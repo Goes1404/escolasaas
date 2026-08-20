@@ -1,0 +1,22 @@
+
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  maxInstances: 5
+  timeoutSeconds: 60
+
+env:
+  - variable: YOUTUBE_API_KEY
+    availability: [RUNTIME]
+  - variable: WOLFRAM_ALPHA_APP_ID
+    availability: [RUNTIME]
+  - variable: NODE_OPTIONS
+    value: --max-old-space-size=4096
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    value: https://qjdcexrirortchemezij.supabase.co
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqZGNleHJpcm9ydGNoZW1lemlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODg0MzksImV4cCI6MjA4NTk2NDQzOX0.bOnOPy-AkPokgOON6f3KJb7TD2u6HceZ5UL86Xk0Vi0
+    availability: [BUILD, RUNTIME]

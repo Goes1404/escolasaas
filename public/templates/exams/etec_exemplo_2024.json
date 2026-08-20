@@ -1,0 +1,67 @@
+{
+  "title": "ETEC 2024 - 1º Semestre (Demonstração)",
+  "year": 2024,
+  "exam_type": "etec",
+  "questions": [
+    {
+      "question_text": "A energia cinética de um corpo está diretamente relacionada à sua massa e velocidade. Se a velocidade de um carro dobra, o que acontece com a sua energia cinética?",
+      "options": [
+        { "key": "A", "text": "Permanece a mesma" },
+        { "key": "B", "text": "Dobra" },
+        { "key": "C", "text": "Triplica" },
+        { "key": "D", "text": "Quadruplica" },
+        { "key": "E", "text": "Reduz pela metade" }
+      ],
+      "correct_answer": "D",
+      "subject_name": "Física"
+    },
+    {
+      "question_text": "Em uma feira, 3 maçãs custam R$ 4,50. Quanto custarão 10 maçãs?",
+      "options": [
+        { "key": "A", "text": "R$ 10,00" },
+        { "key": "B", "text": "R$ 13,50" },
+        { "key": "C", "text": "R$ 15,00" },
+        { "key": "D", "text": "R$ 18,00" },
+        { "key": "E", "text": "R$ 20,00" }
+      ],
+      "correct_answer": "C",
+      "subject_name": "Matemática"
+    },
+    {
+      "question_text": "Assinale a alternativa em que há erro de concordância verbal.",
+      "options": [
+        { "key": "A", "text": "Faz dez anos que não a vejo." },
+        { "key": "B", "text": "Havia muitas pessoas na festa." },
+        { "key": "C", "text": "Fazem invernos rigorosos no Sul." },
+        { "key": "D", "text": "Vende-se casa." },
+        { "key": "E", "text": "Existem várias soluções." }
+      ],
+      "correct_answer": "C",
+      "subject_name": "Português"
+    },
+    {
+      "question_text": "Qual organela celular é a principal responsável pela produção de ATP através da respiração celular em células eucarióticas?",
+      "options": [
+        { "key": "A", "text": "Complexo de Golgi" },
+        { "key": "B", "text": "Retículo Endoplasmático" },
+        { "key": "C", "text": "Ribossomo" },
+        { "key": "D", "text": "Lisossomo" },
+        { "key": "E", "text": "Mitocôndria" }
+      ],
+      "correct_answer": "E",
+      "subject_name": "Biologia"
+    },
+    {
+      "question_text": "Um trem viaja a uma velocidade constante de 60 km/h. Quanto tempo ele levará para percorrer 150 km?",
+      "options": [
+        { "key": "A", "text": "2 horas" },
+        { "key": "B", "text": "2 horas e 30 minutos" },
+        { "key": "C", "text": "3 horas" },
+        { "key": "D", "text": "3 horas e 30 minutos" },
+        { "key": "E", "text": "4 horas" }
+      ],
+      "correct_answer": "B",
+      "subject_name": "Física"
+    }
+  ]
+}

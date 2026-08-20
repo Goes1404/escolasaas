@@ -1,0 +1,25 @@
+[
+  {
+    "id": "etec_exemplo_2024",
+    "title": "ETEC 2024 - 1º Semestre (Demonstração)",
+    "institution": "ETEC",
+    "year": 2024,
+    "exam_type": "etec",
+    "questionCount": 5,
+    "tags": ["Física", "Matemática", "Português", "Biologia", "Demonstração"],
+    "fileUrl": "/templates/exams/etec_exemplo_2024.json",
+    "color": "bg-orange-500"
+  },
+  {
+    "id": "enem_mock_2023",
+    "title": "ENEM 2023 - Ciências Humanas (Em Breve)",
+    "institution": "ENEM",
+    "year": 2023,
+    "exam_type": "enem",
+    "questionCount": 45,
+    "tags": ["História", "Geografia", "Sociologia"],
+    "fileUrl": "",
+    "color": "bg-blue-500",
+    "disabled": true
+  }
+]

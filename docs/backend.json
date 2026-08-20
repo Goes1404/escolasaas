@@ -1,0 +1,79 @@
+
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "type": "object",
+      "description": "Dados de perfil do usuário (Estudante, Professor ou Coordenador).",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "profile_type": { "type": "string", "enum": ["etec", "uni", "teacher", "admin"] },
+        "institution": { "type": "string" },
+        "course": { "type": "string" },
+        "is_financial_aid_eligible": { "type": "boolean" },
+        "last_access": { "type": "string", "format": "date-time" },
+        "class_id": { "type": "string", "description": "ID da Turma/Cohort." }
+      }
+    },
+    "Trail": {
+      "title": "Trail",
+      "type": "object",
+      "description": "Trilha de aprendizagem com workflow de aprovação.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "teacher_id": { "type": "string" },
+        "teacher_name": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "review", "published", "inactive"] },
+        "image_url": { "type": "string" },
+        "target_audience": { "type": "string" },
+        "average_rating": { "type": "number" }
+      }
+    },
+    "EssaySubmission": {
+      "title": "EssaySubmission",
+      "type": "object",
+      "description": "Submissões de redação e seus resultados de avaliação da IA.",
+      "properties": {
+        "id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "theme": { "type": "string" },
+        "content": { "type": "string" },
+        "score": { "type": "number" },
+        "feedback": { "type": "string" },
+        "result_data": { "type": "object", "description": "Objeto JSON completo com as 5 competências." },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "LearningContent": {
+      "title": "LearningContent",
+      "type": "object",
+      "description": "Materiais didáticos vinculados aos módulos das trilhas.",
+      "properties": {
+        "id": { "type": "string" },
+        "module_id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "pdf", "quiz", "text", "file"] },
+        "url": { "type": "string" },
+        "description": { "type": "string" },
+        "workbook_id": { "type": "string", "description": "ID opcional de uma apostila da biblioteca." },
+        "order_index": { "type": "number" }
+      }
+    },
+    "Class": {
+      "title": "Class",
+      "type": "object",
+      "description": "Turmas ou Cohorts de alunos.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "coordinator_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

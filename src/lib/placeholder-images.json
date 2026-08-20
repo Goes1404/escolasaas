@@ -1,0 +1,46 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-educational",
+      "description": "Jornada Literária e Educação em Santana de Parnaíba",
+      "imageUrl": "https://i.postimg.cc/ZRCdsSjy/Whats-App-Image-2026-03-12-at-17-49-18.jpg",
+      "imageHint": "classroom students lecture"
+    },
+    {
+      "id": "gallery-classroom",
+      "description": "Alunos em sala de aula - Santana de Parnaíba",
+      "imageUrl": "https://i.postimg.cc/QMnBTzsK/4.jpg",
+      "imageHint": "student classroom"
+    },
+    {
+      "id": "gallery-lab",
+      "description": "Ambiente de estudo e tecnologia",
+      "imageUrl": "https://i.postimg.cc/mgvJgL14/Whats-App-Image-2026-03-12-at-17-48-36.jpg",
+      "imageHint": "science lab education"
+    },
+    {
+      "id": "gallery-3",
+      "description": "Estudantes em atividade prática",
+      "imageUrl": "https://i.postimg.cc/Px4Ry13T/2.jpg",
+      "imageHint": "video broadcast studio"
+    },
+    {
+      "id": "gallery-4",
+      "description": "Mentoria e foco acadêmico",
+      "imageUrl": "https://i.postimg.cc/J0YdVMCd/Whats-App-Image-2026-03-12-at-2.jpg",
+      "imageHint": "co-working study space"
+    },
+    {
+      "id": "prefeitura-logo",
+      "description": "Logomarca Oficial da Prefeitura de Santana de Parnaíba SP",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/Santana_Parna%C3%ADba.PNG",
+      "imageHint": "city logo"
+    },
+    {
+      "id": "santana-landmark",
+      "description": "Igreja Matriz de Santana de Parnaíba - Coração da Cidade",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Igreja_Matriz_de_Santana_de_Parna%C3%ADba.jpg/1280px-Igreja_Matriz_de_Santana_de_Parna%C3%ADba.jpg",
+      "imageHint": "historic church"
+    }
+  ]
+}

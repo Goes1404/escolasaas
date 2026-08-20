@@ -1,0 +1,40 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envLocalPath = join(__dirname, '../.env.local');
+
+if (fs.existsSync(envLocalPath)) {
+  const envConfig = dotenv.parse(fs.readFileSync(envLocalPath));
+  for (const k in envConfig) {
+    process.env[k] = envConfig[k];
+  }
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function listExams() {
+  console.log("Listing current exams in database...");
+  const { data, error } = await supabase
+    .from("exams")
+    .select("id, title, year, exam_type, pdf_url, exam_questions(count)")
+    .order("year", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching exams:", error.message);
+    return;
+  }
+
+  data.forEach((e) => {
+    console.log(`- ${e.title} (${e.year}) [${e.exam_type}] | PDF: ${e.pdf_url} | Questions: ${e.exam_questions?.[0]?.count ?? 0}`);
+  });
+}
+
+listExams();

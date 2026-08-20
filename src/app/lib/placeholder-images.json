@@ -1,0 +1,47 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-main",
+      "description": "Jornada Literária e Educação em Santana de Parnaíba",
+      "imageUrl": "/images/capa1.jpeg",
+      "imageHint": "classroom students"
+    },
+    {
+      "id": "gallery-classroom",
+      "description": "Salas Inteligentes - Santana de Parnaíba",
+      "imageUrl": "/images/carrosel1.jpeg",
+      "imageHint": "student classroom"
+    },
+    {
+      "id": "gallery-lab",
+      "description": "Ambiente de estudo e tecnologia",
+      "imageUrl": "/images/carrosel2.jpeg",
+      "imageHint": "science lab"
+    },
+    {
+      "id": "gallery-live",
+      "description": "Estúdios de Live e Transmissão",
+      "imageUrl": "/images/carrosel3.jpeg",
+      "imageHint": "video studio"
+    },
+    {
+      "id": "gallery-mentorship",
+      "description": "Espaços de Mentoria e Foco Acadêmico",
+      "imageUrl": "/images/carrosel4.jpeg",
+      "imageHint": "study space"
+    },
+    {
+      "id": "prefeitura-logo",
+      "description": "Brasão Oficial de Santana de Parnaíba",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/Santana_Parna%C3%ADba.PNG",
+      "imageHint": "city logo"
+    },
+    {
+      "id": "login-bg",
+      "description": "Centro Histórico de Santana de Parnaíba",
+      "imageUrl": "/images/carrosel5.jpeg",
+      "imageHint": "historic city"
+    }
+  ]
+}

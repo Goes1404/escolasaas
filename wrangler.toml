@@ -1,0 +1,7 @@
+name = "compromisso-platform"
+compatibility_date = "2024-11-18"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = ".vercel/output"
+filter = ["!node_modules"]

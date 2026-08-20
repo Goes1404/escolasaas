@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    /**
+     * MODO APRESENTAÇÃO - ACESSO TOTAL
+     * Versão: 2.0.0 (Reset de Emergência para Demo)
+     * Data: 2024-05-20
+     */
+    
+    match /{document=**} {
+      allow read, write: if true;
+    }
+
+    // Regras explícitas redundantes para garantir que o login e criação de perfil funcionem
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+    
+    match /teachers/{teacherId} {
+      allow read, write: if true;
+    }
+    
+    match /lives/{liveId} {
+      allow read, write, list: if true;
+    }
+  }
+}
