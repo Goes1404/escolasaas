@@ -35,6 +35,40 @@ Corrigido rodando um `UPDATE auth.users SET ... = COALESCE(..., '')` nessas 3
 contas (o usuário rodou no SQL Editor do painel, já aplicado). Se aparecer de
 novo em outra conta legada, o sintoma e o fix são esses.
 
+## Conteúdo de demonstração (inserido direto no banco, sem migration)
+
+Pedido do usuário: "quero algo para apresentar". Descoberta importante: as
+contas `aluno@compromisso.com` e `professor@compromisso.com` **já tinham**
+uma história de demo bem construída, vinda de `20260615000000_demo_accounts_seed`
++ a reconciliação de XP (`20260729180000`) — 3 redações corrigidas, notas, 3
+simulados ("Simulado ENEM 1/2/3") com `exam_attempts` e nota, streak, etc. Não
+recriei nada disso; só somei em cima.
+
+O que foi adicionado (tudo via `execute_sql`, dados puros — nenhuma migration
+nova, nenhum arquivo no repo):
+- **15 questões novas**, reais (não placeholder), 3 cada em Matemática,
+  Português, Biologia, História, Geografia — `teacher_id` = professor.
+- **1 exame novo** "Simulado ENEM — Demonstração" com 10 dessas questões
+  linkadas via `exam_questions` (os 3 exames antigos continuam sem questões
+  linkadas — não mexi neles).
+- **2 trilhas publicadas** ("Matemática Básica para o ENEM", "Redação Nota
+  1000"), cada uma com 2 módulos e 2 aulas por módulo.
+- **1 turma** ("3º Ano ENEM — Manhã"), **3 materiais de aula**, **5 itens de
+  biblioteca** (2 livros com prefixo `LIVRO|`, 3 recursos avulsos).
+- **2 fóruns** com 3 posts (pergunta do aluno + resposta do professor).
+- **1 aula ao vivo agendada** (daqui a 2 dias, host = professor).
+- Para o **aluno**: bichinho adotado (lobinho "Fumaça"), streak atualizada
+  (6 dias correntes), ~245 XP novo somado ao histórico já existente (total
+  agora **3.485 XP** — número alto de propósito, mostra um aluno engajado),
+  15 respostas de questão, 1 tentativa completa no exame novo (nota 90), 3
+  flashcards em revisão, 1 redação nova (880/1000) e 2 notas novas no
+  caderno.
+
+Se quiser mais conteúdo (mais questões, mais trilhas, dados para o
+admin/secretaria), é só pedir — o padrão de UUIDs usado aqui é
+`1111...`=questões, `2222...`=exame, `3333...`=trilhas/módulos/conteúdo,
+`4444...`=turma, `5555...`=fóruns, então dá pra estender sem colidir.
+
 ## Vercel — pendências para o deploy funcionar de verdade
 
 Projeto: `escolasaas` (team `sq1matheusgsilva-7306s-projects`,
