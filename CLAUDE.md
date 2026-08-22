@@ -238,7 +238,23 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
 - `student/ranking` (primeira, fase 2): pódio em blocos chapados com as três
   cores, sombra dura no lugar de glow, posições/XP em `u-num`, destaque da
   própria linha por forma (borda + sombra) e não por opacidade, confete no
-  top 3. Serve de molde para bichinho, desafio diário e resultado de simulado.
+  top 3. É o molde das demais.
+- `student/bichinho`: cor chapada escolhida pelo humor, contadores em `u-num`,
+  confete ao subir de nível.
+- `student/daily`: hero em amarelo chapado (o âmbar/laranja anterior não
+  existia na paleta), ofensiva e contagem regressiva em `u-num`, botão arcade.
+- Resultado de simulado (dentro de `student/simulados`): faixa chapada no topo
+  carrega o veredito — ciano ≥70%, amarelo ≥50%, rosa abaixo — no lugar de três
+  gradientes escuros quase idênticos. Anel de nota e os três números em `u-num`.
+
+**Onde a cor continua sendo sinal, e não decoração:** acerto/erro no gabarito e
+no desafio diário seguem verde/vermelho. A regra dos três níveis fala de
+intensidade visual, não proíbe semântica.
+
+**Cuidado com o confete:** dispare no evento (dentro do handler que registra o
+acerto), nunca num `useEffect` que observe o estado do resultado. A tela já
+respondida remonta a cada visita, e pelo efeito a festa se repetiria. Onde o
+disparo é no carregamento, use `celebrateOnce(chave)`.
 
 ### Outros padrões
 

@@ -8,6 +8,7 @@ import { fixEncoding } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { trackMissionProgress } from '@/lib/missions';
+import { celebrate, haptic } from '@/lib/celebrate';
 import {
   Zap, CheckCircle2, XCircle, Lock, Trophy,
   Flame, Target, ChevronRight, Loader2, Star,
@@ -190,8 +191,14 @@ export default function DailyQuestionPage() {
       setAlreadyDone(true);
       setStreakCount(s => s + (s === 0 || isCorrect ? 1 : 0));
 
+      // A festa acontece AQUI, no instante do acerto — não num efeito que
+      // observe `answerState`. A tela já respondida remonta a cada visita, e
+      // pelo efeito o confete voltaria a cair toda vez que o aluno abrisse.
+      if (isCorrect) celebrate();
+      haptic(isCorrect ? [12, 40, 12] : 25);
+
       toast({
-        title: isCorrect ? '🎉 Resposta correta!' : '😅 Quase lá!',
+        title: isCorrect ? 'Resposta correta' : 'Quase lá',
         description: `+${xp} XP ganhos`,
       });
     } catch (e: any) {
@@ -216,9 +223,9 @@ export default function DailyQuestionPage() {
   if (!daily) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <div className="aurora-dark rounded-card p-12 text-white">
+        <div className="aurora-dark rounded-card border-2 border-foreground p-12 text-white shadow-hard">
           <Target className="h-16 w-16 mx-auto mb-4 opacity-40" />
-          <h2 className="text-2xl font-black italic">Sem desafio hoje</h2>
+          <h2 className="u-page-title text-2xl">Sem desafio hoje</h2>
           <p className="text-white/50 mt-2 text-sm">
             O professor ainda não agendou a questão de hoje. Volte mais tarde!
           </p>
@@ -232,71 +239,70 @@ export default function DailyQuestionPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 space-y-6 pb-24 animate-in fade-in duration-700">
 
-      {/* ── HERO ── */}
-      <section className="aurora-dark relative overflow-hidden rounded-card p-6 md:p-8 text-white shadow-2xl border border-white/5">
-        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/20 rounded-full blur-[80px]" />
+      {/* ── HERO ──
+          Nível alto: cor chapada e sombra dura no lugar do blur difuso. O
+          amarelo é o acento da marca, e é ele que carrega a ideia de "hoje,
+          agora" — o âmbar/laranja anterior não existe na paleta. */}
+      <section className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-6 md:p-8 text-foreground shadow-hard">
+        <div className="absolute inset-0 dot-grid opacity-[0.07] pointer-events-none rounded-card" />
 
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="space-y-2 min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/30 whitespace-nowrap">
-                <Zap className="inline h-2.5 w-2.5 mr-1" />
-                Desafio Diário
+              <span className="u-label inline-flex items-center gap-1 border-2 border-foreground bg-foreground text-background px-2.5 py-1 rounded-control whitespace-nowrap">
+                <Zap className="h-2.5 w-2.5" />
+                Desafio diário
               </span>
               {daily.subject_name && (
-                <span className="text-[9px] font-black uppercase tracking-widest bg-white/10 text-white/70 px-3 py-1 rounded-full whitespace-nowrap">
+                <span className="u-label border-2 border-foreground px-2.5 py-1 rounded-control whitespace-nowrap">
                   {daily.subject_name}
                 </span>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-black italic tracking-tighter leading-tight">
-              Questão do<br />
-              <span className="text-gradient-brand">Dia 🎯</span>
+            <h1 className="u-page-title text-[clamp(1.5rem,6vw,2.25rem)] leading-[1.25]">
+              Questão do dia
             </h1>
-            <p className="text-white/40 text-xs font-medium">
+            <p className="u-label !text-foreground/60">
               {new Date(daily.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', {
                 weekday: 'long', day: '2-digit', month: 'long'
               })}
             </p>
           </div>
 
-          {/* Stats */}
+          {/* Ofensiva e contagem: os dois números da tela, em display */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Streak */}
-            <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1.5 md:px-3 md:py-2 rounded-2xl">
-              <Flame className="h-3.5 w-3.5 md:h-4 md:w-4 text-orange-400" />
-              <span className="text-base md:text-lg font-black leading-none">{streakCount}</span>
-              <span className="text-[8px] md:text-[9px] font-black opacity-50 uppercase">dias</span>
+            <div className="flex items-center gap-1.5 border-2 border-foreground bg-background px-2.5 py-1.5 rounded-control">
+              <Flame className="h-3.5 w-3.5 md:h-4 md:w-4 text-brand-pink" />
+              <span className="u-num text-base md:text-lg leading-none">{streakCount}</span>
+              <span className="u-label !text-[8px] !text-foreground/50">dias</span>
             </div>
-            {/* Countdown */}
             <div className="text-right">
-              <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">Nova em</p>
-              <p className="text-xs md:text-sm font-black font-mono text-white/70 whitespace-nowrap">{countdown}</p>
+              <p className="u-label !text-[8px] !text-foreground/50 whitespace-nowrap">Nova em</p>
+              <p className="u-num text-xs md:text-sm whitespace-nowrap tabular-nums">{countdown}</p>
             </div>
           </div>
         </div>
 
-        {/* XP disponível */}
-        <div className="relative z-10 mt-5 flex items-center gap-2 bg-white/10 rounded-2xl px-4 py-3">
-          <Star className="h-4 w-4 text-amber-400" />
-          <span className="text-sm font-black">
-            +{XP_VALUES.daily_question_correct} XP
-          </span>
-          <span className="text-white/40 text-xs font-medium">pelo acerto •</span>
-          <span className="text-xs font-black text-white/60">
-            +{XP_VALUES.daily_question_wrong} XP pela tentativa
+        {/* XP em jogo */}
+        <div className="relative z-10 mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 border-2 border-foreground bg-background rounded-control px-4 py-3">
+          <Star className="h-4 w-4 shrink-0 text-brand-yellow fill-brand-yellow stroke-foreground" />
+          <span className="u-num text-base">+{XP_VALUES.daily_question_correct} XP</span>
+          <span className="text-xs font-medium text-foreground/60">pelo acerto</span>
+          <span className="w-full text-[11px] font-medium text-foreground/45 sm:w-auto sm:before:content-['·'] sm:before:mr-2">
+            +{XP_VALUES.daily_question_wrong} XP mesmo errando
           </span>
         </div>
       </section>
 
       {/* ── CARD DA QUESTÃO ── */}
-      <div className="bg-white rounded-card shadow-md border border-slate-100 overflow-hidden">
+      <div className="bg-card rounded-card border-2 border-foreground overflow-hidden">
         {/* Barra superior de status */}
-        <div className={`h-1 w-full transition-all duration-500 ${
+        {/* Verde e vermelho ficam: aqui a cor é SINAL (certo/errado), não
+            decoração. O que sai é o gradiente. */}
+        <div className={`h-1.5 w-full border-b-2 border-foreground transition-all duration-500 ${
           answerState === 'correct' ? 'bg-emerald-500' :
           answerState === 'wrong'   ? 'bg-red-400' :
-          'bg-gradient-to-r from-amber-400 to-orange-500'
+          'bg-brand-yellow'
         }`} />
 
         <div className="p-6 md:p-8 space-y-6">
@@ -326,7 +332,7 @@ export default function DailyQuestionPage() {
                   key={opt.key}
                   disabled={alreadyDone || submitting}
                   onClick={() => setSelected(opt.key)}
-                  className={`w-full flex items-start gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-200 group ${cardStyle} ${
+                  className={`w-full flex items-start gap-4 p-4 rounded-card border-2 text-left transition-all duration-200 group ${cardStyle} ${
                     !alreadyDone ? 'cursor-pointer' : 'cursor-default'
                   }`}
                 >
@@ -355,12 +361,14 @@ export default function DailyQuestionPage() {
             })}
           </div>
 
-          {/* Botão de confirmar */}
+          {/* Botão de confirmar. `h-13` não existe na escala do Tailwind — a
+              classe era descartada e o botão ficava na altura padrão. */}
           {!alreadyDone && (
             <Button
+              variant="arcade"
               onClick={handleSubmit}
               disabled={!selected || submitting}
-              className="w-full h-13 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-0.5 transition-all border-none"
+              className="w-full h-14 text-sm uppercase tracking-wider font-black"
             >
               {submitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" />Confirmando...</>
@@ -372,20 +380,22 @@ export default function DailyQuestionPage() {
 
           {/* Resultado */}
           {alreadyDone && (
-            <div className={`rounded-2xl p-5 space-y-3 ${
-              answerState === 'correct' ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'
+            <div className={`rounded-card p-5 space-y-3 border-2 ${
+              answerState === 'correct'
+                ? 'bg-emerald-50 border-emerald-600 shadow-hard'
+                : 'bg-red-50 border-red-500'
             }`}>
               <div className="flex items-center gap-3">
                 {answerState === 'correct'
                   ? <Trophy className="h-6 w-6 text-emerald-600" />
                   : <XCircle className="h-6 w-6 text-red-500" />}
                 <div>
-                  <p className={`font-black text-base ${answerState === 'correct' ? 'text-emerald-800' : 'text-red-700'}`}>
-                    {answerState === 'correct' ? '🎉 Resposta Correta!' : '😅 Resposta Incorreta'}
+                  <p className={`u-display text-base leading-[1.3] ${answerState === 'correct' ? 'text-emerald-800' : 'text-red-700'}`}>
+                    {answerState === 'correct' ? 'Resposta correta' : 'Resposta incorreta'}
                   </p>
                   {xpEarned !== null && (
-                    <p className="text-xs font-bold text-muted-foreground">
-                      +{xpEarned} XP adicionados ao seu perfil
+                    <p className="mt-1 text-xs font-bold text-muted-foreground">
+                      <span className="u-num">+{xpEarned}</span> XP adicionados ao seu perfil
                     </p>
                   )}
                 </div>
@@ -393,9 +403,7 @@ export default function DailyQuestionPage() {
 
               {daily.explanation && (
                 <div className="space-y-1">
-                  <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">
-                    Explicação:
-                  </p>
+                  <p className="u-label">Explicação</p>
                   <p className={`text-sm leading-relaxed font-medium ${
                     answerState === 'correct' ? 'text-emerald-900' : 'text-red-900'
                   }`}>
@@ -427,14 +435,14 @@ export default function DailyQuestionPage() {
 
       {/* ── CTA para Simulados ── */}
       {alreadyDone && (
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-card border border-primary/10 p-6 flex items-center justify-between gap-4">
+        <div className="bg-card rounded-card border-2 border-foreground p-6 flex items-center justify-between gap-4">
           <div>
-            <p className="font-black text-primary italic">Quer mais questões?</p>
+            <p className="u-display text-base">Quer mais questões?</p>
             <p className="text-xs text-muted-foreground mt-1">
               Pratique com simulados completos e ganhe ainda mais XP.
             </p>
           </div>
-          <Button asChild className="rounded-2xl shrink-0 bg-primary text-white font-black text-xs uppercase tracking-wider">
+          <Button asChild variant="arcade" className="shrink-0 text-xs uppercase tracking-wider font-black">
             <a href="/dashboard/student/simulados">
               Simulados <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </a>

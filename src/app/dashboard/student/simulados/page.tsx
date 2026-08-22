@@ -55,13 +55,16 @@ function ScoreRing({ pct, size = 110 }: { pct: number; size?: number }) {
   const r = (size - 12) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (pct / 100) * circ;
-  const color = pct >= 70 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+  // Paleta do produto: ciano quando foi bem, amarelo no meio, rosa embaixo.
+  // O rosa é acento da marca, não alarme — quem sinaliza erro é o vermelho do
+  // gabarito, item a item.
+  const color = pct >= 70 ? '#4CCCED' : pct >= 50 ? '#EDE04C' : '#ED3474';
   return (
     <svg width={size} height={size} className="-rotate-90" aria-hidden>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={8} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={10} />
       <circle
         cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke={color} strokeWidth={8} strokeLinecap="round"
+        stroke={color} strokeWidth={10} strokeLinecap="butt"
         strokeDasharray={circ} strokeDashoffset={offset}
         style={{ transition: 'stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)' }}
       />
@@ -676,23 +679,26 @@ export default function SimuladoPage() {
   // FINISHED — SCORECARD GAMER & REVIEW ACCORDIONS
   // ════════════════════════════════════════════════════════════════════════════
   if (gameState === 'finished') {
-    const resultColor = pct >= 70 ? 'text-green-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400';
-    const resultLabel = pct >= 70 ? 'Desempenho de Elite!' : pct >= 50 ? 'Bom progresso!' : 'Continue praticando!';
-    const resultBg    = pct >= 70 ? 'from-[#0d2e1b] to-[#070709]' : pct >= 50 ? 'from-[#3a2007] to-[#070709]' : 'from-[#380e14] to-[#070709]';
+    const resultLabel = pct >= 70 ? 'Desempenho de elite' : pct >= 50 ? 'Bom progresso' : 'Continue praticando';
+    // Faixa chapada no topo do card: é ela que carrega a cor do veredito, em
+    // vez de três gradientes escuros quase indistinguíveis entre si.
+    const resultBand  = pct >= 70 ? 'bg-primary' : pct >= 50 ? 'bg-brand-yellow' : 'bg-brand-pink';
 
     return (
       <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-700 pb-28 px-2 sm:px-4">
         
-        {/* Confetti canvas */}
-        <canvas id="confetti-canvas" className="fixed inset-0 pointer-events-none z-[10000]" />
+        {/* O canvas do confete é criado pelo próprio `celebrate()` quando não
+            existe — o elemento fixo aqui era sobra da versão caseira. */}
 
-        {/* Premium Gamer Scorecard */}
-        <div className={`rounded-card bg-gradient-to-b ${resultBg} border border-white/5 overflow-hidden shadow-2xl p-6 sm:p-8 space-y-6 text-center relative`}>
-          <div className="absolute top-3 right-3 shrink-0">
-            <Badge className="bg-[#4CCCED]/10 text-orange-400 border border-[#4CCCED]/25 font-black text-[9px] uppercase tracking-widest px-2.5 h-6">
-              <Trophy className="h-3 w-3 mr-1" />
-              Simulado Concluído
-            </Badge>
+        {/* Placar */}
+        <div className="aurora-dark rounded-card border-2 border-foreground overflow-hidden shadow-hard text-center relative">
+          <div className={`h-2 w-full ${resultBand}`} />
+          <div className="p-6 sm:p-8 space-y-6">
+          <div className="absolute top-5 right-3 shrink-0">
+            <span className="u-label inline-flex items-center gap-1 border-2 border-white/25 text-white/70 px-2.5 py-1 rounded-control">
+              <Trophy className="h-3 w-3" />
+              Concluído
+            </span>
           </div>
 
           <div className="flex flex-col items-center">
@@ -700,12 +706,12 @@ export default function SimuladoPage() {
             <div className="relative shrink-0 flex items-center justify-center h-28 w-28 mb-3 mt-4">
               <ScoreRing pct={pct} size={110} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="font-black text-white text-2xl leading-none">{pct}<span className="text-xs text-white/50">%</span></p>
-                <p className="text-[7px] font-black uppercase tracking-widest text-white/40 mt-1">Acertos</p>
+                <p className="u-num text-white text-3xl leading-none">{pct}<span className="text-sm text-white/50">%</span></p>
+                <p className="u-label !text-[8px] !text-white/40 mt-1">Acertos</p>
               </div>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-black italic tracking-tighter text-white leading-none mb-1">
+            <h2 className="u-page-title text-2xl sm:text-3xl text-white leading-[1.2] mb-1">
               {resultLabel}
             </h2>
             <p className="text-white/60 text-xs font-semibold max-w-sm">
@@ -713,71 +719,75 @@ export default function SimuladoPage() {
             </p>
 
             {/* Tempo total gasto */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-4 py-2">
-              <Clock className="h-4 w-4 text-orange-400" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Tempo total</span>
-              <span className="text-sm font-black text-white tabular-nums tracking-wider">{formatTime(elapsedSeconds)}</span>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-control border-2 border-white/25 px-4 py-2">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="u-label !text-white/40">Tempo total</span>
+              <span className="u-num text-sm text-white tabular-nums">{formatTime(elapsedSeconds)}</span>
             </div>
           </div>
 
           {/* Gamified Reward Banner */}
-          <div className="bg-white/5 border border-white/8 rounded-2xl p-4 flex items-center justify-center gap-6 max-w-md mx-auto">
+          <div className="border-2 border-white/25 rounded-control p-4 flex items-center justify-center gap-6 max-w-md mx-auto">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-[#4CCCED]/20 flex items-center justify-center shadow-md">
-                <Zap className="h-4.5 w-4.5 text-orange-400 fill-orange-400" />
+              <div className="h-8 w-8 rounded-control bg-brand-yellow flex items-center justify-center">
+                <Zap className="h-4 w-4 text-foreground fill-foreground" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-black text-white">+{xpGained} XP</p>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Experiência</p>
+                <p className="u-num text-sm text-white">+{xpGained} XP</p>
+                <p className="u-label !text-[8px] !text-white/40">Experiência</p>
               </div>
             </div>
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-[2px] bg-white/15" />
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center shadow-md">
-                <Award className="h-4.5 w-4.5 text-indigo-400" />
+              <div className="h-8 w-8 rounded-control bg-primary flex items-center justify-center">
+                <Award className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-black text-white">Salvo</p>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Histórico</p>
+                <p className="u-display text-sm text-white">Salvo</p>
+                <p className="u-label !text-[8px] !text-white/40">Histórico</p>
               </div>
             </div>
           </div>
 
           {/* Stats breakdown */}
-          <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-white/5 pt-5">
+          {/* Acerto e erro guardam verde/vermelho: ali a cor é sinal, não
+              decoração. O total é neutro. */}
+          <div className="grid grid-cols-3 divide-x-2 divide-white/15 border-t-2 border-white/15 pt-5">
             {[
               { label: 'Acertos', value: score, color: 'text-emerald-400', icon: CheckCircle2 },
               { label: 'Erros',   value: answers.length - score, color: 'text-red-400', icon: XCircle },
-              { label: 'Total',   value: answers.length, color: 'text-orange-400', icon: ClipboardList },
+              { label: 'Total',   value: answers.length, color: 'text-white', icon: ClipboardList },
             ].map(s => (
               <div key={s.label} className="text-center px-1">
                 <s.icon className={`h-4 w-4 mx-auto mb-1 ${s.color}`} />
-                <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-                <p className="text-[8px] font-black uppercase tracking-widest text-white/40 mt-0.5">{s.label}</p>
+                <p className={`u-num text-3xl leading-none ${s.color}`}>{s.value}</p>
+                <p className="u-label !text-[8px] !text-white/40 mt-1">{s.label}</p>
               </div>
             ))}
           </div>
 
           <div className="pt-4">
             <Button
+              variant="arcade"
               onClick={() => {
                 triggerHaptic(20);
                 setAnswers([]);
                 setGameState('idle');
               }}
-              className="w-full h-12 rounded-2xl bg-[#4CCCED] text-slate-950 hover:bg-orange-600 font-black text-sm uppercase tracking-wider active:scale-95 transition-transform border-none"
+              className="w-full h-12 text-sm uppercase tracking-wider font-black"
             >
               <RotateCw className="h-4 w-4 mr-2" />
-              Iniciar Novo Simulado
+              Iniciar novo simulado
             </Button>
+          </div>
           </div>
         </div>
 
         {/* Gabarito Comentado Accordion */}
         <div className="space-y-4">
-          <h3 className="text-base font-black text-slate-800 italic px-1 mb-2 flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-orange-500" />
-            Revisão & Gabarito Comentado
+          <h3 className="u-display text-base px-1 mb-2 flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            Revisão e gabarito comentado
           </h3>
 
           <div className="space-y-3">
@@ -871,7 +881,7 @@ export default function SimuladoPage() {
                                       ${wasWrong     ? 'bg-red-50 border-red-200 text-red-600 line-through' : ''}
                                       ${!isCorrectOpt && !wasWrong ? 'bg-white border-slate-100 text-slate-500' : ''}`}
                                   >
-                                    <span className="font-black italic w-4 shrink-0">{(k || '?').toUpperCase()})</span>
+                                    <span className="u-display w-4 shrink-0">{(k || '?').toUpperCase()}</span>
                                     <span className="flex-1">{opt.text}</span>
                                     {isCorrectOpt && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
                                     {wasWrong     && <XCircle      className="h-3.5 w-3.5 text-red-500 shrink-0" />}
@@ -1171,13 +1181,13 @@ export default function SimuladoPage() {
                       );
                     })()}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`text-xs font-black leading-none ${color}`}>{pct}%</span>
+                      <span className={`u-num text-xs leading-none ${color}`}>{pct}%</span>
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Resultado Oficial</p>
-                    <p className="font-black italic text-slate-800 truncate">{r.title}</p>
-                    <p className={`text-2xl font-black italic leading-none mt-1 ${color}`}>
+                    <p className="u-label">Resultado oficial</p>
+                    <p className="u-display text-sm text-slate-800 truncate">{r.title}</p>
+                    <p className={`u-num text-2xl leading-none mt-1 ${color}`}>
                       {r.score}<span className="text-sm text-slate-400 font-bold">/{r.total}</span>
                     </p>
                   </div>
