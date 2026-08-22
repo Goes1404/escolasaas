@@ -90,6 +90,26 @@ const STATS = [
 
 const SCRAMBLE_CHARS = "▮▯#%&@01XZ";
 
+/** Chave própria: a escolha aqui não mexe no tema do dashboard. */
+const THEME_KEY = "landing-theme";
+
+/* Ícones do toggle — desenhados à mão, na mesma linguagem de traço grosso */
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 1.5v2.6M12 19.9v2.6M22.5 12h-2.6M4.1 12H1.5M19.4 4.6l-1.8 1.8M6.4 17.6l-1.8 1.8M19.4 19.4l-1.8-1.8M6.4 6.4L4.6 4.6" />
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round">
+      <path d="M20.5 14.3A8.8 8.8 0 0 1 9.7 3.5a8.8 8.8 0 1 0 10.8 10.8Z" />
+    </svg>
+  );
+}
+
 /* Selo circular girando (SVG com textPath) */
 function Seal({ className, text }: { className?: string; text: string }) {
   const id = useRef(`seal-${Math.random().toString(36).slice(2, 8)}`).current;
@@ -112,6 +132,50 @@ export default function LandingExperience() {
   const windowRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [loaderDone, setLoaderDone] = useState(false);
+  /* O tema real já foi aplicado no <html> pelo script inline de page.tsx
+     (antes do paint, para não piscar). Aqui só espelhamos para o ícone. */
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const themeIconRef = useRef<HTMLSpanElement>(null);
+
+  useGSAP(() => {
+    const current = document.documentElement.getAttribute("data-landing-theme");
+    if (current === "light") setTheme("light");
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const apply = () => {
+      document.documentElement.setAttribute("data-landing-theme", next);
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch {
+        /* modo privado / storage bloqueado: o tema vale só nesta visita */
+      }
+      setTheme(next);
+    };
+
+    if (reduced) {
+      apply();
+      return;
+    }
+
+    /* Cortina varrendo a tela: a troca não é seca, é um "corte" de cena. */
+    const wipe = document.getElementById("l-theme-wipe");
+    gsap.timeline()
+      .set(wipe, { display: "block", yPercent: 100 })
+      .to(wipe, { yPercent: 0, duration: 0.32, ease: "power3.in" })
+      .add(apply)
+      .to(wipe, { yPercent: -100, duration: 0.4, ease: "power3.out" })
+      .set(wipe, { display: "none" });
+
+    gsap.fromTo(
+      themeIconRef.current,
+      { rotate: -90, scale: 0.4, autoAlpha: 0 },
+      { rotate: 0, scale: 1, autoAlpha: 1, duration: 0.5, ease: "back.out(2)", delay: 0.3 }
+    );
+  };
 
   useGSAP(
     () => {
@@ -556,6 +620,13 @@ export default function LandingExperience() {
       <div id="l-cursor-dot" className="l-cursor-dot" aria-hidden="true" />
       <div id="l-cursor-ring" className="l-cursor-ring" aria-hidden="true" />
 
+      {/* Cortina da troca de tema */}
+      <div
+        id="l-theme-wipe"
+        aria-hidden="true"
+        className="fixed inset-0 z-[110] hidden bg-[var(--yellow)]"
+      />
+
       {/* Preloader + cortinas */}
       {!loaderDone && (
         <>
@@ -563,9 +634,9 @@ export default function LandingExperience() {
           <div id="l-curtain-a" className="l-curtain l-curtain-a" aria-hidden="true" />
           <div id="l-preloader" className="l-preloader" aria-hidden="true">
             <span className="l-label !text-[var(--paper)]">
-              Compromisso<span className="text-[var(--cyan)]">*</span> carregando fase
+              Compromisso<span className="text-[var(--cyan-text)]">*</span> carregando fase
             </span>
-            <span id="l-counter" className="l-display text-6xl md:text-8xl text-[var(--yellow)]">
+            <span id="l-counter" className="l-display text-6xl md:text-8xl text-[var(--yellow-text)]">
               000
             </span>
           </div>
@@ -576,7 +647,7 @@ export default function LandingExperience() {
         {/* ── Nav ── */}
         <header className="relative z-20 flex items-center justify-between px-5 md:px-12 py-5">
           <span className="l-label !text-[var(--paper)] !text-[0.72rem]">
-            Compromisso<span className="text-[var(--pink)]">*</span>
+            Compromisso<span className="text-[var(--pink-text)]">*</span>
           </span>
           <nav className="flex items-center gap-6">
             <a
@@ -589,6 +660,16 @@ export default function LandingExperience() {
             >
               Módulos
             </a>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="l-theme-btn"
+              aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+            >
+              <span ref={themeIconRef} className="flex items-center justify-center">
+                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+              </span>
+            </button>
             <button ref={magnetic} onClick={() => go("/login")} className="l-btn l-btn-cyan !py-2.5 !px-5">
               Entrar
             </button>
@@ -609,19 +690,19 @@ export default function LandingExperience() {
                 Plataforma ENEM · ETEC — nível: escola inteira
               </p>
               <h1 className="l-hero-title l-display text-[clamp(2.1rem,8.5vw,5rem)]">
-                Estudar virou <span className="text-[var(--yellow)]">jogo</span>. Gerir virou{" "}
-                <span className="text-[var(--cyan)]">simples</span>.
+                Estudar virou <span className="text-[var(--yellow-text)]">jogo</span>. Gerir virou{" "}
+                <span className="text-[var(--cyan-text)]">simples</span>.
               </h1>
 
               <div className="flex flex-wrap gap-3 mt-8 l-hero-fade">
                 <span className="l-chip">
-                  <i className="h-2.5 w-2.5 rounded-full bg-[var(--cyan)]" /> XP <b className="text-[var(--cyan)]">+5</b>
+                  <i className="h-2.5 w-2.5 rounded-full bg-[var(--cyan)]" /> XP <b className="text-[var(--cyan-text)]">+5</b>
                 </span>
                 <span className="l-chip">
-                  <i className="h-2.5 w-2.5 bg-[var(--pink)]" /> Ofensiva <b className="text-[var(--pink)]">6d</b>
+                  <i className="h-2.5 w-2.5 bg-[var(--pink)]" /> Ofensiva <b className="text-[var(--pink-text)]">6d</b>
                 </span>
                 <span className="l-chip">
-                  <i className="h-2.5 w-2.5 rotate-45 bg-[var(--yellow)]" /> Ranking <b className="text-[var(--yellow)]">#1</b>
+                  <i className="h-2.5 w-2.5 rotate-45 bg-[var(--yellow)]" /> Ranking <b className="text-[var(--yellow-text)]">#1</b>
                 </span>
               </div>
 
@@ -648,7 +729,7 @@ export default function LandingExperience() {
 
               <Seal
                 text="INSERT COIN • COMEÇAR AGORA • INSERT COIN • "
-                className="hidden md:block absolute -top-6 right-0 w-28 h-28 text-[var(--pink)]"
+                className="hidden md:block absolute -top-6 right-0 w-28 h-28 text-[var(--pink-text)]"
               />
             </div>
 
@@ -669,13 +750,13 @@ export default function LandingExperience() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="border-2 border-[var(--paper)] p-3 md:p-4">
                       <p className="l-label !text-[0.5rem] mb-2">XP acumulado</p>
-                      <p className="l-display text-2xl md:text-3xl text-[var(--cyan)]">
+                      <p className="l-display text-2xl md:text-3xl text-[var(--cyan-text)]">
                         <span id="l-kpi-xp">0</span>
                       </p>
                     </div>
                     <div className="border-2 border-[var(--paper)] p-3 md:p-4">
                       <p className="l-label !text-[0.5rem] mb-2">Acertos hoje</p>
-                      <p className="l-display text-2xl md:text-3xl text-[var(--yellow)]">
+                      <p className="l-display text-2xl md:text-3xl text-[var(--yellow-text)]">
                         <span id="l-kpi-acertos">0%</span>
                       </p>
                     </div>
@@ -684,7 +765,7 @@ export default function LandingExperience() {
                   <div className="border-2 border-[var(--paper)] p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
                       <p className="l-label !text-[0.5rem]">Nível do mascote</p>
-                      <p className="l-label !text-[0.5rem] !text-[var(--cyan)]">lv. 4</p>
+                      <p className="l-label !text-[0.5rem] !text-[var(--cyan-text)]">lv. 4</p>
                     </div>
                     <div className="l-hpbar">
                       <i id="l-hpfill" />
@@ -719,7 +800,7 @@ export default function LandingExperience() {
                       <span className="l-eq">
                         <span /><span /><span /><span />
                       </span>
-                      <span className="l-label !text-[0.5rem] !text-[var(--pink)]">ao vivo</span>
+                      <span className="l-label !text-[0.5rem] !text-[var(--pink-text)]">ao vivo</span>
                     </div>
                   </div>
                 </div>
@@ -769,7 +850,7 @@ export default function LandingExperience() {
               Selecione sua fase
             </p>
             <h2 className="l-display text-[clamp(1.5rem,6vw,3rem)]" data-reveal>
-              Seis módulos, <span className="text-[var(--pink)]">uma escola</span>
+              Seis módulos, <span className="text-[var(--pink-text)]">uma escola</span>
             </h2>
           </div>
 
@@ -808,9 +889,9 @@ export default function LandingExperience() {
                   <span className="l-stat-value" data-value={s.value}>
                     0
                   </span>
-                  <span className="text-[var(--paper)]">{s.suffix}</span>
+                  <span className="text-[var(--on-pink)]">{s.suffix}</span>
                 </p>
-                <p className="l-label mt-3 !text-[var(--paper)]/80" data-scramble>
+                <p className="l-label mt-3 !text-[var(--on-pink)]/80" data-scramble>
                   {s.label}
                 </p>
               </div>
@@ -827,7 +908,7 @@ export default function LandingExperience() {
                 Modo história
               </p>
               <h2 className="l-display text-[clamp(1.5rem,6vw,3rem)]" data-reveal>
-                Do primeiro login à <span className="text-[var(--yellow)]">aprovação</span>
+                Do primeiro login à <span className="text-[var(--yellow-text)]">aprovação</span>
               </h2>
             </div>
 
@@ -843,7 +924,7 @@ export default function LandingExperience() {
                     <div className="grid md:grid-cols-[110px_1fr] gap-3 md:gap-10 items-baseline">
                       <span
                         className={`l-display text-4xl md:text-5xl ${
-                          i % 3 === 0 ? "text-[var(--cyan)]" : i % 3 === 1 ? "text-[var(--pink)]" : "text-[var(--yellow)]"
+                          i % 3 === 0 ? "text-[var(--cyan-text)]" : i % 3 === 1 ? "text-[var(--pink-text)]" : "text-[var(--yellow-text)]"
                         }`}
                       >
                         {step.num}
@@ -866,15 +947,15 @@ export default function LandingExperience() {
         <section id="l-cta-block" className="l-skew l-block-cyan relative z-10 py-20 md:py-32 text-center overflow-hidden">
           <Seal
             text="SEM VÍRUS • SEM LOOTBOX • SÓ ESTUDO • "
-            className="absolute top-6 left-5 md:left-12 w-24 h-24 md:w-32 md:h-32 text-[var(--ink)] opacity-80"
+            className="absolute top-6 left-5 md:left-12 w-24 h-24 md:w-32 md:h-32 text-[var(--on-cyan)] opacity-80"
           />
           <span className="l-shape l-shape-dot w-6 h-6 bottom-[18%] right-[10%] !bg-[var(--pink)]" />
-          <p className="l-label mb-6 !text-[var(--ink)]/70" data-scramble>
+          <p className="l-label mb-6 !text-[var(--on-cyan)]/70" data-scramble>
             Pressione start
           </p>
           <h2
             id="l-cta-title"
-            className="l-display text-[clamp(2.4rem,12vw,8rem)] leading-none text-[var(--ink)]"
+            className="l-display text-[clamp(2.4rem,12vw,8rem)] leading-none text-[var(--on-cyan)]"
             aria-label="Começar agora"
           >
             Começar agora
@@ -889,7 +970,7 @@ export default function LandingExperience() {
         {/* ── Rodapé ── */}
         <footer className="relative z-10 px-5 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="l-label">
-            Compromisso<span className="text-[var(--pink)]">*</span> — Santana de Parnaíba, SP
+            Compromisso<span className="text-[var(--pink-text)]">*</span> — Santana de Parnaíba, SP
           </span>
           <div className="flex items-center gap-8">
             <button onClick={() => go("/login")} className="l-underline l-label">

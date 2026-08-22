@@ -1,21 +1,49 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Landing v2 — direção "arcade" com a paleta REAL da plataforma:
+   Landing — direção "arcade" com a paleta REAL da plataforma:
    ciano #4CCCED (--primary do app), amarelo #EDE04C (--accent),
-   rosa #ED3474 (secondaryColor do tenant) sobre o dark do app (#09090f).
+   rosa #ED3474 (secondaryColor do tenant).
+
+   TEMAS: escuro é o padrão; o claro entra por [data-landing-theme="light"]
+   (atributo escrito no <html> por um script inline antes do paint, para não
+   piscar). A convenção que faz o tema trocar quase sozinho:
+
+       --ink   = cor de FUNDO
+       --paper = cor de TEXTO / traço
+
+   No claro os dois invertem de valor, então todo `background: var(--ink)` e
+   `color: var(--paper)` acompanha sem precisar de regra duplicada. Só o que
+   depende de contraste sobre cor chapada tem token próprio (--on-pink etc.).
+
    Mobile-first: todo efeito principal é dirigido por scroll/tempo (funciona
    no touch); hover/cursor são camadas extras só para ≥900px.
-   Sem gradiente roxo, sem emoji, sem sombra difusa genérica — sombra aqui é
-   DURA e deslocada, borda é grossa, cor é chapada.
    ──────────────────────────────────────────────────────────────────────────── */
 
 .landing {
+  /* ── Tema escuro (padrão) ── */
   --ink: #09090f;
   --paper: #fafafa;
+  --surface: #0e0e18;
+  --line: rgba(250, 250, 250, 0.12);
+  --muted: #9aa0b4;
+  --shadow-soft: rgba(250, 250, 250, 0.18);
+  --dot: rgba(250, 250, 250, 0.07);
+  --noise-opacity: 0.06;
+  --noise-blend: normal;
+
+  /* Acentos de PREENCHIMENTO — idênticos nos dois temas */
   --cyan: #4cccec;
   --yellow: #ede04c;
   --pink: #ed3474;
-  --muted: #9aa0b4;
-  --line: rgba(250, 250, 250, 0.12);
+
+  /* Acentos para TEXTO — no claro escurecem para manter contraste legível */
+  --cyan-text: #4cccec;
+  --yellow-text: #ede04c;
+  --pink-text: #ed3474;
+
+  /* Texto sobre bloco chapado — fixo, o bloco não muda de cor entre temas */
+  --on-pink: #fafafa;
+  --on-cyan: #09090f;
+  --on-yellow: #09090f;
 
   --font-display: "Boldonse", "Arial Black", sans-serif;
   --font-mono: "Space Mono", "Courier New", monospace;
@@ -25,11 +53,31 @@
   font-family: var(--font-mono);
   overflow-x: clip;
   cursor: default;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* ── Tema claro ────────────────────────────────────────────────────────────
+   Papel levemente creme (não branco puro) para o preto chapado e as cores
+   vibrantes não estourarem — e para fugir do branco-de-template. */
+[data-landing-theme="light"] .landing {
+  --ink: #f2efe6;
+  --paper: #14141c;
+  --surface: #ffffff;
+  --line: rgba(20, 20, 28, 0.18);
+  --muted: #5b5f70;
+  --shadow-soft: rgba(20, 20, 28, 0.22);
+  --dot: rgba(20, 20, 28, 0.1);
+  --noise-opacity: 0.045;
+  --noise-blend: multiply;
+
+  --cyan-text: #0d7a9c;
+  --yellow-text: #7a6a00;
+  --pink-text: #c4135b;
 }
 
 .landing ::selection {
   background: var(--yellow);
-  color: var(--ink);
+  color: var(--on-yellow);
 }
 
 /* ── Texturas ──────────────────────────────────────────────────────────────── */
@@ -40,13 +88,14 @@
   inset: 0;
   z-index: 70;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: var(--noise-blend);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Pontinhos de "mapa de fase" no fundo escuro */
+/* Pontinhos de "mapa de fase" */
 .l-dots {
-  background-image: radial-gradient(rgba(250, 250, 250, 0.07) 1px, transparent 1px);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
@@ -68,17 +117,9 @@
   color: var(--muted);
 }
 
-.l-stroke-yellow {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--yellow);
-}
 .l-stroke-paper {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--paper);
-}
-.l-stroke-ink {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--ink);
 }
 
 .l-mask-lines .split-line {
@@ -123,7 +164,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--paper);
   padding: 1rem 1.6rem;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
   overflow: hidden;
@@ -132,18 +173,13 @@
 }
 .l-btn-pink {
   background: var(--pink);
-  color: var(--paper);
+  color: var(--on-pink);
   box-shadow: 6px 6px 0 var(--yellow);
 }
 .l-btn-cyan {
   background: var(--cyan);
-  color: var(--ink);
+  color: var(--on-cyan);
   box-shadow: 6px 6px 0 var(--pink);
-}
-.l-btn-paper {
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: 6px 6px 0 var(--cyan);
 }
 .l-btn:active {
   transform: translate(6px, 6px);
@@ -167,12 +203,32 @@
   transition: left 0.55s ease;
 }
 
-/* Botão fantasma (borda clara sobre escuro) */
-.l-btn-ghost {
-  background: transparent;
+/* Toggle de tema — quadrado arcade, mesma linguagem dos botões */
+.l-theme-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--paper);
+  background: var(--ink);
   color: var(--paper);
-  border-color: var(--paper);
-  box-shadow: 6px 6px 0 rgba(250, 250, 250, 0.25);
+  box-shadow: 4px 4px 0 var(--yellow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  touch-action: manipulation;
+  overflow: hidden;
+}
+.l-theme-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 transparent;
+}
+/* Sem position:absolute: o wrapper do ícone é inline-flex de tamanho zero, e o
+   svg absoluto dentro dele não ganhava caixa — sumia. */
+.l-theme-btn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 /* ── Chips de jogo (XP / ofensiva) ─────────────────────────────────────────── */
@@ -188,7 +244,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  box-shadow: 4px 4px 0 rgba(250, 250, 250, 0.18);
+  box-shadow: 4px 4px 0 var(--shadow-soft);
 }
 .l-chip b {
   font-size: 0.8rem;
@@ -201,7 +257,7 @@
 }
 .l-window {
   transform-style: preserve-3d;
-  background: #0e0e18;
+  background: var(--surface);
   border: 2px solid var(--paper);
   box-shadow: 10px 10px 0 var(--pink), 20px 20px 0 rgba(76, 204, 236, 0.35);
 }
@@ -215,7 +271,7 @@
   width: 8px;
   height: 1em;
   vertical-align: text-bottom;
-  background: var(--yellow);
+  background: var(--yellow-text);
   animation: l-caret-blink 0.9s steps(1) infinite;
 }
 @keyframes l-caret-blink {
@@ -254,7 +310,7 @@
   }
 }
 
-/* Barra de HP/XP que enche em loop */
+/* Barra de XP que enche em loop */
 .l-hpbar {
   height: 10px;
   border: 2px solid var(--paper);
@@ -274,17 +330,17 @@
   display: flex;
   overflow: hidden;
   user-select: none;
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
+  border-top: 2px solid var(--on-cyan);
+  border-bottom: 2px solid var(--on-cyan);
 }
 .l-band-cyan {
   background: var(--cyan);
-  color: var(--ink);
+  color: var(--on-cyan);
   transform: rotate(-2deg) scale(1.06);
 }
 .l-band-yellow {
   background: var(--yellow);
-  color: var(--ink);
+  color: var(--on-yellow);
   transform: rotate(1.5deg) scale(1.06);
 }
 .l-band-track {
@@ -341,7 +397,7 @@
 /* ── Cards de módulo ───────────────────────────────────────────────────────── */
 
 .l-card {
-  background: #0e0e18;
+  background: var(--surface);
   border: 2px solid var(--paper);
   border-left-width: 10px;
   transform-style: preserve-3d;
@@ -361,17 +417,17 @@
   line-height: 1;
 }
 .l-card[data-tone="cyan"] .l-card-num {
-  color: var(--cyan);
+  color: var(--cyan-text);
 }
 .l-card[data-tone="pink"] .l-card-num {
-  color: var(--pink);
+  color: var(--pink-text);
 }
 .l-card[data-tone="yellow"] .l-card-num {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 @media (min-width: 900px) {
   .l-card:hover {
-    box-shadow: 8px 8px 0 rgba(250, 250, 250, 0.2);
+    box-shadow: 8px 8px 0 var(--shadow-soft);
   }
 }
 
@@ -379,12 +435,12 @@
 
 .l-block-pink {
   background: var(--pink);
-  color: var(--paper);
+  color: var(--on-pink);
   clip-path: polygon(0 3vw, 100% 0, 100% calc(100% - 3vw), 0 100%);
 }
 .l-block-cyan {
   background: var(--cyan);
-  color: var(--ink);
+  color: var(--on-cyan);
   clip-path: polygon(0 0, 100% 3vw, 100% 100%, 0 calc(100% - 3vw));
 }
 
@@ -461,7 +517,7 @@
 .l-cursor-ring.is-hot {
   width: 64px;
   height: 64px;
-  border-color: var(--yellow);
+  border-color: var(--yellow-text);
 }
 
 /* ── Sublinhado desenhado ──────────────────────────────────────────────────── */
@@ -476,7 +532,7 @@
   bottom: -3px;
   height: 2px;
   width: 100%;
-  background: var(--yellow);
+  background: var(--yellow-text);
   transform: scaleX(0);
   transform-origin: right;
   transition: transform 0.3s ease;
