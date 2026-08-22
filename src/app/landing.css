@@ -1,68 +1,53 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Landing page (home) — sistema visual próprio, separado do design system do
-   dashboard. Direção: editorial escuro com azul elétrico, tipografia display
-   (Boldonse) + serifa itálica (EB Garamond) + mono (Space Mono).
-   Nada de gradiente roxo-sobre-branco, cards arredondados genéricos ou emoji.
+   Landing v2 — direção "arcade" com a paleta REAL da plataforma:
+   ciano #4CCCED (--primary do app), amarelo #EDE04C (--accent),
+   rosa #ED3474 (secondaryColor do tenant) sobre o dark do app (#09090f).
+   Mobile-first: todo efeito principal é dirigido por scroll/tempo (funciona
+   no touch); hover/cursor são camadas extras só para ≥900px.
+   Sem gradiente roxo, sem emoji, sem sombra difusa genérica — sombra aqui é
+   DURA e deslocada, borda é grossa, cor é chapada.
    ──────────────────────────────────────────────────────────────────────────── */
 
 .landing {
-  --ink: #05070f;
-  --panel: #0a0e1c;
-  --panel-2: #0d1226;
-  --paper: #e9edf7;
-  --muted: #8b93ab;
-  --line: rgba(233, 237, 247, 0.08);
-  --line-strong: rgba(233, 237, 247, 0.16);
-  --blue: #2f6bff;
-  --cyan: #38e0ff;
-  --warm: #f97316;
+  --ink: #09090f;
+  --paper: #fafafa;
+  --cyan: #4cccec;
+  --yellow: #ede04c;
+  --pink: #ed3474;
+  --muted: #9aa0b4;
+  --line: rgba(250, 250, 250, 0.12);
 
   --font-display: "Boldonse", "Arial Black", sans-serif;
-  --font-serif: "EB Garamond", Georgia, serif;
   --font-mono: "Space Mono", "Courier New", monospace;
 
   background: var(--ink);
   color: var(--paper);
   font-family: var(--font-mono);
   overflow-x: clip;
+  cursor: default;
 }
 
 .landing ::selection {
-  background: var(--blue);
+  background: var(--yellow);
   color: var(--ink);
 }
 
-/* ── Texturas de fundo ─────────────────────────────────────────────────────── */
+/* ── Texturas ──────────────────────────────────────────────────────────────── */
 
 .landing-noise::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 70;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.06;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.landing-grid-cols {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  opacity: 0.6;
-}
-.landing-grid-cols > span {
-  border-left: 1px solid var(--line);
-}
-.landing-grid-cols > span:first-child {
-  border-left: none;
-}
-@media (min-width: 768px) {
-  .landing-grid-cols {
-    grid-template-columns: repeat(8, 1fr);
-  }
+/* Pontinhos de "mapa de fase" no fundo escuro */
+.l-dots {
+  background-image: radial-gradient(rgba(250, 250, 250, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 /* ── Tipografia ────────────────────────────────────────────────────────────── */
@@ -71,98 +56,166 @@
   font-family: var(--font-display);
   font-weight: 400;
   text-transform: uppercase;
-  line-height: 1.06;
-  letter-spacing: -0.01em;
-}
-
-.l-serif {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
 }
 
 .l-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.32em;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-/* SplitText: as linhas ficam mascaradas até o reveal */
+.l-stroke-yellow {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--yellow);
+}
+.l-stroke-paper {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--paper);
+}
+.l-stroke-ink {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--ink);
+}
+
 .l-mask-lines .split-line {
   overflow: hidden;
 }
 
-/* ── Preloader ─────────────────────────────────────────────────────────────── */
+/* ── Preloader (cortina dupla ciano + rosa) ────────────────────────────────── */
 
 .l-preloader {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: var(--ink);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem;
+  background: var(--ink);
+}
+.l-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  pointer-events: none;
+}
+.l-curtain-a {
+  background: var(--pink);
+}
+.l-curtain-b {
+  background: var(--cyan);
 }
 
-/* ── Marquee ───────────────────────────────────────────────────────────────── */
+/* ── Botão arcade: sombra dura, aperta no toque ────────────────────────────── */
 
-.l-marquee {
-  display: flex;
-  overflow: hidden;
-  user-select: none;
-  border-top: 1px solid var(--line-strong);
-  border-bottom: 1px solid var(--line-strong);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.l-marquee-track {
-  display: flex;
-  flex-shrink: 0;
-  min-width: 100%;
+.l-btn {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 3rem;
-  padding: 1.1rem 1.5rem;
-  animation: l-marquee-scroll 28s linear infinite;
+  justify-content: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 2px solid var(--ink);
+  padding: 1rem 1.6rem;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: manipulation;
 }
-@keyframes l-marquee-scroll {
-  to {
-    transform: translateX(-100%);
+.l-btn-pink {
+  background: var(--pink);
+  color: var(--paper);
+  box-shadow: 6px 6px 0 var(--yellow);
+}
+.l-btn-cyan {
+  background: var(--cyan);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--pink);
+}
+.l-btn-paper {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--cyan);
+}
+.l-btn:active {
+  transform: translate(6px, 6px);
+  box-shadow: 0 0 0 transparent;
+}
+@media (min-width: 900px) {
+  .l-btn:hover::before {
+    left: 130%;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .l-marquee-track {
-    animation: none;
-  }
+.l-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 40%;
+  z-index: -1;
+  transform: skewX(-18deg);
+  background: rgba(255, 255, 255, 0.35);
+  transition: left 0.55s ease;
 }
 
-/* ── Mock "vídeo" do dashboard (janela 3D) ─────────────────────────────────── */
+/* Botão fantasma (borda clara sobre escuro) */
+.l-btn-ghost {
+  background: transparent;
+  color: var(--paper);
+  border-color: var(--paper);
+  box-shadow: 6px 6px 0 rgba(250, 250, 250, 0.25);
+}
+
+/* ── Chips de jogo (XP / ofensiva) ─────────────────────────────────────────── */
+
+.l-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--paper);
+  background: var(--ink);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 rgba(250, 250, 250, 0.18);
+}
+.l-chip b {
+  font-size: 0.8rem;
+}
+
+/* ── Janela demo ("vídeo" animado) ─────────────────────────────────────────── */
 
 .l-scene {
-  perspective: 1400px;
+  perspective: 1200px;
 }
 .l-window {
   transform-style: preserve-3d;
-  background: var(--panel);
-  border: 1px solid var(--line-strong);
-  box-shadow:
-    0 40px 80px -30px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(47, 107, 255, 0.06),
-    0 0 120px -40px rgba(47, 107, 255, 0.45);
+  background: #0e0e18;
+  border: 2px solid var(--paper);
+  box-shadow: 10px 10px 0 var(--pink), 20px 20px 0 rgba(76, 204, 236, 0.35);
 }
 .l-window-bar {
-  border-bottom: 1px solid var(--line);
-  background: var(--panel-2);
+  border-bottom: 2px solid var(--paper);
+  background: var(--ink);
 }
 
-/* Cursor de digitação do mock */
 .l-caret {
   display: inline-block;
   width: 8px;
   height: 1em;
   vertical-align: text-bottom;
-  background: var(--cyan);
+  background: var(--yellow);
   animation: l-caret-blink 0.9s steps(1) infinite;
 }
 @keyframes l-caret-blink {
@@ -171,7 +224,6 @@
   }
 }
 
-/* Equalizer da "aula ao vivo" */
 .l-eq {
   display: flex;
   align-items: flex-end;
@@ -180,7 +232,7 @@
 }
 .l-eq span {
   width: 3px;
-  background: var(--warm);
+  background: var(--pink);
   animation: l-eq-bounce 1s ease-in-out infinite;
 }
 .l-eq span:nth-child(2) {
@@ -202,29 +254,153 @@
   }
 }
 
-/* ── Cards de módulo (tilt 3D no hover) ────────────────────────────────────── */
+/* Barra de HP/XP que enche em loop */
+.l-hpbar {
+  height: 10px;
+  border: 2px solid var(--paper);
+  background: var(--ink);
+  overflow: hidden;
+}
+.l-hpbar > i {
+  display: block;
+  height: 100%;
+  background: var(--cyan);
+  transform-origin: left;
+}
+
+/* ── Marquee duplo cruzado ─────────────────────────────────────────────────── */
+
+.l-band {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+.l-band-cyan {
+  background: var(--cyan);
+  color: var(--ink);
+  transform: rotate(-2deg) scale(1.06);
+}
+.l-band-yellow {
+  background: var(--yellow);
+  color: var(--ink);
+  transform: rotate(1.5deg) scale(1.06);
+}
+.l-band-track {
+  display: flex;
+  flex-shrink: 0;
+  min-width: 100%;
+  align-items: center;
+  gap: 2.2rem;
+  padding: 0.85rem 1.2rem;
+  animation: l-band-scroll 22s linear infinite;
+}
+.l-band-track.is-reverse {
+  animation-direction: reverse;
+}
+@keyframes l-band-scroll {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* ── Formas flutuantes da paleta ───────────────────────────────────────────── */
+
+.l-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+.l-shape-dot {
+  border-radius: 9999px;
+  background: var(--cyan);
+}
+.l-shape-ring {
+  border-radius: 9999px;
+  border: 3px solid var(--pink);
+  background: transparent;
+}
+.l-shape-cross::before,
+.l-shape-cross::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: var(--yellow);
+}
+.l-shape-cross::before {
+  width: 100%;
+  height: 22%;
+}
+.l-shape-cross::after {
+  width: 22%;
+  height: 100%;
+}
+
+/* ── Cards de módulo ───────────────────────────────────────────────────────── */
 
 .l-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: #0e0e18;
+  border: 2px solid var(--paper);
+  border-left-width: 10px;
   transform-style: preserve-3d;
-  transition: border-color 0.35s ease;
   will-change: transform;
 }
-.l-card:hover {
-  border-color: rgba(47, 107, 255, 0.55);
+.l-card[data-tone="cyan"] {
+  border-left-color: var(--cyan);
+}
+.l-card[data-tone="pink"] {
+  border-left-color: var(--pink);
+}
+.l-card[data-tone="yellow"] {
+  border-left-color: var(--yellow);
 }
 .l-card-num {
   font-family: var(--font-display);
-  color: transparent;
-  -webkit-text-stroke: 1px var(--line-strong);
-  transition: -webkit-text-stroke-color 0.35s ease, color 0.35s ease;
+  line-height: 1;
 }
-.l-card:hover .l-card-num {
-  -webkit-text-stroke-color: var(--cyan);
+.l-card[data-tone="cyan"] .l-card-num {
+  color: var(--cyan);
+}
+.l-card[data-tone="pink"] .l-card-num {
+  color: var(--pink);
+}
+.l-card[data-tone="yellow"] .l-card-num {
+  color: var(--yellow);
+}
+@media (min-width: 900px) {
+  .l-card:hover {
+    box-shadow: 8px 8px 0 rgba(250, 250, 250, 0.2);
+  }
 }
 
-/* ── Linha do fluxo (thread) ───────────────────────────────────────────────── */
+/* ── Blocos de cor (stats rosa / CTA ciano) ────────────────────────────────── */
+
+.l-block-pink {
+  background: var(--pink);
+  color: var(--paper);
+  clip-path: polygon(0 3vw, 100% 0, 100% calc(100% - 3vw), 0 100%);
+}
+.l-block-cyan {
+  background: var(--cyan);
+  color: var(--ink);
+  clip-path: polygon(0 0, 100% 3vw, 100% 100%, 0 calc(100% - 3vw));
+}
+
+/* ── Selo circular girando ─────────────────────────────────────────────────── */
+
+.l-seal {
+  animation: l-seal-spin 14s linear infinite;
+  transform-origin: center;
+}
+@keyframes l-seal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Fluxo ─────────────────────────────────────────────────────────────────── */
 
 .l-thread-dot {
   position: relative;
@@ -234,9 +410,9 @@
   position: absolute;
   inset: -6px;
   border-radius: 9999px;
-  border: 1px solid var(--cyan);
+  border: 2px solid var(--yellow);
   opacity: 0;
-  animation: l-thread-pulse 2.4s ease-out infinite;
+  animation: l-thread-pulse 2.2s ease-out infinite;
 }
 @keyframes l-thread-pulse {
   0% {
@@ -245,35 +421,51 @@
   }
   70%,
   100% {
-    transform: scale(1.8);
+    transform: scale(1.9);
     opacity: 0;
   }
 }
 
-/* ── CTA com sheen ─────────────────────────────────────────────────────────── */
+/* ── Cursor custom (só desktop) ────────────────────────────────────────────── */
 
-.l-cta {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-.l-cta::before {
-  content: "";
-  position: absolute;
+.l-cursor-dot,
+.l-cursor-ring {
+  position: fixed;
   top: 0;
-  bottom: 0;
-  left: -60%;
-  width: 40%;
-  z-index: -1;
-  transform: skewX(-18deg);
-  background: linear-gradient(90deg, transparent, rgba(233, 237, 247, 0.25), transparent);
-  transition: left 0.6s ease;
+  left: 0;
+  z-index: 120;
+  pointer-events: none;
+  border-radius: 9999px;
+  display: none;
 }
-.l-cta:hover::before {
-  left: 120%;
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .l-cursor-dot,
+  .l-cursor-ring {
+    display: block;
+  }
+}
+.l-cursor-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--cyan);
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+}
+.l-cursor-ring {
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--pink);
+  transform: translate(-50%, -50%);
+  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+}
+.l-cursor-ring.is-hot {
+  width: 64px;
+  height: 64px;
+  border-color: var(--yellow);
 }
 
-/* Sublinhado que desenha no hover (links do nav/footer) */
+/* ── Sublinhado desenhado ──────────────────────────────────────────────────── */
+
 .l-underline {
   position: relative;
 }
@@ -282,24 +474,19 @@
   position: absolute;
   left: 0;
   bottom: -3px;
-  height: 1px;
+  height: 2px;
   width: 100%;
-  background: var(--cyan);
+  background: var(--yellow);
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform 0.35s ease;
+  transition: transform 0.3s ease;
 }
 .l-underline:hover::after {
   transform: scaleX(1);
   transform-origin: left;
 }
 
-/* ── Utilidades ────────────────────────────────────────────────────────────── */
-
-.l-outline-text {
-  color: transparent;
-  -webkit-text-stroke: 1px var(--line-strong);
-}
+/* ── Reduced motion: mata tudo ─────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .landing *,
