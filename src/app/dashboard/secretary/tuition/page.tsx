@@ -386,10 +386,12 @@ export default function TuitionPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black italic text-primary flex items-center gap-3">
-            <Receipt className="h-8 w-8" /> Mensalidades
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          {/* Manchete de jornal: expressivo no topo, corpo sóbrio embaixo.
+              É este cabeçalho que faz a tela de trabalho pertencer ao mesmo
+              produto das telas de festa. */}
+          <p className="u-label flex items-center gap-2"><Receipt className="h-3.5 w-3.5" /> Secretaria · financeiro</p>
+          <h1 className="u-page-title text-3xl mt-1">Mensalidades</h1>
+          <p className="text-muted-foreground text-sm mt-2">
             Cobrança, bolsas e inadimplência — registro manual de pagamentos.
           </p>
         </div>
@@ -409,30 +411,34 @@ export default function TuitionPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-2xl rounded-card">
+        {/* Verde, vermelho e neutro: aqui a cor é SINAL de estado do dinheiro,
+            não decoração — é o uso que a doutrina permite em nível baixo. O
+            azul de "em aberto" saiu porque não existe na paleta e nada
+            significava; em aberto é ausência de estado, e ausência é neutra. */}
+        <Card className="rounded-card">
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest"><DollarSign className="h-4 w-4" /> Previsto</div>
-            <p className="text-2xl font-black mt-2">{brl(kpi.previsto)}</p>
+            <div className="u-label flex items-center gap-2"><DollarSign className="h-3.5 w-3.5" /> Previsto</div>
+            <p className="u-num text-2xl mt-2">{brl(kpi.previsto)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.total} fatura(s)</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-card">
+        <Card className="rounded-card">
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-emerald-600 text-xs font-black uppercase tracking-widest"><TrendingUp className="h-4 w-4" /> Recebido</div>
-            <p className="text-2xl font-black mt-2 text-emerald-600">{brl(kpi.recebido)}</p>
+            <div className="u-label !text-emerald-600 flex items-center gap-2"><TrendingUp className="h-3.5 w-3.5" /> Recebido</div>
+            <p className="u-num text-2xl mt-2 text-emerald-600">{brl(kpi.recebido)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.pagas} paga(s)</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-card">
+        <Card className="rounded-card">
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest"><Wallet className="h-4 w-4" /> Em aberto</div>
-            <p className="text-2xl font-black mt-2 text-blue-600">{brl(kpi.emAberto)}</p>
+            <div className="u-label flex items-center gap-2"><Wallet className="h-3.5 w-3.5" /> Em aberto</div>
+            <p className="u-num text-2xl mt-2">{brl(kpi.emAberto)}</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-card">
+        <Card className="rounded-card">
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-red-600 text-xs font-black uppercase tracking-widest"><AlertTriangle className="h-4 w-4" /> Inadimplência</div>
-            <p className="text-2xl font-black mt-2 text-red-600">{kpi.inadimplencia}%</p>
+            <div className="u-label !text-red-600 flex items-center gap-2"><AlertTriangle className="h-3.5 w-3.5" /> Inadimplência</div>
+            <p className="u-num text-2xl mt-2 text-red-600">{kpi.inadimplencia}%</p>
           </CardContent>
         </Card>
       </div>
@@ -554,7 +560,7 @@ export default function TuitionPage() {
         <TabsContent value="planos" className="space-y-4 mt-4">
           <Card className="shadow-2xl rounded-card">
             <CardContent className="p-6 space-y-4">
-              <h3 className="font-black italic text-lg">Novo plano</h3>
+              <h3 className="u-display text-lg">Novo plano</h3>
               <div className="grid md:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs font-bold uppercase">Nome</Label>
@@ -621,7 +627,7 @@ export default function TuitionPage() {
           <div className="grid lg:grid-cols-2 gap-4">
             <Card className="shadow-2xl rounded-card">
               <CardContent className="p-6 space-y-4">
-                <h3 className="font-black italic text-lg flex items-center gap-2"><Wallet className="h-5 w-5" /> Vincular aluno a plano</h3>
+                <h3 className="u-display text-lg flex items-center gap-2"><Wallet className="h-5 w-5" /> Vincular aluno a plano</h3>
                 <div className="space-y-3">
                   <Select value={subStudent} onValueChange={setSubStudent}>
                     <SelectTrigger className="rounded-xl"><SelectValue placeholder="Aluno" /></SelectTrigger>
@@ -647,7 +653,7 @@ export default function TuitionPage() {
 
             <Card className="shadow-2xl rounded-card">
               <CardContent className="p-6 space-y-4">
-                <h3 className="font-black italic text-lg flex items-center gap-2"><BadgePercent className="h-5 w-5" /> Bolsa / desconto</h3>
+                <h3 className="u-display text-lg flex items-center gap-2"><BadgePercent className="h-5 w-5" /> Bolsa / desconto</h3>
                 <div className="space-y-3">
                   <Select value={discStudent} onValueChange={setDiscStudent}>
                     <SelectTrigger className="rounded-xl"><SelectValue placeholder="Aluno" /></SelectTrigger>
@@ -726,7 +732,7 @@ export default function TuitionPage() {
       <Dialog open={!!payInvoice} onOpenChange={(o) => !o && setPayInvoice(null)}>
         <DialogContent className="rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="font-black italic">Registrar pagamento</DialogTitle>
+            <DialogTitle className="u-display">Registrar pagamento</DialogTitle>
             <DialogDescription>
               {payInvoice && `${studentById[payInvoice.student_id]?.name ?? "Aluno"} — competência ${format(new Date(payInvoice.competence + "T12:00:00"), "MM/yyyy")}`}
             </DialogDescription>
@@ -763,7 +769,7 @@ export default function TuitionPage() {
       <Dialog open={!!renegInvoice} onOpenChange={(o) => !o && setRenegInvoice(null)}>
         <DialogContent className="rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="font-black italic">Renegociar fatura</DialogTitle>
+            <DialogTitle className="u-display">Renegociar fatura</DialogTitle>
             <DialogDescription>Novo vencimento e, se necessário, novo valor.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -793,7 +799,7 @@ export default function TuitionPage() {
       <Dialog open={!!historyInvoice} onOpenChange={(o) => !o && setHistoryInvoice(null)}>
         <DialogContent className="rounded-3xl max-h-[70vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-black italic">Histórico da fatura</DialogTitle>
+            <DialogTitle className="u-display">Histórico da fatura</DialogTitle>
             <DialogDescription>
               {historyInvoice && `${studentById[historyInvoice.student_id]?.name ?? ""} — ${format(new Date(historyInvoice.competence + "T12:00:00"), "MM/yyyy")}`}
             </DialogDescription>

@@ -260,6 +260,20 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
   carrega o veredito — ciano ≥70%, amarelo ≥50%, rosa abaixo — no lugar de três
   gradientes escuros quase idênticos. Anel de nota e os três números em `u-num`.
 
+### Telas já convertidas para nível baixo
+
+- `secretary/tuition` (primeira, fase 3): serve de molde para as outras telas
+  de trabalho. O que define o nível baixo, na prática:
+  1. **Cabeçalho em nível médio** — `u-label` com o caminho ("Secretaria ·
+     financeiro") e `u-page-title` abaixo. É a única expressividade da tela, e
+     é ela que costura o painel da secretaria ao resto do produto.
+  2. **Número em `u-num`, rótulo em `u-label`** — a tipografia carrega a
+     hierarquia, no lugar de peso e cor.
+  3. **Cor só onde é sinal.** Verde = recebido, vermelho = inadimplência. O
+     azul de "em aberto" saiu: não existe na paleta e não significava nada —
+     em aberto é ausência de estado, e ausência é neutra.
+  4. **Sem sombra dura e sem animação.**
+
 ### Tela já convertida para nível médio
 
 - `dashboard/home`: superfícies neutras com o acento **só no ícone** (a cor
