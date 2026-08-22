@@ -49,6 +49,7 @@ interface Announcement {
   message: string;
   priority: Priority;
   target_group?: string;
+  audience?: string;
   created_at: string;
 }
 
@@ -76,9 +77,11 @@ export default function SecretaryCommunication() {
   const [message, setMessage] = useState("");
   const [priority, setPriority] = useState<Priority>("low");
   const [target, setTarget] = useState("all");
+  const [audience, setAudience] = useState("students");
   const [sending, setSending] = useState(false);
 
   const [list, setList] = useState<Announcement[]>([]);
+  const [readCounts, setReadCounts] = useState<Record<string, number>>({});
   const [loadingList, setLoadingList] = useState(true);
 
   useEffect(() => {
@@ -91,10 +94,24 @@ export default function SecretaryCommunication() {
     setLoadingList(true);
     const { data } = await supabase
       .from("announcements")
-      .select("id, title, message, priority, target_group, created_at")
+      .select("id, title, message, priority, target_group, audience, created_at")
       .order("created_at", { ascending: false })
       .limit(15);
-    setList((data as Announcement[]) || []);
+    const anns = (data as Announcement[]) || [];
+    setList(anns);
+
+    // Confirmações de leitura dos responsáveis (staff tem SELECT via RLS).
+    if (anns.length > 0) {
+      const { data: reads } = await supabase
+        .from("guardian_announcement_reads")
+        .select("announcement_id")
+        .in("announcement_id", anns.map((a) => a.id));
+      const counts: Record<string, number> = {};
+      ((reads as { announcement_id: string }[]) || []).forEach((r) => {
+        counts[r.announcement_id] = (counts[r.announcement_id] || 0) + 1;
+      });
+      setReadCounts(counts);
+    }
     setLoadingList(false);
   }, []);
 
@@ -112,7 +129,7 @@ export default function SecretaryCommunication() {
       const res = await fetch("/api/admin/announce", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, message, priority, target_group: target }),
+        body: JSON.stringify({ title, message, priority, target_group: target, audience }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Falha ao publicar");
@@ -210,6 +227,20 @@ export default function SecretaryCommunication() {
             <p className="text-[9px] font-bold text-slate-300 text-right">{message.length}/2000</p>
           </div>
 
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Destinatários</Label>
+            <Select value={audience} onValueChange={setAudience}>
+              <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-none shadow-2xl">
+                <SelectItem value="students" className="font-bold text-xs">Alunos (mural da plataforma)</SelectItem>
+                <SelectItem value="guardians" className="font-bold text-xs">Responsáveis (portal)</SelectItem>
+                <SelectItem value="all" className="font-bold text-xs">Alunos + Responsáveis</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Prioridade</Label>
@@ -301,6 +332,11 @@ export default function SecretaryCommunication() {
                         <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-slate-400">
                           <Users className="h-2.5 w-2.5" /> {targetLabel(a.target_group)}
                         </span>
+                        {(a.audience === "guardians" || a.audience === "all") && (
+                          <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-orange-500">
+                            Responsáveis · {readCounts[a.id] || 0} leitura(s)
+                          </span>
+                        )}
                       </div>
                       <p className="font-black text-sm text-slate-800 truncate italic">{a.title}</p>
                       <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mt-0.5">{a.message}</p>

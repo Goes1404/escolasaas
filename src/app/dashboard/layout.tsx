@@ -97,7 +97,9 @@ const studentItems: NavItem[] = [
   {
     icon: Settings, label: "Conta", id: "nav-conta",
     children: [
-      { icon: Settings,   label: "Meu Perfil",      href: "/dashboard/settings",          id: "nav-settings" },
+      { icon: Wallet,      label: "Financeiro",      href: "/dashboard/student/finance",      id: "nav-student-finance" },
+      { icon: FilePenLine, label: "Rematrícula",     href: "/dashboard/student/reenrollment", id: "nav-student-reenrollment" },
+      { icon: Settings,    label: "Meu Perfil",      href: "/dashboard/settings",             id: "nav-settings" },
     ],
   },
 ];
@@ -171,6 +173,14 @@ const adminItems: NavItem[] = [
     ],
   },
   {
+    icon: Wallet, label: "Financeiro", id: "nav-admin-financeiro",
+    children: [
+      { icon: FileText,    label: "Mensalidades",          href: "/dashboard/secretary/tuition",      id: "nav-admin-tuition" },
+      { icon: FilePenLine, label: "Rematrícula",           href: "/dashboard/secretary/reenrollment", id: "nav-admin-reenrollment" },
+      { icon: Wallet,      label: "Professores & Recibos", href: "/dashboard/secretary/finance",      id: "nav-admin-teacher-finance" },
+    ],
+  },
+  {
     icon: BarChart3, label: "Monitoramento", id: "nav-admin-monitoramento",
     children: [
       { icon: BarChart3,      label: "BI & Analytics",     href: "/dashboard/teacher/analytics", id: "nav-admin-analytics" },
@@ -225,7 +235,9 @@ const secretaryItems: NavItem[] = [
   {
     icon: Wallet, label: "Financeiro", id: "nav-secretary-financeiro",
     children: [
-      { icon: Wallet, label: "Professores & Recibos", href: "/dashboard/secretary/finance", id: "nav-secretary-finance" },
+      { icon: FileText,    label: "Mensalidades",          href: "/dashboard/secretary/tuition",      id: "nav-secretary-tuition" },
+      { icon: FilePenLine, label: "Rematrícula",           href: "/dashboard/secretary/reenrollment", id: "nav-secretary-reenrollment" },
+      { icon: Wallet,      label: "Professores & Recibos", href: "/dashboard/secretary/finance",      id: "nav-secretary-finance" },
     ],
   },
   {

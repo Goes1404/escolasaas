@@ -23,6 +23,16 @@ resumo, sempre que o status mudar). Resumo:
   `wyqfyrfkudxroumggnnp`, projeto errado) e se "Vercel Authentication" (SSO
   protection) já foi desligada — enquanto ligada, ninguém fora do time
   consegue acessar o site. Ver `docs/DEPLOY_STATUS.md` para o passo a passo.
+- **Módulos de gestão escolar (22/08)**: financeiro de mensalidades
+  (`secretary/tuition`, `student/finance`), portal do responsável por token
+  (`guardian/[token]`, tokens no `GuardiansCard`) e rematrícula digital
+  (`secretary/reenrollment`, `student/reenrollment`, aceite via
+  `/api/reenrollment/accept` e `/api/guardian/[token]/reenrollment`).
+  Migrations `20260822*`–`20260824*` já aplicadas. Regras: mutações do
+  financeiro SÓ via RPCs (`generate_monthly_invoices` etc.); aceite de
+  contrato SÓ via rotas de API (IP real na trilha de auditoria);
+  `announcements.audience` separa mural do aluno do portal do responsável.
+  Detalhes em `docs/DEPLOY_STATUS.md`.
 
 ## 🛠 Comandos
 

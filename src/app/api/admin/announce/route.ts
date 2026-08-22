@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { title, message, priority, target_group } = await request.json();
+    const { title, message, priority, target_group, audience } = await request.json();
 
     const cleanTitle = String(title ?? '').trim();
     const cleanMessage = String(message ?? '').trim();
@@ -51,11 +51,17 @@ export async function POST(request: Request) {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    // Público: mural do aluno (padrão), portal do responsável, ou ambos.
+    const safeAudience = ['students', 'guardians', 'all'].includes(audience)
+      ? audience
+      : 'students';
+
     const payload: Record<string, unknown> = {
       title: cleanTitle,
       message: cleanMessage,
       priority: safePriority,
       target_group: safeTarget,
+      audience: safeAudience,
       author_id: admin.id,
     };
 

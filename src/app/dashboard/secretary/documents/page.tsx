@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { distinctOptions } from "@/components/secretary/StudentFilterBar";
+import { esc } from "@/lib/print-utils";
 
 export default function SecretaryDocumentsPage() {
   const { toast } = useToast();
@@ -120,16 +121,8 @@ export default function SecretaryDocumentsPage() {
       ? format(new Date(selectedStudent.birth_date + "T12:00:00"), "dd/MM/yyyy")
       : "___/___/______";
 
-    // Segurança: escapa qualquer valor vindo do banco/UI antes de injetar no HTML de impressão.
-    // Evita XSS armazenado (ex.: um nome ou observação com <script> executaria na janela de impressão).
-    const esc = (v: unknown) =>
-      String(v ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-
+    // Segurança: esc() (de lib/print-utils) escapa qualquer valor vindo do
+    // banco/UI antes de injetar no HTML de impressão — evita XSS armazenado.
     let title = "";
     let contentHtml = "";
 

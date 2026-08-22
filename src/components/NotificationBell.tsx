@@ -91,7 +91,8 @@ export function NotificationBell() {
     async function fetchAnnouncements() {
       setLoading(true);
       try {
-        let query = supabase.from('announcements').select('*');
+        // Comunicados só de responsáveis ficam fora do sino do aluno.
+        let query = supabase.from('announcements').select('*').neq('audience', 'guardians');
 
         if (profile) {
           const audience = (profile.exam_target || '').toLowerCase().trim();

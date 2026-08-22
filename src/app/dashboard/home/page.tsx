@@ -393,7 +393,7 @@ export default function DashboardHome() {
     dataFetchedRef.current = true;
     try {
       const [annRes, trailRes, progressRes, libRes, essayRes, examRes, simOficialRes, specialExamRes] = await Promise.all([
-        supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(4),
+        supabase.from('announcements').select('*').neq('audience', 'guardians').order('created_at', { ascending: false }).limit(4),
         supabase.from('trails').select('*').or('status.eq.active,status.eq.published').limit(3),
         supabase.from('user_progress').select(`*, trail:trails(title, category, image_url)`).eq('user_id', user.id).order('last_accessed', { ascending: false }).limit(4),
         supabase.from('library_resources').select('*').not('category', 'ilike', 'LIVRO|%').order('created_at', { ascending: false }).limit(3),

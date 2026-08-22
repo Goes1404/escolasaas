@@ -28,6 +28,8 @@ export function UrgentNotice() {
           .from("announcements")
           .select("*")
           .eq("priority", "high")
+          // Comunicados só para responsáveis não aparecem no mural do aluno.
+          .neq("audience", "guardians")
           .order("created_at", { ascending: false })
           .limit(1);
 
@@ -48,6 +50,7 @@ export function UrgentNotice() {
             .from("announcements")
             .select("*")
             .eq("priority", "high")
+            .neq("audience", "guardians")
             .order("created_at", { ascending: false })
             .limit(1);
           data = fb.data;

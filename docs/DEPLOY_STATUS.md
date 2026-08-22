@@ -69,6 +69,52 @@ admin/secretaria), é só pedir — o padrão de UUIDs usado aqui é
 `1111...`=questões, `2222...`=exame, `3333...`=trilhas/módulos/conteúdo,
 `4444...`=turma, `5555...`=fóruns, então dá pra estender sem colidir.
 
+## Módulos de gestão escolar (22/08/2026) — Financeiro, Portal, Rematrícula
+
+Três módulos novos de "escola particular" (benchmark: Sponte, TOTVS, ClassApp,
+Agenda Edu), implementados nesta ordem porque 2 e 3 dependem de 1. Migrations
+`20260822100000` → `20260824110000` (6 arquivos), TODAS já aplicadas no
+projeto `sgkgsjmfcsgfxliwvwjg` e versionadas no repo. Testado de ponta a ponta
+por REST com login real (idempotência, RLS, permissões, aceite duplo).
+
+1. **Financeiro de mensalidades** — `tuition_plans`, `student_plan_subscriptions`,
+   `student_discounts`, `invoices` (unique parcial aluno+competência),
+   `invoice_events`. RPCs staff: `generate_monthly_invoices` (idempotente),
+   `register_invoice_payment`, `cancel_invoice`, `renegotiate_invoice`;
+   `mark_overdue_invoices` roda em pg_cron diário (6h UTC) e a UI também
+   deriva "vencida". Páginas: `secretary/tuition` (KPIs, faturas, planos,
+   bolsas, recibo imprimível), `student/finance` (leitura). Sem gateway —
+   pagamento manual; `external_id`/`gateway` reservados. `src/lib/print-utils.ts`
+   centraliza `esc()`/impressão (documents/page.tsx importa de lá).
+2. **Portal dos responsáveis** — `guardian_access_tokens` (token POR
+   responsável, gerado no banco, expira em 1 ano, revogável; gestão no
+   `GuardiansCard`), RPCs públicas por token `get_guardian_portal` (payload
+   único: engajamento, frequência, boletim, financeiro, comunicados) e
+   `ack_guardian_announcement`. `announcements.audience`
+   (students/guardians/all; default students) + `guardian_announcement_reads`
+   (confirmação de leitura, contador na secretary/communication). Murais do
+   aluno filtram `.neq('audience','guardians')` (UrgentNotice, NotificationBell,
+   home). Tokens legados por aluno seguem no fallback da página.
+3. **Rematrícula digital** — `reenrollment_campaigns` (template com
+   {{aluno}}/{{valor}}/{{ano}}, plano do ano alvo) + `reenrollment_agreements`
+   (aceite eletrônico simples MP 2.200-2: nome+CPF+IP+UA+snapshot).
+   `open_reenrollment_campaign` (staff, seed reexecutável);
+   `accept/refuse_reenrollment` são EXECUTE **só service_role** — o aceite
+   passa pelas rotas `/api/reenrollment/accept` (aluno logado) e
+   `/api/guardian/[token]/reenrollment` (portal), que capturam o IP real.
+   Aceite cria a subscription do ano seguinte (fecha o ciclo com o financeiro).
+   Páginas: `secretary/reenrollment` (campanha, funil, impressão do contrato),
+   `student/reenrollment`, aba Rematrícula no portal.
+
+Dados de demo já no banco: plano 2026 (R$850, aluno com bolsa de 50% → R$425;
+agosto paga via PIX, setembro aberta), plano 2027 (R$920) + campanha
+"Rematrícula 2027" ativa e ACEITA pela responsável de teste (contrato
+imprimível na secretary/reenrollment), token do portal
+`/guardian/demotoken-responsavel-maria-2026`.
+
+Extra: `20260824110000` revoga `funil_alunos` de anon/PUBLIC (pendência do
+security advisor — a view junta auth.users; staff usa a RPC `obter_funil_alunos`).
+
 ## Vercel — pendências para o deploy funcionar de verdade
 
 Projeto: `escolasaas` (team `sq1matheusgsilva-7306s-projects`,

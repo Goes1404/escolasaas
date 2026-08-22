@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   HeartHandshake, Plus, Pencil, Trash2, Star, Loader2, Phone, Mail, X, Check, UserRound,
+  Link2, Copy, ShieldOff,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
@@ -30,6 +31,16 @@ export interface Guardian {
   email: string | null;
   is_primary: boolean;
   notes: string | null;
+}
+
+interface PortalToken {
+  id: string;
+  guardian_id: string;
+  token: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+  last_access_at: string | null;
+  access_count: number;
 }
 
 const RELATIONSHIPS = [
@@ -58,6 +69,8 @@ export function GuardiansCard({ studentId }: { studentId: string }) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<Guardian | null>(null);
 
+  const [tokens, setTokens] = useState<Record<string, PortalToken>>({});
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -67,8 +80,62 @@ export function GuardiansCard({ studentId }: { studentId: string }) {
       .order("is_primary", { ascending: false })
       .order("name");
     if (!error) setGuardians((data as Guardian[]) || []);
+
+    // Tokens do portal (RLS: só staff/admin enxerga — para aluno volta vazio).
+    const { data: toks } = await supabase
+      .from("guardian_access_tokens")
+      .select("id, guardian_id, token, expires_at, revoked_at, last_access_at, access_count")
+      .eq("student_id", studentId)
+      .is("revoked_at", null)
+      .order("created_at", { ascending: false });
+    const map: Record<string, PortalToken> = {};
+    ((toks as PortalToken[]) || []).forEach((t) => {
+      if (!map[t.guardian_id]) map[t.guardian_id] = t; // o mais recente ativo por responsável
+    });
+    setTokens(map);
     setLoading(false);
   }, [studentId]);
+
+  const portalUrl = (t: PortalToken) =>
+    `${typeof window !== "undefined" ? window.location.origin : ""}/guardian/${t.token}`;
+
+  const copyPortalLink = async (t: PortalToken) => {
+    try {
+      await navigator.clipboard.writeText(portalUrl(t));
+      toast({ title: "Link do portal copiado", description: "Envie ao responsável — o link é pessoal e dá acesso aos dados do aluno." });
+    } catch {
+      toast({ title: "Não foi possível copiar", description: portalUrl(t), variant: "destructive" });
+    }
+  };
+
+  const generatePortalToken = async (g: Guardian) => {
+    // O token é gerado pelo DEFAULT no banco (gen_random_bytes) — o cliente
+    // nunca escolhe o valor; só lê de volta para montar o link.
+    const { data, error } = await supabase
+      .from("guardian_access_tokens")
+      .insert({ guardian_id: g.id, student_id: studentId })
+      .select("id, guardian_id, token, expires_at, revoked_at, last_access_at, access_count")
+      .single();
+    if (error) {
+      toast({ title: "Erro ao gerar acesso", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTokens((prev) => ({ ...prev, [g.id]: data as PortalToken }));
+    await copyPortalLink(data as PortalToken);
+  };
+
+  const revokePortalToken = async (t: PortalToken) => {
+    const { error } = await supabase
+      .from("guardian_access_tokens")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("id", t.id);
+    if (error) {
+      toast({ title: "Erro ao revogar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Acesso revogado", description: "O link antigo deixou de funcionar." });
+    await load();
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -317,6 +384,45 @@ export function GuardiansCard({ studentId }: { studentId: string }) {
                         <span className="text-[11px] text-slate-400 italic mt-0.5">{g.notes}</span>
                       )}
                     </div>
+                    {/* Portal do responsável (só staff/admin vê os controles) */}
+                    {canEdit && (
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        {tokens[g.id] ? (
+                          <>
+                            <Badge className="bg-emerald-100 text-emerald-700 border-none text-[9px] font-black uppercase tracking-wide h-5 px-1.5">
+                              <Link2 className="h-2.5 w-2.5 mr-0.5" /> Portal ativo
+                            </Badge>
+                            {tokens[g.id].last_access_at && (
+                              <span className="text-[10px] text-slate-400">
+                                {tokens[g.id].access_count} acesso(s)
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => copyPortalLink(tokens[g.id])}
+                              className="text-[10px] font-black uppercase tracking-wide text-orange-600 hover:underline flex items-center gap-1"
+                            >
+                              <Copy className="h-3 w-3" /> Copiar link
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => revokePortalToken(tokens[g.id])}
+                              className="text-[10px] font-black uppercase tracking-wide text-red-500 hover:underline flex items-center gap-1"
+                            >
+                              <ShieldOff className="h-3 w-3" /> Revogar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => generatePortalToken(g)}
+                            className="text-[10px] font-black uppercase tracking-wide text-orange-600 hover:underline flex items-center gap-1"
+                          >
+                            <Link2 className="h-3 w-3" /> Gerar acesso ao portal
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {canEdit && (
                     <div className="flex gap-1 shrink-0">
