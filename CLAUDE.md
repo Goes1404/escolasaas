@@ -179,6 +179,20 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
   vira poluição nas telas densas.
 - **Utilitários** em `globals.css`: `.u-label`, `.u-display`, `.u-num`,
   `.u-page-title`, `.u-surface`.
+- **Cores da marca por classe**: `bg-brand-pink` / `-yellow` / `-slate` /
+  `-olive` (as variáveis já existiam, faltava expor no Tailwind). As telas de
+  nível alto usam as três cores do produto como blocos chapados.
+- **Celebração**: `celebrate()` / `celebrateOnce(chave)` / `haptic()` em
+  `src/lib/celebrate.ts` — confete na paleta do produto, com guarda de
+  `prefers-reduced-motion` e canvas próprio. Use `celebrateOnce` em tela que
+  celebra ao carregar, senão a festa se repete a cada refresh.
+
+### Telas já convertidas para nível alto
+
+- `student/ranking` (primeira, fase 2): pódio em blocos chapados com as três
+  cores, sombra dura no lugar de glow, posições/XP em `u-num`, destaque da
+  própria linha por forma (borda + sombra) e não por opacidade, confete no
+  top 3. Serve de molde para bichinho, desafio diário e resultado de simulado.
 
 ### Outros padrões
 

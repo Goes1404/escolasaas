@@ -9,6 +9,7 @@ import {
   Loader2, RefreshCw, Zap, Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { celebrateOnce } from '@/lib/celebrate';
 
 type RankEntry = {
   student_id:  string;
@@ -34,41 +35,44 @@ function Avatar({ name, url, size = 'md' }: { name: string; url?: string | null;
   const sz = size === 'lg' ? 'h-16 w-16 text-xl' : size === 'md' ? 'h-11 w-11 text-sm' : 'h-8 w-8 text-xs';
   const initials = name?.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
   if (url) return (
-    <img src={url} alt={name} className={`${sz} rounded-full object-cover border-2 border-white shadow-md`} />
+    <img src={url} alt={name} className={`${sz} rounded-full object-cover border-2 border-foreground shrink-0`} />
   );
+  // Fundo chapado da paleta (era um gradiente violeta→roxo, fora do produto).
   return (
-    <div className={`${sz} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white font-black border-2 border-white shadow-md shrink-0`}>
+    <div className={`${sz} rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black border-2 border-foreground shrink-0`}>
       {initials}
     </div>
   );
 }
 
+/**
+ * Degrau do pódio em NÍVEL ALTO: cor chapada da paleta + sombra dura, no lugar
+ * do gradiente ouro/prata/bronze com glow. As três posições usam as três cores
+ * do produto — é o que amarra esta tela à landing sem copiá-la.
+ */
 function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
   const configs = {
     1: {
-      height: 'h-36',
-      bg: 'bg-gradient-to-b from-amber-400 to-yellow-600',
-      icon: <Crown className="h-6 w-6 text-amber-200" />,
-      ring: 'ring-4 ring-amber-400',
-      glow: 'shadow-amber-400/40',
+      height: 'h-32 sm:h-36',
+      bg: 'bg-accent',                 // amarelo #EDE04C
+      text: 'text-accent-foreground',
+      icon: <Crown className="h-5 w-5" />,
       label: '1º',
       avatarSize: 'lg' as const,
     },
     2: {
       height: 'h-24',
-      bg: 'bg-gradient-to-b from-slate-300 to-slate-500',
-      icon: <Medal className="h-5 w-5 text-slate-200" />,
-      ring: 'ring-4 ring-slate-300',
-      glow: 'shadow-slate-400/40',
+      bg: 'bg-primary',                // ciano #4CCCED
+      text: 'text-primary-foreground',
+      icon: <Medal className="h-4 w-4" />,
       label: '2º',
       avatarSize: 'md' as const,
     },
     3: {
       height: 'h-20',
-      bg: 'bg-gradient-to-b from-amber-700 to-amber-900',
-      icon: <Trophy className="h-5 w-5 text-amber-300" />,
-      ring: 'ring-4 ring-amber-700',
-      glow: 'shadow-amber-700/40',
+      bg: 'bg-brand-pink',             // rosa #ED3474
+      text: 'text-white',
+      icon: <Trophy className="h-4 w-4" />,
       label: '3º',
       avatarSize: 'md' as const,
     },
@@ -77,27 +81,33 @@ function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
   const c = configs[place];
 
   return (
-    <div className={`flex flex-col items-center gap-2 ${place === 1 ? 'order-2' : place === 2 ? 'order-1' : 'order-3'}`}>
-      {/* Avatar */}
+    <div
+      className={`flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4 ${
+        place === 1 ? 'order-2 duration-700' : place === 2 ? 'order-1 duration-500' : 'order-3 duration-[900ms]'
+      }`}
+    >
       <div className="flex flex-col items-center gap-1.5">
-        <div className={`relative ${c.ring} rounded-full shadow-xl ${c.glow}`}>
+        <div className={`relative rounded-full ${place === 1 ? 'ring-4 ring-accent' : ''}`}>
           <Avatar name={entry.full_name} url={entry.avatar_url} size={c.avatarSize} />
-          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow">
+          <div className={`absolute -bottom-1 -right-1 ${c.bg} ${c.text} rounded-full p-1 border-2 border-foreground`}>
             {c.icon}
           </div>
         </div>
-        <p className={`text-xs font-black text-center max-w-[80px] leading-tight truncate ${place === 1 ? 'text-amber-900' : 'text-slate-700'}`}>
+        <p className="text-xs font-bold text-center max-w-[84px] leading-tight truncate">
           {entry.full_name?.split(' ')[0]}
         </p>
-        <div className="flex items-center gap-1 bg-white/80 rounded-full px-2 py-0.5 shadow-sm">
-          <Zap className="h-3 w-3 text-amber-500" />
-          <span className="text-[11px] font-black text-slate-800">{entry.weekly_xp} XP</span>
+        <div className="flex items-center gap-1 border-2 border-foreground bg-card rounded-control px-2 py-0.5">
+          <Zap className="h-3 w-3 text-accent-foreground fill-accent" />
+          <span className="u-num text-[11px]">{entry.weekly_xp}</span>
+          <span className="u-label !text-[8px] !tracking-[0.2em]">XP</span>
         </div>
       </div>
 
-      {/* Degrau do pódio */}
-      <div className={`w-24 ${c.height} ${c.bg} rounded-t-2xl flex items-end justify-center pb-3 shadow-lg`}>
-        <span className="text-2xl font-black text-white opacity-60">{c.label}</span>
+      {/* Degrau: bloco chapado com sombra dura e a posição em display */}
+      <div
+        className={`w-[86px] sm:w-24 ${c.height} ${c.bg} ${c.text} rounded-t-card border-2 border-foreground border-b-0 shadow-hard flex items-end justify-center pb-3`}
+      >
+        <span className="u-num text-3xl">{c.label}</span>
       </div>
     </div>
   );
@@ -182,6 +192,14 @@ export default function RankingPage() {
   const rest    = ranking.slice(3);
   const myPos   = myEntry?.position ?? null;
 
+  // Está no pódio? Festa — uma vez por aba, para não repetir a cada refresh.
+  // A chave carrega a posição: subir de 3º para 1º celebra de novo, e é isso
+  // que a gente quer premiar.
+  useEffect(() => {
+    if (!user || !myPos || myPos > 3) return;
+    return celebrateOnce(`ranking:${user.id}:${myPos}`);
+  }, [user, myPos]);
+
   const periodo = (() => {
     if (cycle) {
       const fim = new Date(cycle.ends_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
@@ -198,45 +216,50 @@ export default function RankingPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 space-y-6 pb-24 animate-in fade-in duration-700">
 
-      {/* ── HERO ── */}
-      <section className="aurora-dark relative overflow-hidden rounded-card p-8 text-white shadow-2xl border border-white/5">
+      {/* ── HERO (nível alto: cor chapada + sombra dura, sem glow difuso) ── */}
+      <section className="aurora-dark relative overflow-hidden rounded-card p-6 sm:p-8 text-white border-2 border-foreground shadow-hard">
+        {/* Sem blur difuso e sem bloco decorativo: o peso vem do título em
+            display, do selo amarelo chapado e da sombra dura. Blocos soltos
+            aqui colidiam com o selo (também amarelo) e liam como erro. */}
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/20 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-primary/20 rounded-full blur-[60px]" />
 
         <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="space-y-2">
-            <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30 inline-flex items-center gap-1.5">
-              <Trophy className="h-2.5 w-2.5" /> Ranking Semanal
+            <span className="u-label !text-white/70 inline-flex items-center gap-1.5">
+              <Trophy className="h-2.5 w-2.5" /> Ranking semanal
             </span>
-            <h1 className="text-3xl font-black italic tracking-tighter leading-tight">
-              Tabela de<br />
-              <span className="text-gradient-brand">Líderes 🏆</span>
+            <h1 className="u-page-title text-[clamp(1.6rem,7vw,2.5rem)]">
+              Tabela de<br />líderes
             </h1>
-            <p className="text-white/40 text-xs font-medium">
+            <p className="text-white/50 text-xs font-medium">
               {periodo}
             </p>
           </div>
 
           {myPos && (
-            <div className="shrink-0 text-center bg-white/10 rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/50">Você</p>
-              <p className="text-3xl font-black leading-none">{myPos}º</p>
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mt-0.5">lugar</p>
+            <div className="shrink-0 text-center bg-accent text-accent-foreground rounded-card px-4 py-3 border-2 border-foreground">
+              {/* tracking menor que o do u-label: em caixa estreita o padrão
+                  (0.28em) quebrava "VOCÊ" e "LUGAR" em duas linhas. */}
+              <p className="u-label !text-accent-foreground/70 !text-[8px] !tracking-[0.12em]">Você</p>
+              <p className="u-num text-3xl leading-none">{myPos}º</p>
+              <p className="u-label !text-accent-foreground/70 !text-[8px] !tracking-[0.12em] mt-0.5">lugar</p>
             </div>
           )}
         </div>
 
         {myEntry && (
-          <div className="relative z-10 mt-5 flex items-center gap-3 bg-white/10 rounded-2xl px-4 py-3 border border-white/10">
+          <div className="relative z-10 mt-5 flex items-center gap-3 bg-white/10 rounded-card px-4 py-3 border-2 border-white/25">
             <Avatar name={myEntry.full_name} url={myEntry.avatar_url} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-black truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
-              <p className="text-[10px] text-white/50 font-medium">{myEntry.weekly_xp} XP esta semana</p>
+              <p className="text-xs font-bold truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
+              <p className="u-label !text-white/50 !text-[9px] mt-0.5">
+                <span className="u-num">{myEntry.weekly_xp}</span> XP esta semana
+              </p>
             </div>
-            <div className="flex items-center gap-1">
-              <Flame className="h-4 w-4 text-orange-400" />
-              <span className="text-sm font-black">{myEntry.total_xp} XP total</span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Flame className="h-4 w-4 text-accent" />
+              <span className="u-num text-sm">{myEntry.total_xp}</span>
+              <span className="u-label !text-white/50 !text-[8px]">total</span>
             </div>
           </div>
         )}
@@ -244,15 +267,13 @@ export default function RankingPage() {
 
       {/* ── VENCEDORES DA LEVA ANTERIOR ── */}
       {winners.length > 0 && (
-        <section className="rounded-card border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 shadow-md">
+        <section className="rounded-card border-2 border-foreground bg-card p-6 shadow-hard">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <Crown className="h-4 w-4 text-amber-600" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">
-              Vencedores da leva anterior
-            </p>
+            <Crown className="h-4 w-4 text-accent-foreground fill-accent" />
+            <p className="u-label">Vencedores da leva anterior</p>
           </div>
           {winners[0]?.cycle_label && (
-            <p className="text-center text-[10px] text-amber-700/60 font-medium mb-4">
+            <p className="text-center text-[10px] text-muted-foreground font-medium mb-4">
               {winners[0].cycle_label}
             </p>
           )}
@@ -260,24 +281,32 @@ export default function RankingPage() {
           <div className="space-y-2">
             {winners.map((w) => {
               const isMe = w.student_id === user?.id;
-              const medalha = w.position === 1 ? '🥇' : w.position === 2 ? '🥈' : w.position === 3 ? '🥉' : `${w.position}º`;
+              // Medalha por COR da paleta, não por emoji (1º amarelo, 2º ciano,
+              // 3º rosa) — mesma leitura do pódio, e sem depender de emoji.
+              const tom =
+                w.position === 1 ? 'bg-accent text-accent-foreground'
+                : w.position === 2 ? 'bg-primary text-primary-foreground'
+                : w.position === 3 ? 'bg-brand-pink text-white'
+                : 'bg-muted text-muted-foreground';
               return (
                 <div
                   key={w.student_id}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-2.5 ${
-                    isMe ? 'border-primary/20 bg-primary/5' : 'border-amber-100 bg-white'
+                  className={`flex items-center gap-3 rounded-control border-2 px-4 py-2.5 ${
+                    isMe ? 'border-foreground shadow-hard' : 'border-border bg-card'
                   }`}
                 >
-                  <span className="w-6 text-center text-lg shrink-0">{medalha}</span>
+                  <span className={`u-num w-7 h-7 shrink-0 flex items-center justify-center rounded-full border-2 border-foreground text-xs ${tom}`}>
+                    {w.position}
+                  </span>
                   <Avatar name={w.full_name} url={w.avatar_url} size="sm" />
-                  <p className="flex-1 min-w-0 truncate text-sm font-black text-slate-800">
+                  <p className="flex-1 min-w-0 truncate text-sm font-bold">
                     {w.full_name}
-                    {isMe && <span className="ml-1.5 text-[9px] font-bold text-primary/60">(você)</span>}
+                    {isMe && <span className="ml-1.5 u-label !text-[8px] text-primary">(você)</span>}
                   </p>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Zap className="h-3.5 w-3.5 text-amber-500" />
-                    <span className="text-sm font-black text-slate-700">{w.xp}</span>
-                    <span className="text-[9px] font-bold text-slate-400">XP</span>
+                    <Zap className="h-3.5 w-3.5 text-accent-foreground fill-accent" />
+                    <span className="u-num text-sm">{w.xp}</span>
+                    <span className="u-label !text-[8px]">XP</span>
                   </div>
                 </div>
               );
@@ -285,7 +314,7 @@ export default function RankingPage() {
           </div>
 
           <p className="mt-4 text-center text-[10px] font-medium text-muted-foreground">
-            A secretaria entra em contato com os premiados. A disputa recomeçou do zero — boa sorte! 📚
+            A secretaria entra em contato com os premiados. A disputa recomeçou do zero — boa sorte!
           </p>
         </section>
       )}
@@ -315,7 +344,7 @@ export default function RankingPage() {
       ) : ranking.length === 0 ? (
         <div className="py-20 text-center">
           <Trophy className="h-16 w-16 mx-auto mb-4 text-slate-200" />
-          <p className="font-black italic text-primary text-lg">Ranking ainda vazio</p>
+          <p className="u-page-title text-lg text-primary">Ranking ainda vazio</p>
           <p className="text-sm text-muted-foreground mt-1">
             Responda questões para aparecer aqui!
           </p>
@@ -324,10 +353,8 @@ export default function RankingPage() {
         <>
           {/* ── PÓDIO ── */}
           {top3.length >= 2 && (
-            <div className="bg-gradient-to-b from-amber-50 to-white rounded-card border border-amber-100 p-6 pb-0 shadow-md">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 text-center mb-6">
-                Top 3 da Semana
-              </p>
+            <div className="bg-card rounded-card border-2 border-foreground p-6 pb-0 shadow-hard overflow-hidden">
+              <p className="u-label text-center mb-6">Top 3 da semana</p>
               <div className="flex items-end justify-center gap-3">
                 {top3[1] && <PodiumCard entry={top3[1]} place={2} />}
                 {top3[0] && <PodiumCard entry={top3[0]} place={1} />}
@@ -339,23 +366,22 @@ export default function RankingPage() {
           {/* ── LISTA ── */}
           {rest.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
-                Classificação Geral
-              </p>
+              <p className="u-label px-1">Classificação geral</p>
               {rest.map((entry, idx) => {
                 const isMe = entry.student_id === user?.id;
                 return (
                   <div
                     key={entry.student_id}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${
+                    // A SUA linha destaca por FORMA (borda grossa + sombra dura),
+                    // não por um fundo de 5% de opacidade que some no celular.
+                    className={`flex items-center gap-3 px-4 py-3 rounded-control border-2 transition-all ${
                       isMe
-                        ? 'bg-primary/5 border-primary/20 shadow-sm'
-                        : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm'
+                        ? 'bg-primary/10 border-foreground shadow-hard'
+                        : 'bg-card border-border hover:border-foreground/40'
                     }`}
                   >
-                    {/* Posição */}
-                    <span className={`w-8 text-center text-sm font-black shrink-0 ${
-                      isMe ? 'text-primary' : 'text-slate-400'
+                    <span className={`u-num w-8 text-center text-sm shrink-0 ${
+                      isMe ? 'text-primary' : 'text-muted-foreground'
                     }`}>
                       {entry.position}º
                     </span>
@@ -363,19 +389,19 @@ export default function RankingPage() {
                     <Avatar name={entry.full_name} url={entry.avatar_url} size="sm" />
 
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-black truncate ${isMe ? 'text-primary' : 'text-slate-800'}`}>
+                      <p className={`text-sm font-bold truncate ${isMe ? 'text-primary' : ''}`}>
                         {entry.full_name}
-                        {isMe && <span className="text-[9px] ml-1.5 font-bold text-primary/60">(você)</span>}
+                        {isMe && <span className="u-label !text-[8px] ml-1.5 text-primary">(você)</span>}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-medium">
-                        {entry.total_xp} XP total
+                      <p className="u-label !text-[9px] mt-0.5">
+                        <span className="u-num">{entry.total_xp}</span> XP total
                       </p>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
-                      <Zap className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="text-sm font-black text-slate-700">{entry.weekly_xp}</span>
-                      <span className="text-[9px] font-bold text-slate-400">XP</span>
+                      <Zap className="h-3.5 w-3.5 text-accent-foreground fill-accent" />
+                      <span className="u-num text-sm">{entry.weekly_xp}</span>
+                      <span className="u-label !text-[8px]">XP</span>
                     </div>
                   </div>
                 );

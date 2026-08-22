@@ -17,6 +17,10 @@ import {
 import { useAuth } from '@/lib/AuthProvider';
 import { supabase } from '@/app/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+// Confete e vibração agora são compartilhados (mesma paleta em toda a
+// plataforma, e com guarda de prefers-reduced-motion). Importados com o
+// nome antigo para não mexer nas dezenas de chamadas desta tela.
+import { celebrate as triggerConfetti, haptic as triggerHaptic } from '@/lib/celebrate';
 import { SupportingTextBlock } from '@/components/SupportingTextBlock';
 import {
   awardXP, checkAndAwardBadges, getTotalAnswered, BADGE_META,
@@ -64,75 +68,6 @@ function ScoreRing({ pct, size = 110 }: { pct: number; size?: number }) {
     </svg>
   );
 }
-
-// ─── Canvas Confetti Effect ───────────────────────────────────────────────────
-const triggerConfetti = () => {
-  const canvas = document.getElementById("confetti-canvas") as HTMLCanvasElement | null;
-  if (!canvas) return () => {};
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return () => {};
-  
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  
-  const colors = ["#4ccced", "#6366f1", "#10b981", "#ec4899", "#f59e0b"];
-  const particles: any[] = [];
-  
-  for (let i = 0; i < 120; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 5 + 3,
-      d: Math.random() * canvas.height,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      tilt: Math.random() * 8 - 4,
-      tiltAngleIncremental: Math.random() * 0.05 + 0.02,
-      tiltAngle: 0
-    });
-  }
-  
-  let animationFrameId: number;
-  const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let active = false;
-    
-    particles.forEach((p) => {
-      p.tiltAngle += p.tiltAngleIncremental;
-      p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2.5;
-      p.x += Math.sin(p.tiltAngle);
-      p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 12;
-      
-      if (p.y < canvas.height) {
-        active = true;
-      }
-      
-      ctx.beginPath();
-      ctx.lineWidth = p.r;
-      ctx.strokeStyle = p.color;
-      ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
-      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
-      ctx.stroke();
-    });
-    
-    if (active) {
-      animationFrameId = requestAnimationFrame(draw);
-    }
-  };
-  
-  draw();
-  return () => cancelAnimationFrame(animationFrameId);
-};
-
-// ─── Haptic vibration helper ───────────────────────────────────────────────────
-const triggerHaptic = (ms: number | number[] = 15) => {
-  if (typeof window !== "undefined" && navigator.vibrate) {
-    try {
-      navigator.vibrate(ms);
-    } catch (e) {
-      // Ignora erro se haptics falhar
-    }
-  }
-};
 
 // ─── main page ────────────────────────────────────────────────────────────────
 export default function SimuladoPage() {

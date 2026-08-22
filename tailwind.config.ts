@@ -29,6 +29,15 @@ export default {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
+        // Tons da marca que já existiam como variável em globals.css mas não
+        // eram alcançáveis por classe. As telas de nível alto (ranking, pódio,
+        // conquistas) usam as três cores do produto como blocos chapados.
+        brand: {
+          pink: 'hsl(var(--brand-pink))',
+          yellow: 'hsl(var(--brand-yellow))',
+          slate: 'hsl(var(--brand-slate))',
+          olive: 'hsl(var(--brand-olive))',
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
