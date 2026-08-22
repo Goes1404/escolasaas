@@ -30,8 +30,6 @@ import { AreaChartPremium } from "@/components/charts/premium";
 
 // Canvases decorativos (pointer-events-none) fora do bundle inicial: no 3G/
 // celular fraco eles não podem competir com o conteúdo pelo primeiro paint.
-const EmberCanvas = dynamic(() => import("@/components/EmberCanvas").then(m => m.EmberCanvas), { ssr: false });
-const FlameEmberCanvas = dynamic(() => import("@/components/FlameEmberCanvas").then(m => m.FlameEmberCanvas), { ssr: false });
 
 import {
   SIMULADO_GABARITO,
@@ -569,21 +567,25 @@ export default function DashboardHome() {
     return acc;
   }, {} as Record<string, typeof SIMULADO_GABARITO>);
 
+  // A home é nível MÉDIO: fundo neutro, acento no detalhe. Onze cores fora da
+  // paleta (violeta, esmeralda, índigo, âmbar…) davam a cada atalho uma
+  // identidade própria e nenhuma ao conjunto. Agora a superfície é neutra e a
+  // cor mora só no ícone, alternando entre as três do produto.
   const quickActions = [
-    { label: "Simulado",   icon: BrainCircuit, href: "/dashboard/student/simulados",           color: "from-violet-500 to-purple-600" },
-    { label: "Redação",    icon: FilePenLine,  href: "/dashboard/student/essays",              color: "from-emerald-500 to-green-600" },
-    { label: "Provas",     icon: Scroll,       href: "/dashboard/student/provas",              color: "from-red-500 to-rose-600" },
-    { label: "Checklist",  icon: FileCheck,    href: "/dashboard/student/documents",           color: "from-blue-500 to-blue-600" },
-    { label: "Biblioteca", icon: Library,      href: "/dashboard/library",                     color: "from-teal-500 to-cyan-600" },
-    { label: "Isenção",    icon: Calculator,   href: "/dashboard/student/documents/exemption", color: "from-amber-500 to-orange-500" },
+    { label: "Simulado",   icon: BrainCircuit, href: "/dashboard/student/simulados",           tone: "text-primary" },
+    { label: "Redação",    icon: FilePenLine,  href: "/dashboard/student/essays",              tone: "text-brand-pink" },
+    { label: "Provas",     icon: Scroll,       href: "/dashboard/student/provas",              tone: "text-brand-slate" },
+    { label: "Checklist",  icon: FileCheck,    href: "/dashboard/student/documents",           tone: "text-primary" },
+    { label: "Biblioteca", icon: Library,      href: "/dashboard/library",                     tone: "text-brand-slate" },
+    { label: "Isenção",    icon: Calculator,   href: "/dashboard/student/documents/exemption", tone: "text-brand-pink" },
   ];
 
   const platformFeatures = [
-    { icon: BrainCircuit, label: "Banco de Questões",  desc: "novas questões semanais",      href: "/dashboard/student/simulados", gradient: "from-violet-600 to-purple-700",  glow: "shadow-violet-500/30" },
-    { icon: FilePenLine,  label: "Sala de Redação",     desc: "correções para o seu texto",   href: "/dashboard/student/essays",    gradient: "from-emerald-500 to-teal-600",  glow: "shadow-emerald-500/30" },
-    { icon: Bot,          label: "Aurora AI",          desc: "mentora disponível 24h",       href: "/dashboard/support",           gradient: "from-indigo-500 to-violet-600", glow: "shadow-indigo-500/30", wide: true },
-    { icon: PlayCircle,   label: "Trilhas de Vídeo",   desc: "aprenda no seu ritmo",         href: "/dashboard/trails",            gradient: "from-blue-500 to-cyan-600",     glow: "shadow-blue-500/30" },
-    { icon: BarChart3,    label: "Meu Desempenho",     desc: "estatísticas para o seu progresso", href: "/dashboard/student/performance", gradient: "from-orange-500 to-red-500",  glow: "shadow-orange-500/30" },
+    { icon: BrainCircuit, label: "Banco de questões", desc: "novas questões semanais",           href: "/dashboard/student/simulados",    tone: "bg-primary text-primary-foreground" },
+    { icon: FilePenLine,  label: "Sala de redação",   desc: "correções para o seu texto",        href: "/dashboard/student/essays",       tone: "bg-brand-pink text-white" },
+    { icon: Bot,          label: "Aurora AI",         desc: "mentora disponível 24h",            href: "/dashboard/support",              tone: "bg-brand-yellow text-foreground", wide: true },
+    { icon: PlayCircle,   label: "Trilhas de vídeo",  desc: "aprenda no seu ritmo",              href: "/dashboard/trails",               tone: "bg-brand-slate text-white" },
+    { icon: BarChart3,    label: "Meu desempenho",    desc: "estatísticas para o seu progresso", href: "/dashboard/student/performance",  tone: "bg-primary text-primary-foreground" },
   ];
 
   const containerVariants = {
@@ -607,23 +609,23 @@ export default function DashboardHome() {
       {/* ── CARD DE TELEFONE PENDENTE ── */}
       {profile && !profile.phone && (
         <motion.div variants={itemVariants}
-          className="gradient-border relative overflow-hidden rounded-card border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-8 shadow-2xl text-white">
+          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
-                <Phone className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 rounded-control bg-foreground flex items-center justify-center shrink-0">
+                <Phone className="h-5 w-5 text-background" />
               </div>
               <div>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/70">Cadastro Obrigatório</span>
-                <h2 className="text-base md:text-xl font-black italic tracking-tighter leading-tight">Cadastre seu Telefone</h2>
+                <span className="u-label !text-foreground/60">Cadastro obrigatório</span>
+                <h2 className="u-display text-base md:text-xl leading-tight">Cadastre seu telefone</h2>
               </div>
             </div>
             <form onSubmit={handlePhoneSubmit} className="flex flex-col sm:flex-row gap-3">
               <input type="tel" inputMode="numeric" value={phoneValue} onChange={handlePhoneChange} placeholder="(00) 00000-0000"
-                className="h-12 flex-1 bg-white/10 backdrop-blur-md text-white placeholder:text-white/50 border border-white/20 focus:border-white rounded-xl font-bold font-mono text-center text-sm focus-visible:outline-none px-3" />
+                className="h-12 flex-1 bg-background text-foreground placeholder:text-muted-foreground border-2 border-foreground rounded-control font-bold font-mono text-center text-sm focus-visible:outline-none px-3" />
               <Button type="submit" disabled={submittingPhone}
-                className="bg-white text-[#0F7A95] hover:bg-orange-50 font-black rounded-xl shadow-lg border-none h-12 px-6 text-xs uppercase tracking-widest active:scale-95 flex items-center gap-2 justify-center shrink-0">
+                className="bg-foreground text-background hover:bg-foreground/90 font-black rounded-control border-none h-12 px-6 text-xs uppercase tracking-widest active:scale-95 flex items-center gap-2 justify-center shrink-0">
                 {submittingPhone ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
               </Button>
             </form>
@@ -634,50 +636,50 @@ export default function DashboardHome() {
       {/* ── CARD DE TURMA/EXAME PENDENTE ── */}
       {profile && userRole === 'student' && (!profile.sala || !profile.exam_target || !profile.turno) && (
         <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border border-blue-200 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 p-5 md:p-8 shadow-2xl text-white">
+          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
-                <GraduationCap className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 rounded-control bg-foreground flex items-center justify-center shrink-0">
+                <GraduationCap className="h-5 w-5 text-background" />
               </div>
               <div>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/70">Cadastro Obrigatório</span>
-                <h2 className="text-base md:text-xl font-black italic tracking-tighter leading-tight">Complete seu Perfil</h2>
+                <span className="u-label !text-foreground/60">Cadastro obrigatório</span>
+                <h2 className="u-display text-base md:text-xl leading-tight">Complete seu perfil</h2>
               </div>
             </div>
             <form onSubmit={handleClassSubmit} className="flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="relative">
                   <select value={salaValue} onChange={(e) => setSalaValue(e.target.value)}
-                    className="h-12 w-full bg-white/10 text-white border border-white/20 focus:border-white rounded-xl font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
+                    className="h-12 w-full bg-background text-foreground border-2 border-foreground rounded-control font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
                     <option value="" className="text-slate-800">Número de sala...</option>
                     {Array.from({ length: 15 }, (_, i) => String(i + 1)).map(n => (
                       <option key={n} value={n} className="text-slate-800">Sala {n}</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground pointer-events-none" />
                 </div>
                 <div className="relative">
                   <select value={examTargetValue} onChange={(e) => setExamTargetValue(e.target.value)}
-                    className="h-12 w-full bg-white/10 text-white border border-white/20 focus:border-white rounded-xl font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
+                    className="h-12 w-full bg-background text-foreground border-2 border-foreground rounded-control font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
                     <option value="" className="text-slate-800">Foco de exame...</option>
                     <option value="ENEM" className="text-slate-800">ENEM</option>
                     <option value="ETEC" className="text-slate-800">ETEC</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground pointer-events-none" />
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <select value={turnoValue} onChange={(e) => setTurnoValue(e.target.value)}
-                    className="h-12 w-full bg-white/10 text-white border border-white/20 focus:border-white rounded-xl font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
+                    className="h-12 w-full bg-background text-foreground border-2 border-foreground rounded-control font-bold text-sm focus-visible:outline-none px-3 pr-10 cursor-pointer appearance-none">
                     <option value="" className="text-slate-800">Turno...</option>
                     <option value="manha" className="text-slate-800">Manhã</option>
                     <option value="tarde" className="text-slate-800">Tarde</option>
                     <option value="integral" className="text-slate-800">Integral</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground pointer-events-none" />
                 </div>
                 <Button type="submit" disabled={submittingClass}
                   className="bg-white text-blue-600 hover:bg-blue-50 font-black rounded-xl shadow-lg border-none h-12 px-5 text-xs uppercase tracking-widest active:scale-95 flex items-center gap-2 justify-center shrink-0">
@@ -692,32 +694,32 @@ export default function DashboardHome() {
       {/* ── AVISO DE SIMULADO ── */}
       {simuladoEspecial && !simNoticeDismissed && (
         <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-6 shadow-2xl text-white">
+          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-6 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <button
             onClick={dismissSimNotice}
             aria-label="Dispensar aviso"
-            className="absolute top-3 right-3 z-20 h-8 w-8 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors active:scale-95"
+            className="absolute top-3 right-3 z-20 h-8 w-8 rounded-control border-2 border-foreground flex items-center justify-center transition-colors hover:bg-foreground/10 active:scale-95"
           >
-            <XCircle className="h-4 w-4 text-white" />
+            <XCircle className="h-4 w-4 text-foreground" />
           </button>
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="h-11 w-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-lg animate-float">
-                <Megaphone className="h-5 w-5 text-white" />
+              <div className="h-11 w-11 rounded-control bg-foreground flex items-center justify-center shrink-0">
+                <Megaphone className="h-5 w-5 text-background" />
               </div>
               <div className="min-w-0 pr-8 sm:pr-0">
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/75">Simulados disponíveis</span>
-                <h2 className="text-base md:text-lg font-black italic tracking-tighter leading-tight">
+                <span className="u-label !text-foreground/60">Simulados disponíveis</span>
+                <h2 className="u-display text-base md:text-lg leading-tight">
                   Faça os simulados do 2º semestre
                 </h2>
-                <p className="text-[11px] md:text-xs font-semibold text-white/85 mt-1 leading-relaxed">
+                <p className="text-[11px] md:text-xs font-semibold text-foreground/70 mt-1 leading-relaxed">
                   As <strong>2 primeiras tentativas</strong> de cada simulado contam para o seu <strong>boletim do 2º semestre</strong>. As demais valem como treino e entram no seu gráfico de evolução.
                 </p>
               </div>
             </div>
             <Link href="/dashboard/student/provas" className="shrink-0">
-              <Button className="w-full sm:w-auto h-11 px-5 rounded-xl bg-white text-[#0F7A95] hover:bg-orange-50 font-black text-[11px] uppercase tracking-widest shadow-lg border-none active:scale-95 flex items-center justify-center gap-2">
+              <Button className="w-full sm:w-auto h-11 px-5 rounded-control bg-foreground text-background hover:bg-foreground/90 font-black text-[11px] uppercase tracking-widest border-none active:scale-95 flex items-center justify-center gap-2">
                 Fazer simulado <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -728,39 +730,39 @@ export default function DashboardHome() {
       {/* ── CHAMADA ATIVA ── */}
       {activeSession && (
         <motion.div variants={itemVariants}
-          className="gradient-border relative overflow-hidden rounded-card border border-violet-200 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 md:p-8 shadow-2xl glow-purple text-white flex flex-col md:flex-row items-center justify-between gap-6">
+          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-6 md:p-8 text-foreground flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 relative z-10 w-full md:w-auto">
-            <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 shadow-xl animate-float">
-              <ClipboardCheck className="h-7 w-7 text-white" />
+            <div className="h-14 w-14 rounded-control bg-foreground flex items-center justify-center shrink-0">
+              <ClipboardCheck className="h-7 w-7 text-background" />
             </div>
             <div className="text-center sm:text-left space-y-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/80 animate-pulse">Chamada em Andamento 🚨</span>
-              <h2 className="text-xl md:text-2xl font-black italic tracking-tighter leading-none">Registre sua Presença</h2>
-              <p className="text-white/80 font-semibold text-xs leading-relaxed max-w-lg italic">
-                Chamada para <strong className="text-white">{activeSession.title}</strong> · turma <strong className="text-white">{activeSession.class_label}</strong> aberta.
+              <span className="u-label !text-foreground/60">Chamada em andamento</span>
+              <h2 className="u-page-title text-xl md:text-2xl leading-[1.15]">Registre sua presença</h2>
+              <p className="text-foreground/70 font-semibold text-xs leading-relaxed max-w-lg">
+                Chamada para <strong className="text-foreground">{activeSession.title}</strong> · turma <strong className="text-foreground">{activeSession.class_label}</strong> aberta.
               </p>
             </div>
           </div>
           <Button onClick={handleOpenAttendanceCheckin}
-            className="bg-white text-violet-600 hover:bg-violet-50 font-black rounded-xl shadow-lg border-none h-12 px-6 text-xs uppercase tracking-widest active:scale-[0.98] flex items-center gap-2 relative z-10 shrink-0">
+            className="bg-foreground text-background hover:bg-foreground/90 font-black rounded-control border-none h-12 px-6 text-xs uppercase tracking-widest active:scale-[0.98] flex items-center gap-2 relative z-10 shrink-0">
             <KeyRound className="h-4 w-4" /> Responder Chamada
           </Button>
         </motion.div>
       )}
 
       {/* ══════════════════════════════════════════════════
-           HERO "ARENA" — fundo vivo de brasas + tipografia editorial
+           HERO — cabeçalho em nível médio
+           Aqui rodavam TRÊS animações eternas ao mesmo tempo: o canvas de
+           brasas (loop de rAF), a varredura de luz e o gradiente animado do
+           nome. A home é a tela onde o aluno mais fica, e a doutrina reserva
+           movimento contínuo para as telas de segundos. Sobra a entrada em
+           stagger, que já existia — e o celular do aluno agradece.
           ══════════════════════════════════════════════════ */}
       <motion.section variants={itemVariants}
-        className="relative rounded-card overflow-hidden hero-arena-bg noise shadow-2xl">
+        className="relative rounded-card overflow-hidden aurora-dark border-2 border-foreground shadow-hard">
 
-        {/* camadas de atmosfera (de trás pra frente) */}
-        <EmberCanvas className="absolute inset-0 h-full w-full pointer-events-none" />
         <div className="absolute inset-0 dot-grid opacity-[0.14] pointer-events-none" />
-        <div className="hero-sweep" />
-        {/* linha de horizonte incandescente */}
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent z-10" />
 
         <div className="relative z-10 p-5 md:p-10 pb-5 md:pb-7 flex flex-col gap-6">
 
@@ -769,17 +771,14 @@ export default function DashboardHome() {
             <motion.div
               initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
               className="flex items-center gap-2 bg-white/[0.06] backdrop-blur-md border border-white/10 rounded-full pl-2.5 pr-3.5 py-1.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-              </span>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/80">Área do Aluno</span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+              <span className="u-label !text-white/80 whitespace-nowrap">Área do aluno</span>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
               className="flex items-center gap-1.5 bg-primary/15 backdrop-blur-md border border-primary/30 rounded-full px-3.5 py-1.5">
               <GraduationCap className="h-3 w-3 text-accent" />
-              <span className="text-[9px] font-black uppercase tracking-[0.25em] text-accent">
+              <span className="u-label !text-accent whitespace-nowrap">
                 Foco · {(profile?.exam_target || 'ENEM').toUpperCase()}
               </span>
             </motion.div>
@@ -790,18 +789,18 @@ export default function DashboardHome() {
             <div className="min-w-0">
               <motion.p
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                className="text-[10px] md:text-xs font-black uppercase tracking-[0.35em] text-white/50">
+                className="u-label !text-white/50">
                 {greeting},
               </motion.p>
               <motion.h1
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="text-[2.7rem] leading-[0.92] sm:text-6xl md:text-7xl font-black italic tracking-tighter text-white truncate">
-                {firstName}<span className="text-gradient-fire not-italic">.</span>
+                className="u-page-title text-[2.4rem] leading-[1.05] sm:text-6xl md:text-7xl text-white truncate">
+                {firstName}<span className="text-accent">.</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-                className="mt-2 md:mt-3 text-sm md:text-base font-bold italic text-white/70">
-                Cada questão te deixa mais perto da <span className="text-gradient-fire font-black">aprovação</span>.
+                className="mt-2 md:mt-3 text-sm md:text-base font-bold text-white/70">
+                Cada questão te deixa mais perto da <span className="u-display text-accent">aprovação</span>.
               </motion.p>
             </div>
 
@@ -812,10 +811,11 @@ export default function DashboardHome() {
               <div className="relative w-[88px] h-[88px] md:w-28 md:h-28">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
                   <defs>
+                    {/* Laranja e vermelho não existem na paleta: o arco ia do
+                        ciano do produto para duas cores emprestadas. */}
                     <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FF9A00" />
-                      <stop offset="60%" stopColor="#4CCCED" />
-                      <stop offset="100%" stopColor="#FF3D00" />
+                      <stop offset="0%" stopColor="#4CCCED" />
+                      <stop offset="100%" stopColor="#EDE04C" />
                     </linearGradient>
                   </defs>
                   {Array.from({ length: 48 }, (_, i) => (
@@ -894,12 +894,12 @@ export default function DashboardHome() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.06 }}
-                className={`btn-shimmer flex flex-col items-center justify-center gap-2 bg-gradient-to-br ${action.color} rounded-2xl w-[84px] h-[84px] shadow-lg hover:shadow-xl transition-all [touch-action:manipulation]`}
+                className="flex flex-col items-center justify-center gap-2 bg-card border-2 border-foreground rounded-card w-[84px] h-[84px] transition-all active:translate-x-[2px] active:translate-y-[2px] [touch-action:manipulation]"
                 style={{ transformStyle: "preserve-3d" }}>
                 <div style={{ transform: "translateZ(8px)" }}>
-                  <action.icon className="h-5 w-5 text-white" strokeWidth={1.5} />
+                  <action.icon className={`h-5 w-5 ${action.tone}`} strokeWidth={2} />
                 </div>
-                <p className="font-bold text-white uppercase text-[9px] tracking-wide text-center leading-tight px-1"
+                <p className="u-label !text-[8px] text-center leading-tight px-1"
                    style={{ transform: "translateZ(4px)" }}>
                   {action.label}
                 </p>
@@ -914,27 +914,26 @@ export default function DashboardHome() {
         <motion.div variants={itemVariants}>
           {simuladoEspecial.hasAttempt ? (
             // Card de resultado concluído com TRI
-            <div className="w-full relative card-on-fire rounded-card overflow-hidden p-6 text-white group shadow-2xl">
-              <div className="absolute inset-0 pointer-events-none z-0" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(255,90,0,0.2) 0%, transparent 60%)" }} />
+            <div className="w-full relative aurora-dark rounded-card border-2 border-foreground overflow-hidden p-6 text-white group">
               <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-[#4CCCED]/10 border border-[#4CCCED]/35 flex items-center justify-center shrink-0 shadow-lg">
-                    <Flame className="h-6 w-6 text-orange-500 animate-pulse" />
+                  <div className="h-12 w-12 rounded-control bg-brand-pink border-2 border-white/25 flex items-center justify-center shrink-0">
+                    <Flame className="h-6 w-6 text-white fill-white" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[8px] font-black uppercase tracking-[0.25em] text-orange-400">Simulado Especial Concluído</span>
-                      <Badge className="bg-[#4CCCED]/25 text-orange-400 border border-[#4CCCED]/30 text-[7px] font-black px-1 rounded">TRI ATIVA</Badge>
+                      <span className="u-label !text-[8px] !text-brand-pink">Simulado especial concluído</span>
+                      <Badge className="u-label !text-[7px] bg-transparent text-white/70 border-2 border-white/25 px-1.5 rounded-control">TRI ativa</Badge>
                     </div>
-                    <h3 className="font-black italic text-lg leading-tight text-white mt-0.5">{simuladoEspecial.title}</h3>
+                    <h3 className="u-display text-lg leading-tight text-white mt-1">{simuladoEspecial.title}</h3>
                     <p className="text-[10px] text-white/60 mt-1">Sua nota oficial estimada pela Teoria de Resposta ao Item.</p>
                   </div>
                 </div>
                 <div className="text-center sm:text-right shrink-0">
-                  <p className="text-[8px] font-black uppercase tracking-widest text-white/50">Média TRI Estimada</p>
-                  <p className="text-3xl font-black italic text-orange-400 text-glow-orange leading-none mt-1">
+                  <p className="u-label !text-[8px] !text-white/50">Média TRI estimada</p>
+                  <p className="u-num text-3xl text-accent leading-none mt-1">
                     {simuladoEspecial.triScore ?? 0}
-                    <span className="text-xs text-white/50 font-bold not-italic ml-1">pts</span>
+                    <span className="text-xs text-white/50 font-bold ml-1">pts</span>
                   </p>
                   <p className="text-[9px] font-bold text-white/40 mt-1">({simuladoEspecial.score}/45 acertos)</p>
                 </div>
@@ -943,22 +942,21 @@ export default function DashboardHome() {
           ) : (
             // Card para iniciar o simulado
             <Link href={`/dashboard/student/provas/${simuladoEspecial.id}`} className="block">
-              <div className="w-full text-left relative card-on-fire rounded-card overflow-hidden p-6 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation] shadow-2xl">
-                {/* Canvas de partículas de fogo */}
-                <FlameEmberCanvas className="absolute inset-0 h-full w-full pointer-events-none z-0 opacity-70" />
-                <div className="absolute inset-0 pointer-events-none z-10" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(255,90,0,0.15) 0%, transparent 60%)" }} />
+              {/* Quando existe, este é o CTA primário da tela — por isso é o
+                  único lugar da home que recebe a sombra dura. */}
+              <div className="w-full text-left relative aurora-dark rounded-card border-2 border-foreground shadow-hard overflow-hidden p-6 group cursor-pointer active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all [touch-action:manipulation]">
                 
                 <div className="relative z-20 flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-start gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-[#4CCCED]/10 border border-[#4CCCED]/30 flex items-center justify-center shrink-0 shadow-lg animate-float">
-                      <Flame className="h-7 w-7 text-orange-500 fill-orange-500" />
+                    <div className="h-14 w-14 rounded-control bg-brand-pink border-2 border-white/25 flex items-center justify-center shrink-0">
+                      <Flame className="h-7 w-7 text-white fill-white" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-orange-400">Simulado Especial dos Professores</span>
-                        <Badge className="bg-red-500 text-white border-none text-[8px] font-black tracking-widest px-2 animate-pulse">INÉDITO</Badge>
+                        <span className="u-label !text-[8px] !text-brand-pink">Simulado especial dos professores</span>
+                        <Badge className="u-label !text-[8px] bg-brand-yellow text-foreground border-2 border-foreground px-2 rounded-control">Inédito</Badge>
                       </div>
-                      <h3 className="font-black italic text-xl leading-tight text-white mt-1 group-hover:text-orange-400 transition-colors">
+                      <h3 className="u-display text-xl leading-tight text-white mt-1.5 group-hover:text-accent transition-colors">
                         {simuladoEspecial.title}
                       </h3>
                       <p className="text-xs font-semibold text-white/70 mt-1.5 leading-relaxed max-w-md">
@@ -966,8 +964,8 @@ export default function DashboardHome() {
                       </p>
                     </div>
                   </div>
-                  <Button className="w-full sm:w-auto h-12 px-6 rounded-xl bg-[#4CCCED] hover:bg-orange-600 text-slate-950 font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2 border-none shrink-0">
-                    <span>Iniciar Simulado</span>
+                  <Button className="w-full sm:w-auto h-12 px-6 rounded-control bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 border-2 border-foreground shrink-0">
+                    <span>Iniciar simulado</span>
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1017,7 +1015,7 @@ export default function DashboardHome() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/40 mb-0.5">Gabarito Comentado</p>
-              <p className="font-black italic text-white leading-tight truncate">{simuladoOficial?.title || SIMULADO_GABARITO_TITULO}</p>
+              <p className="u-display text-sm text-white leading-tight truncate">{simuladoOficial?.title || SIMULADO_GABARITO_TITULO}</p>
               {simuladoOficial ? (
                 <p className="text-xl font-black text-primary leading-none mt-1 italic">
                   {simuladoOficial.score}<span className="text-sm text-white/40 font-bold">/{simuladoOficial.total} acertos</span>
@@ -1037,30 +1035,30 @@ export default function DashboardHome() {
       <motion.section variants={itemVariants}>
         <SectionHeader index="01 · Plataforma" title="Tudo em Um Só Lugar" icon={Sparkles} iconClass="bg-primary/10 text-primary" />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {platformFeatures.map((feat, i) => (
-            <motion.div key={feat.label} className={feat.wide ? "col-span-2" : "col-span-1"}
+            <motion.div key={feat.label} className={feat.wide ? "sm:col-span-2" : ""}
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
               <TiltCard>
                 <Link href={feat.href}>
-                  <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${feat.gradient} p-4 md:p-5 shadow-xl ${feat.glow} shadow-lg flex items-center gap-4 [touch-action:manipulation]`}
+                  {/* O ícone flutuava em loop infinito. Numa tela onde o aluno
+                      passa minutos, cinco animações eternas custam bateria e
+                      não somam nada — a entrada em stagger já dá vida. */}
+                  <div className="relative overflow-hidden rounded-card bg-card border-2 border-foreground p-4 md:p-5 flex items-center gap-4 [touch-action:manipulation]"
                        style={{ transformStyle: "preserve-3d" }}>
-                    {/* Orb glow bg */}
-                    <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                    <motion.div
-                      className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0"
-                      animate={{ y: [0, -4, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    <div
+                      className={`h-12 w-12 rounded-control border-2 border-foreground flex items-center justify-center shrink-0 ${feat.tone}`}
                       style={{ transform: "translateZ(12px)" }}>
-                      <feat.icon className="h-6 w-6 text-white" strokeWidth={1.5} />
-                    </motion.div>
+                      <feat.icon className="h-6 w-6" strokeWidth={2} />
+                    </div>
                     <div className="relative z-10 flex-1 min-w-0" style={{ transform: "translateZ(6px)" }}>
-                      <p className="font-black text-white text-sm md:text-base italic leading-tight break-words">{feat.label}</p>
-                      <p className="text-white/60 text-[10px] md:text-xs font-semibold mt-0.5 break-words">{feat.desc}</p>
+                      <p className="u-display text-sm md:text-base leading-tight">{feat.label}</p>
+                      <p className="text-muted-foreground text-[10px] md:text-xs font-semibold mt-1">{feat.desc}</p>
                     </div>
                     {feat.wide && (
-                      <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
-                        <ArrowRight className="h-4 w-4 text-white" />
+                      <div className="h-8 w-8 rounded-full border-2 border-foreground flex items-center justify-center shrink-0">
+                        <ArrowRight className="h-4 w-4" />
                       </div>
                     )}
                   </div>
@@ -1075,18 +1073,14 @@ export default function DashboardHome() {
            AURORA AI — full-width CTA banner
           ══════════════════════════════════════ */}
       <motion.div variants={itemVariants}
-        className="gradient-border relative overflow-hidden rounded-card border border-accent/20 bg-gradient-to-r from-blue-50 via-indigo-50/20 to-white p-5 md:p-8 shadow-2xl group">
+        className="relative overflow-hidden rounded-card border-2 border-foreground bg-card p-5 md:p-8 group">
         <div className="absolute inset-0 dot-grid-dark opacity-40 pointer-events-none rounded-card" />
-        <motion.div
-          className="absolute right-[-40px] top-[-40px] w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none"
-          animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        />
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 relative z-10">
           <div className="flex items-center gap-4 sm:gap-0">
             <motion.div className="relative h-12 w-12 md:h-16 md:w-16 shrink-0"
               whileHover={{ scale: 1.1, rotateY: 15 }} style={{ transformStyle: "preserve-3d" }}>
               <div className="h-full w-full rounded-2xl bg-white shadow-xl flex items-center justify-center border border-accent/10">
-                <Bot className="h-6 w-6 md:h-8 md:w-8 text-accent animate-pulse-subtle" />
+                <Bot className="h-6 w-6 md:h-8 md:w-8 text-accent" />
               </div>
               <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-2 border-white animate-pulse" />
             </motion.div>
@@ -1178,7 +1172,7 @@ export default function DashboardHome() {
                   <PlayCircle className="h-6 w-6 text-primary/30" />
                 </div>
                 <div>
-                  <p className="font-black italic text-primary/60 text-sm">Nenhuma trilha iniciada</p>
+                  <p className="u-display text-primary/60 text-sm">Nenhuma trilha iniciada</p>
                   <p className="text-xs text-muted-foreground mt-1">Explore o catálogo e comece sua jornada.</p>
                 </div>
                 <Button asChild size="sm" className="mt-1 bg-primary text-white border-none rounded-xl font-black h-9 px-5 text-xs">
@@ -1478,7 +1472,7 @@ export default function DashboardHome() {
                 <ClipboardCheck className="h-6 w-6 text-primary" />
               </div>
               <div className="min-w-0">
-                <DialogTitle className="text-lg font-black italic text-white leading-tight tracking-tighter truncate">
+                <DialogTitle className="u-display text-lg text-white leading-tight truncate">
                   {SIMULADO_GABARITO_TITULO}
                 </DialogTitle>
                 <DialogDescription className="text-[11px] font-bold text-white/50 mt-0.5">
@@ -1510,7 +1504,7 @@ export default function DashboardHome() {
             {Object.keys(gabaritoPorArea).length === 0 ? (
               <div className="py-14 text-center">
                 <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-2" />
-                <p className="font-black italic text-slate-700">Nenhum erro! Mandou bem 🎉</p>
+                <p className="u-display text-slate-700">Nenhum erro. Mandou bem</p>
               </div>
             ) : (
               Object.entries(gabaritoPorArea).map(([area, questoes]) => (

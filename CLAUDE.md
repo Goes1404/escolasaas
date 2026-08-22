@@ -247,6 +247,24 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
   carrega o veredito — ciano ≥70%, amarelo ≥50%, rosa abaixo — no lugar de três
   gradientes escuros quase idênticos. Anel de nota e os três números em `u-num`.
 
+### Tela já convertida para nível médio
+
+- `dashboard/home`: superfícies neutras com o acento **só no ícone** (a cor
+  chapada em bloco é vocabulário de nível alto, e a home é de minutos). Os
+  banners de "você precisa agir" — telefone, perfil, aviso de simulado, chamada
+  aberta — falam **um idioma só**: amarelo chapado com texto escuro. Antes eram
+  laranja/âmbar, azul/índigo e violeta/roxo, três linguagens para a mesma
+  classe de mensagem. A sombra dura aparece em **dois lugares** e nada mais: o
+  hero e o card do simulado especial, que é o CTA primário quando existe.
+
+**Animação contínua saiu da home.** Rodavam ao mesmo tempo: o canvas de brasas
+(`EmberCanvas`, loop de `requestAnimationFrame`), a varredura de luz
+(`hero-sweep`), o gradiente animado do nome (`text-gradient-fire`), cinco ícones
+flutuando em `repeat: Infinity` e um blob que pulsava. É a tela onde o aluno
+mais fica — movimento eterno ali é bateria do celular dele. Ficou a entrada em
+stagger, que já existia. Os `animate-pulse` que sobraram são esqueleto de
+carregamento e devem ficar.
+
 **Onde a cor continua sendo sinal, e não decoração:** acerto/erro no gabarito e
 no desafio diário seguem verde/vermelho. A regra dos três níveis fala de
 intensidade visual, não proíbe semântica.
