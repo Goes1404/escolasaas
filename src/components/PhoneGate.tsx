@@ -5,6 +5,7 @@ import { Phone, ShieldCheck, Loader2, ArrowRight, LogOut } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
+import { useTenant } from "@/components/TenantProvider";
 
 /**
  * Gate obrigatório de telefone (Fase 1 do plano de recuperação por SMS).
@@ -15,8 +16,10 @@ import { useToast } from "@/hooks/use-toast";
  *
  * Aplica-se SÓ a alunos. Professores/admin/secretaria não são bloqueados.
  */
-export function PhoneGate() {
+export function PhoneGate(
+) {
   const { user, profile, userRole, refreshProfile, signOut } = useAuth();
+  const { tenant } = useTenant();
   const { toast } = useToast();
   const [phoneValue, setPhoneValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -88,7 +91,7 @@ export function PhoneGate() {
             <div className="w-8 h-8 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/10">
               <ShieldCheck className="h-4 w-4 text-white/70" />
             </div>
-            <span className="u-label !text-white/50">Dalí</span>
+            <span className="u-label !text-white/50">{tenant.branding.appName}</span>
           </div>
 
           <div className="bg-white rounded-card shadow-2xl overflow-hidden">

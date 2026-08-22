@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/AuthProvider';
+import { useTenant } from '@/components/TenantProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/app/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ const PERIOD_LABEL: Record<Goal['period'], string> = {
 };
 
 export default function GoalsPage() {
+  const { tenant } = useTenant();
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -158,7 +160,7 @@ export default function GoalsPage() {
     });
     ctx.font = 'italic 20px Arial';
     ctx.fillStyle = '#64748b';
-    ctx.fillText(`Emitido em ${dateStr} • Plataforma EAD`, 800, 840);
+    ctx.fillText(`Emitido em ${dateStr} • ${tenant.branding.appName}`, 800, 840);
 
     ctx.font = 'italic 28px Georgia';
     ctx.fillStyle = '#ffffff';

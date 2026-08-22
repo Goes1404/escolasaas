@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useTenant } from "@/components/TenantProvider";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -35,6 +36,7 @@ export default function SecretaryFinancePage() {
   const { userRole, user, profile, loading: isUserLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { tenant } = useTenant();
 
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [rates, setRates] = useState<Record<string, Rate>>({});
@@ -181,7 +183,7 @@ export default function SecretaryFinancePage() {
         @media print{.noprint{display:none;}}
       </style></head><body>
         <div class="container">
-          <div class="header"><div class="logo">Dalí</div><div class="sub">Recibo de Pagamento</div></div>
+          <div class="header"><div class="logo">${esc(tenant.branding.appName)}</div><div class="sub">Recibo de Pagamento</div></div>
           <div class="title">Recibo</div>
           <div class="amount">${esc(fmtBRL(Number(p.amount)))}</div>
           <div class="content">

@@ -89,7 +89,7 @@ export function LoginForm() {
           <div className="text-center mb-8 space-y-2">
             <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full mb-1">
               <Sparkles className="h-3 w-3 text-orange-400" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-400">Plataforma Educacional</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-400">{tenant.branding.appName}</span>
             </div>
             <h1 className="text-2xl font-black italic tracking-tighter text-white leading-tight">
               Portal do <span className="text-gradient-fire">Aluno</span>

@@ -10,6 +10,7 @@
  */
 import sharp from 'sharp';
 import { writeFileSync } from 'node:fs';
+import { Buffer } from 'node:buffer';
 import { DROP, MARK_CENTER, PATH_D, PATH_DRIP } from '../src/lib/logo-dali-geometry';
 
 const INK = '#09090f';
@@ -46,6 +47,38 @@ const badge = svg(mark('#FFFFFF', 0.8), null); // notificação Android: só o a
 
 // Envolto numa função porque o tsx compila este script para CJS, onde
 // `await` de topo não existe.
+/**
+ * Empacota PNGs num container .ico.
+ *
+ * O `sharp` não escreve .ico, e o formato aceita PNG embutido desde o Vista —
+ * então basta montar o cabeçalho à mão. Vale o trabalho: o Next serve
+ * `src/app/favicon.ico` e o declara ANTES dos outros ícones, então é ele que o
+ * navegador escolhe para a aba. Um .ico velho ali anula todo o resto.
+ */
+function buildIco(images: { size: number; png: Buffer }[]): Buffer {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reservado
+  header.writeUInt16LE(1, 2); // tipo 1 = ícone
+  header.writeUInt16LE(images.length, 4);
+
+  let offset = 6 + images.length * 16;
+  const entries: Buffer[] = [];
+  for (const { size, png } of images) {
+    const e = Buffer.alloc(16);
+    e.writeUInt8(size >= 256 ? 0 : size, 0); // 0 significa 256
+    e.writeUInt8(size >= 256 ? 0 : size, 1);
+    e.writeUInt8(0, 2);  // cores da paleta (0 = truecolor)
+    e.writeUInt8(0, 3);  // reservado
+    e.writeUInt16LE(1, 4);   // planos
+    e.writeUInt16LE(32, 6);  // bits por pixel
+    e.writeUInt32LE(png.length, 8);
+    e.writeUInt32LE(offset, 12);
+    entries.push(e);
+    offset += png.length;
+  }
+  return Buffer.concat([header, ...entries, ...images.map((i) => i.png)]);
+}
+
 async function main() {
   await Promise.all([
     png(tile, 192, 'public/icons/icon-192.png'),
@@ -54,6 +87,15 @@ async function main() {
     png(tile, 180, 'public/icons/apple-touch-icon.png'),
     png(badge, 96, 'public/icons/badge-96.png'),
   ]);
+  // Favicon clássico: 16/32/48 no mesmo arquivo, para a aba ficar nítida em
+  // qualquer densidade de tela.
+  const buf = (size: number) =>
+    sharp(Buffer.from(tile)).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
+  const ico = buildIco(
+    await Promise.all([16, 32, 48].map(async (size) => ({ size, png: await buf(size) })))
+  );
+  writeFileSync('src/app/favicon.ico', ico);
+
   console.log('ícones gerados a partir de src/lib/logo-dali-geometry.ts');
 }
 

@@ -9,11 +9,20 @@ Compromisso (Santana de Parnaíba). Voltada ao ENEM e ETEC, com papéis: `admin`
 `teacher`, `student`.
 
 **O produto é o Dalí; o Compromisso é o primeiro cliente.** A plataforma é
-white-label: o nome e o logo do painel vêm de `tenants.branding` (resolvido pelo
-host em `src/lib/get-tenant.ts`). Nunca escreva "Dalí" fixo numa tela de
-dashboard — lá vale `tenant.branding.appName`. O nome fixo só aparece onde a
-tela é do produto e não de uma escola: landing, metadata, PWA, login e primeiro
-acesso.
+white-label: nome e logo vêm de `tenants.branding` (resolvido pelo host em
+`src/lib/get-tenant.ts`).
+
+A regra, em uma frase: **"Dalí" fixo só onde a tela é do produto e nunca de uma
+escola** — landing, `metadata`, manifest do PWA. Tudo que uma pessoa vê ao
+entrar ou já dentro segue o tenant: login, primeiro acesso, `PhoneGate`,
+sidebar, fórum, chat, certificado de metas. O critério prático: **se a tela
+mostra o logo do tenant, o nome ao lado tem de ser o do tenant** — o logo de
+uma escola ao lado da palavra "Dalí" é pior do que qualquer um dos dois
+sozinho.
+
+Única exceção deliberada: `LoadingShell`. É server component de CSS puro, feito
+para FCP rápido, e puxar o hook do tenant o tornaria client. Como ele não exibe
+o logo de ninguém, o nome do produto ali não conflita.
 
 ## 🎭 Marca
 

@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTenant } from '@/components/TenantProvider';
 import Link from 'next/link';
 import {
   Loader2, Search, CheckCircle2, AlertCircle,
@@ -26,6 +27,7 @@ const HEADER: Record<Step, { label: string; sub: string; color: string }> = {
 
 function PrimeiroAcessoContent() {
   const searchParams = useSearchParams();
+  const { tenant } = useTenant();
   const inviteToken = searchParams.get('invite');
 
   const [step, setStep] = useState<Step>('search');
@@ -109,7 +111,7 @@ function PrimeiroAcessoContent() {
             <div className="w-8 h-8 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/10 shrink-0">
               <Sparkles className="h-4 w-4 text-white/70" />
             </div>
-            <span className="u-label !text-white/50">Dalí</span>
+            <span className="u-label !text-white/50">{tenant.branding.appName}</span>
           </div>
           <Link
             href="/login"
