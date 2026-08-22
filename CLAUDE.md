@@ -51,12 +51,13 @@ resumo, sempre que o status mudar). Resumo:
 - **Usuários de teste** (criados por `scripts/seed-test-users.mjs`, senha
   `mudar123` para os 4): `admin@compromisso.com`, `secretaria@compromisso.com`
   (staff), `professor@compromisso.com`, `aluno@compromisso.com`.
-- **Pendente na Vercel** (projeto `escolasaas`, team
-  `sq1matheusgsilva-7306s-projects`): confirmar se as env vars de Production
-  já foram trocadas para apontar pro Supabase acima (estavam apontando para
-  `wyqfyrfkudxroumggnnp`, projeto errado) e se "Vercel Authentication" (SSO
-  protection) já foi desligada — enquanto ligada, ninguém fora do time
-  consegue acessar o site. Ver `docs/DEPLOY_STATUS.md` para o passo a passo.
+- **Vercel** (projeto `escolasaas`, team `sq1matheusgsilva-7306s-projects`):
+  as env vars de Production **já apontam para o Supabase certo** — verificado
+  em 22/08 pelo `initialTenant` que a produção serve (traz `appName: "Dalí"`,
+  valor que só existe na linha `slug='default'` de `sgkgsjmfcsgfxliwvwjg`).
+  Não re-investigue isso: se algum dia precisar reconferir, é esse o teste,
+  não ler o chunk JS. Ver `docs/DEPLOY_STATUS.md` para o estado do SSO e do
+  fluxo de deploy.
 - **Módulos de gestão escolar (22/08)**: financeiro de mensalidades
   (`secretary/tuition`, `student/finance`), portal do responsável por token
   (`guardian/[token]`, tokens no `GuardiansCard`) e rematrícula digital

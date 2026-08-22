@@ -145,32 +145,42 @@ security advisor — a view junta auth.users; staff usa a RPC `obter_funil_aluno
 ## Vercel — pendências para o deploy funcionar de verdade
 
 Projeto: `escolasaas` (team `sq1matheusgsilva-7306s-projects`,
-`prj_BKX5bUMaZkFkmYXbPE0ZkrJhoyAe`). Vários deploys já feitos, build passa sem
-erro. Dois problemas encontrados que **ainda não sei se o usuário corrigiu**:
+`prj_BKX5bUMaZkFkmYXbPE0ZkrJhoyAe`, plano hobby, team
+`team_z5rGXQYGDIY2WL5NadGucSBJ`).
 
-1. **Env vars de Production apontavam para o Supabase ERRADO**
-   (`wyqfyrfkudxroumggnnp.supabase.co`, confirmado lendo o chunk JS da página
-   de login em produção). Precisa trocar em Settings → Environment Variables
-   (ambiente Production):
-   - `NEXT_PUBLIC_SUPABASE_URL` → `https://sgkgsjmfcsgfxliwvwjg.supabase.co`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → a publishable key (está no `.env.local`)
-   - `SUPABASE_SERVICE_ROLE_KEY` → a secret key (está no `.env.local`)
-   - Depois de trocar, **precisa de redeploy manual** (env var não dispara
-     rebuild sozinha).
+### ✅ Env vars de Production — resolvido (verificado em 22/08)
 
-2. **"Vercel Authentication" (SSO protection) está ligada**
-   (`ssoProtection.enabled: true`, `deploymentType: "all_except_custom_domains"`).
-   Bloqueia qualquer pessoa fora do time da Vercel — nenhum aluno real
-   consegue chegar na tela de login. Usuário autorizou desligar, mas a
-   ferramenta MCP (`update_project_deployment_protection`) devolveu
-   `403 forbidden` (token do MCP sem permissão de admin no projeto). Precisa
-   ser desligada manualmente em Settings → Deployment Protection.
+Estavam apontando para o Supabase errado (`wyqfyrfkudxroumggnnp`); não estão
+mais. **Como reconferir sem adivinhar**: buscar `https://escolasaas.vercel.app/login`
+e olhar o `initialTenant` embutido no HTML. Se vier `appName: "Dalí"`, a
+produção está lendo `sgkgsjmfcsgfxliwvwjg` — esse valor só existe lá. É um
+teste melhor do que ler o chunk JS: prova a leitura de ponta a ponta (env var →
+cliente Supabase → linha do banco), não só qual string foi compilada.
 
-**Próximo passo ao retomar**: perguntar se essas duas coisas já foram feitas
-no painel; se sim, disparar redeploy (ou pedir pro usuário) e revalidar login
-em produção do mesmo jeito que foi validado localmente (curl no
-`/auth/v1/token`, depois conferir que o HTML/JS servido aponta para
-`sgkgsjmfcsgfxliwvwjg`, não para o projeto antigo).
+### Como a produção publica
+
+**Só a branch `main` publica em produção.** Os deploys de produção anteriores
+a 22/08 foram promoções manuais de preview pelo painel — por isso a produção
+ficou parada em `ee492ea` enquanto a branch de trabalho já tinha três commits
+a mais. Desde 22/08 a `main` foi alinhada por fast-forward com
+`claude/cherry-pick-old-repo-commit-1d8tnl`, e o caminho normal passou a ser:
+merge fast-forward na `main` → push → a Vercel publica sozinha.
+
+**Armadilha aprendida:** o branding vem do banco, mas os arquivos vêm do build.
+Ao atualizar `tenants.branding.logoUrl` para `/logo-dali.svg` antes de publicar
+o commit que cria esse arquivo, o logo passou a dar 404 em produção — o banco
+apontava para algo que aquele build não tinha. Ao mexer em branding, **publique
+o código antes ou junto**, nunca só o banco.
+
+### Vercel Authentication (SSO)
+
+Estava `enabled: true` com `deploymentType: "all_except_custom_domains"`,
+bloqueando qualquer pessoa fora do time. Uma tentativa anterior de desligar
+por chamada direta à API devolveu `403 forbidden`.
+
+Para conferir o estado atual: `get_project_deployment_protection` do MCP da
+Vercel. Se precisar desligar à mão: Settings → Deployment Protection →
+Vercel Authentication.
 
 ## Git
 
