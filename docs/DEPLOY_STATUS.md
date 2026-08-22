@@ -172,15 +172,34 @@ o commit que cria esse arquivo, o logo passou a dar 404 em produção — o banc
 apontava para algo que aquele build não tinha. Ao mexer em branding, **publique
 o código antes ou junto**, nunca só o banco.
 
-### Vercel Authentication (SSO)
+### ✅ Vercel Authentication (SSO) — não é pendência, e não precisa mexer
 
-Estava `enabled: true` com `deploymentType: "all_except_custom_domains"`,
-bloqueando qualquer pessoa fora do time. Uma tentativa anterior de desligar
-por chamada direta à API devolveu `403 forbidden`.
+`ssoProtection` continua `enabled: true` com
+`deploymentType: "all_except_custom_domains"`, **e está certo assim**: na
+prática ela cobre as URLs de *preview* e **não** cobre o alias de produção.
+O site está público.
 
-Para conferir o estado atual: `get_project_deployment_protection` do MCP da
-Vercel. Se precisar desligar à mão: Settings → Deployment Protection →
-Vercel Authentication.
+Isso contradiz o que este arquivo afirmou por duas sessões ("nenhum aluno
+consegue chegar na tela de login"). A afirmação vinha de *ler a configuração*,
+nunca de testar. **O teste certo é buscar a URL sem nenhuma credencial da
+Vercel** — nada de `web_fetch_vercel_url`, que carrega a sessão do dono da
+conta e sempre passa:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://escolasaas.vercel.app/       # 200
+curl -s -o /dev/null -w '%{http_code}\n' https://escolasaas.vercel.app/login  # 200
+curl -s -o /dev/null -w '%{http_code}\n' https://escolasaas-<hash>-….vercel.app/  # 302 (preview, protegido)
+```
+
+Verificado em 22/08: `/` devolve 46 KB de HTML real com
+`<title>Dalí — plataforma de estudo…`, e os assets da marca
+(`/logo-dali.svg`, `/icon.svg`, `/icons/icon-192.png`,
+`/manifest.webmanifest`) todos 200.
+
+**Não tente desligar o SSO por ferramenta.** Duas rotas já devolveram
+`403 forbidden — "You don't have permission to update the project"`: chamada
+direta à API e `update_project_deployment_protection` do MCP. Se algum dia for
+mesmo necessário, é no painel: Settings → Deployment Protection.
 
 ## Git
 

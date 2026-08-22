@@ -51,13 +51,15 @@ resumo, sempre que o status mudar). Resumo:
 - **Usuários de teste** (criados por `scripts/seed-test-users.mjs`, senha
   `mudar123` para os 4): `admin@compromisso.com`, `secretaria@compromisso.com`
   (staff), `professor@compromisso.com`, `aluno@compromisso.com`.
-- **Vercel** (projeto `escolasaas`, team `sq1matheusgsilva-7306s-projects`):
-  as env vars de Production **já apontam para o Supabase certo** — verificado
-  em 22/08 pelo `initialTenant` que a produção serve (traz `appName: "Dalí"`,
-  valor que só existe na linha `slug='default'` de `sgkgsjmfcsgfxliwvwjg`).
-  Não re-investigue isso: se algum dia precisar reconferir, é esse o teste,
-  não ler o chunk JS. Ver `docs/DEPLOY_STATUS.md` para o estado do SSO e do
-  fluxo de deploy.
+- **Vercel — está no ar e público** em https://escolasaas.vercel.app (projeto
+  `escolasaas`, team `sq1matheusgsilva-7306s-projects`). Env vars de Production
+  corretas e SSO **não** é pendência: ele cobre só as URLs de preview. As duas
+  coisas foram verificadas em 22/08 e **não devem ser re-investigadas** — os
+  testes estão em `docs/DEPLOY_STATUS.md`, junto do porquê de ambas terem sido
+  descritas como problema por duas sessões.
+- **Só a branch `main` publica em produção.** Trabalho em branch fica em
+  preview até um merge fast-forward na `main` — o push dispara o deploy
+  sozinho. Não existe promoção automática de preview.
 - **Módulos de gestão escolar (22/08)**: financeiro de mensalidades
   (`secretary/tuition`, `student/finance`), portal do responsável por token
   (`guardian/[token]`, tokens no `GuardiansCard`) e rematrícula digital
