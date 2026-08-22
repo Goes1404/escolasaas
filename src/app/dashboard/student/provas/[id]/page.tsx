@@ -498,7 +498,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/15 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-orange-400">
             Como funciona
           </span>
-          <h1 className="mt-3 text-2xl font-black italic tracking-tighter leading-tight">{exam?.title}</h1>
+          <h1 className="u-page-title mt-3 text-2xl leading-[1.15]">{exam?.title}</h1>
           <p className="mt-1 text-xs font-semibold text-white/55">
             Leia o passo a passo antes de começar. Leva menos de 1 minuto.
           </p>
@@ -514,7 +514,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                   <Icon className="h-5 w-5 text-orange-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-black italic text-white leading-tight">{s.title}</p>
+                  <p className="u-display text-sm text-white leading-tight">{s.title}</p>
                   <p className="mt-1 text-xs font-medium text-white/60 leading-relaxed">{s.text}</p>
                 </div>
               </div>
@@ -525,7 +525,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
           <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-4">
             <div className="flex items-center gap-2 mb-1.5">
               <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
-              <p className="text-sm font-black italic text-red-300 uppercase tracking-wide">Atenção: não saia da prova</p>
+              <p className="u-display text-sm text-red-300">Atenção: não saia da prova</p>
             </div>
             <p className="text-xs font-semibold text-red-200/90 leading-relaxed">
               Se você <span className="font-black underline">sair desta página</span> durante a prova — trocar de aba,
@@ -548,7 +548,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
         <div className="shrink-0 p-4 border-t border-white/5 bg-[#0a0a0c]">
           <Button
             onClick={handleStart}
-            className="w-full h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-500/30 border-none"
+            className="w-full h-14 rounded-control bg-primary text-primary-foreground font-black text-sm uppercase tracking-widest border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
           >
             <Play className="h-5 w-5 mr-2" />
             Começar prova
@@ -669,7 +669,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                   <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
-                      <p className="text-sm font-black italic text-red-300 uppercase tracking-wide">Oportunidade encerrada</p>
+                      <p className="u-display text-sm text-red-300">Oportunidade encerrada</p>
                     </div>
                     <p className="text-xs font-semibold text-red-200/90 leading-relaxed">
                       Você saiu da página novamente, mesmo após o aviso, então a prova foi encerrada automaticamente com
@@ -684,7 +684,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                   />
                   <div className="relative z-10 text-center">
                     <Award className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
-                    <p className="text-4xl font-black italic text-white leading-none tracking-tighter">
+                    <p className="u-num text-4xl text-white leading-none">
                       {result.score}
                       <span className="text-xl text-white/65">/{result.total}</span>
                     </p>
@@ -774,7 +774,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/65">Questão</p>
-                      <p className="text-3xl font-black italic text-white leading-none tracking-tighter mt-0.5">
+                      <p className="u-num text-3xl text-white leading-none mt-0.5">
                         {String(currentIndex + 1).padStart(2, "0")}
                         <span className="text-base text-white/60 font-bold ml-1">
                           /{String(questions.length).padStart(2, "0")}
@@ -793,7 +793,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                   </div>
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full transition-all duration-300"
+                      className="h-full bg-primary rounded-full transition-all duration-300"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
@@ -821,7 +821,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                             onClick={() => handleSelectAnswer(currentQ.question.id, letter)}
                             className={`aspect-square rounded-2xl font-black text-2xl italic transition-all touch-manipulation active:scale-90 flex items-center justify-center ${
                               isSelected
-                                ? "bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-xl shadow-orange-500/40 scale-105"
+                                ? "bg-primary text-primary-foreground border-2 border-foreground scale-105"
                                 : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
                             }`}
                           >
@@ -938,7 +938,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/30 border-none disabled:opacity-40"
+                className="w-full h-12 rounded-control bg-emerald-600 text-white font-black text-xs uppercase tracking-widest border-2 border-foreground disabled:opacity-40"
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
                 Entregar Prova
@@ -990,7 +990,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
             <div className="mx-auto mb-3 h-14 w-14 rounded-2xl bg-red-500/15 border border-red-500/40 flex items-center justify-center">
               <AlertTriangle className="h-7 w-7 text-red-400" />
             </div>
-            <h2 className="text-lg font-black italic text-white leading-tight">Você saiu da prova!</h2>
+            <h2 className="u-display text-lg text-white leading-tight">Você saiu da prova</h2>
             <p className="mt-2 text-sm font-semibold text-white/70 leading-relaxed">
               Este é o seu <span className="text-red-400 font-black">único aviso</span>. Se você sair da página de novo
               — trocar de aba, abrir outro app ou site — a prova será <span className="font-black text-white">encerrada
@@ -998,7 +998,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
             </p>
             <button
               onClick={() => setShowLeaveWarning(false)}
-              className="mt-5 w-full h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-500/30 active:scale-95 transition-transform"
+              className="mt-5 w-full h-12 rounded-control bg-primary text-primary-foreground font-black text-sm uppercase tracking-widest border-2 border-foreground active:scale-95 transition-transform"
             >
               Entendi, voltar à prova
             </button>

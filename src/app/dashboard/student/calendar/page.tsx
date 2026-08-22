@@ -118,45 +118,45 @@ export default function StudentCalendarPage() {
     <div className="max-w-3xl mx-auto px-2 md:px-4 pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── HERO ── */}
-      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-rose-500 to-red-600 p-6 shadow-2xl shadow-orange-200">
+      <div className="relative rounded-card overflow-hidden border-2 border-foreground bg-brand-pink text-white p-6 shadow-hard">
         <div className="absolute -right-10 -top-10 opacity-10 pointer-events-none">
           <CalendarDays className="h-48 w-48 text-white" />
         </div>
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
             <CalendarDays className="h-3.5 w-3.5 text-white/80" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
-              Calendário Acadêmico
+            <p className="u-label !text-white/80">
+              Calendário acadêmico
             </p>
           </div>
-          <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
-            Sua Jornada
+          <h1 className="u-page-title text-2xl leading-[1.15]">
+            Sua jornada
           </h1>
-          <p className="text-white/75 text-xs font-semibold mt-1">
+          <p className="text-white/75 text-xs font-semibold mt-1.5">
             Vestibulares, prazos e marcos importantes
           </p>
 
           {nextEvent && nextDays !== null && nextMeta && (
             <div className="mt-5 flex items-end gap-4">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-white/70 leading-none mb-1">
+                <p className="u-label !text-white/70 leading-none mb-1">
                   Próximo evento
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[5rem] sm:text-[6rem] font-black italic leading-[0.85] tracking-tighter text-white drop-shadow-lg">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="u-num text-[4.5rem] sm:text-[6rem] leading-[0.9] text-white">
                     {nextDays}
                   </span>
-                  <span className="text-xl font-black italic tracking-tighter text-white/80">
+                  <span className="u-num text-xl text-white/80">
                     {nextDays === 1 ? "dia" : "dias"}
                   </span>
                 </div>
               </div>
               <div className="flex-1 min-w-0 pb-2">
-                <Badge className="bg-white/20 text-white border-white/30 font-black text-[8px] uppercase tracking-widest mb-2 inline-flex items-center gap-1 px-2 h-5">
+                <Badge className="u-label !text-[8px] bg-transparent text-white border-2 border-white/40 mb-2 inline-flex items-center gap-1 px-2 h-5 rounded-control">
                   <Flame className="h-2.5 w-2.5" />
                   {nextMeta.label}
                 </Badge>
-                <p className="text-sm font-black italic text-white leading-snug line-clamp-2">
+                <p className="u-display text-sm text-white leading-snug line-clamp-2">
                   {nextEvent.title}
                 </p>
                 <p className="text-[10px] font-bold text-white/75 mt-1 uppercase tracking-wider">
@@ -258,10 +258,10 @@ export default function StudentCalendarPage() {
                   {/* Cabeçalho do mês */}
                   <div className="flex items-end justify-between gap-3 px-1">
                     <div className="flex items-baseline gap-2">
-                      <h2 className="text-3xl font-black italic tracking-tighter text-primary leading-none">
+                      <h2 className="u-num text-3xl text-primary leading-none">
                         {MONTHS_FULL[monthIdx]}
                       </h2>
-                      <span className="text-base font-black italic text-muted-foreground tracking-tighter">
+                      <span className="u-num text-base text-muted-foreground">
                         {yearStr}
                       </span>
                     </div>
@@ -289,7 +289,7 @@ export default function StudentCalendarPage() {
                           <div className="flex items-center gap-3.5">
                             {/* Âncora do dia */}
                             <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl ${meta.light} shrink-0`}>
-                              <span className="text-2xl font-black italic leading-none tracking-tighter text-primary">
+                              <span className="u-num text-2xl leading-none text-primary">
                                 {String(dayNum).padStart(2, "0")}
                               </span>
                               <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mt-0.5">

@@ -31,49 +31,26 @@ type ClassMaterial = {
   created_at: string;
 };
 
+// O tipo do material é informação CATEGÓRICA — a cor diz se é PDF, vídeo, link
+// ou imagem —, então ela fica. O que saiu foram os nove tokens por tipo
+// (gradiente de dois pontos, glow, dois tons de badge, um anel) reduzidos a
+// dois: a cor chapada e a tinta que se lê sobre ela. E as cores vieram para a
+// paleta do produto; rosa/violeta/esmeralda não existem nela.
 const FILE_TYPES: Record<string, {
   label: string;
   icon: React.ElementType;
+  /** Cor do ícone e do texto do tipo, sobre superfície neutra. */
   color: string;
-  bg: string;
-  ring: string;
-  bar: string;
-  btnFrom: string;
-  btnTo: string;
-  glow: string;
-  badgeBg: string;
-  badgeText: string;
+  /** Cor chapada (faixa do card, botão). */
+  accent: string;
+  /** Tinta legível SOBRE `accent`. */
+  onAccent: string;
 }> = {
-  pdf: {
-    label: 'PDF', icon: FileText,
-    color: 'text-rose-500', bg: 'bg-rose-50', ring: 'ring-rose-200',
-    bar: 'bg-rose-500', btnFrom: 'from-rose-500', btnTo: 'to-red-600',
-    glow: 'shadow-rose-500/25', badgeBg: 'bg-rose-100', badgeText: 'text-rose-700',
-  },
-  video: {
-    label: 'Vídeo', icon: Video,
-    color: 'text-blue-500', bg: 'bg-blue-50', ring: 'ring-blue-200',
-    bar: 'bg-blue-500', btnFrom: 'from-blue-500', btnTo: 'to-indigo-600',
-    glow: 'shadow-blue-500/25', badgeBg: 'bg-blue-100', badgeText: 'text-blue-700',
-  },
-  link: {
-    label: 'Link', icon: Link2,
-    color: 'text-violet-500', bg: 'bg-violet-50', ring: 'ring-violet-200',
-    bar: 'bg-violet-500', btnFrom: 'from-violet-500', btnTo: 'to-fuchsia-600',
-    glow: 'shadow-violet-500/25', badgeBg: 'bg-violet-100', badgeText: 'text-violet-700',
-  },
-  imagem: {
-    label: 'Imagem', icon: Image,
-    color: 'text-emerald-500', bg: 'bg-emerald-50', ring: 'ring-emerald-200',
-    bar: 'bg-emerald-500', btnFrom: 'from-emerald-500', btnTo: 'to-teal-600',
-    glow: 'shadow-emerald-500/25', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700',
-  },
-  outro: {
-    label: 'Outro', icon: File,
-    color: 'text-slate-500', bg: 'bg-slate-50', ring: 'ring-slate-200',
-    bar: 'bg-slate-400', btnFrom: 'from-slate-500', btnTo: 'to-slate-700',
-    glow: 'shadow-slate-500/20', badgeBg: 'bg-slate-100', badgeText: 'text-slate-600',
-  },
+  pdf:    { label: 'PDF',    icon: FileText, color: 'text-brand-pink',  accent: 'bg-brand-pink',   onAccent: 'text-white' },
+  video:  { label: 'Vídeo',  icon: Video,    color: 'text-primary',     accent: 'bg-primary',      onAccent: 'text-primary-foreground' },
+  link:   { label: 'Link',   icon: Link2,    color: 'text-brand-slate', accent: 'bg-brand-slate',  onAccent: 'text-white' },
+  imagem: { label: 'Imagem', icon: Image,    color: 'text-foreground',  accent: 'bg-brand-yellow', onAccent: 'text-foreground' },
+  outro:  { label: 'Outro',  icon: File,     color: 'text-muted-foreground', accent: 'bg-foreground', onAccent: 'text-background' },
 };
 
 const SUBJECT_COLORS: Record<string, string> = {
@@ -313,18 +290,16 @@ export default function StudentMaterialsPage() {
         className="aurora-dark relative overflow-hidden rounded-card p-7 md:p-10 text-white shadow-2xl border border-white/5"
       >
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
-        <div className="absolute -top-24 -right-24 w-72 h-72 bg-primary/20 rounded-full blur-[80px] hidden md:block" />
-        <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-accent/10 rounded-full blur-[60px] hidden md:block" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3">
-            <Badge className="bg-white/10 text-white border border-white/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider">
+            <Badge className="u-label bg-transparent text-white border-2 border-white/25 px-3 py-1.5 rounded-control">
               <Zap className="h-3 w-3 mr-1.5 fill-accent text-accent" />
-              Biblioteca Pessoal
+              Biblioteca pessoal
             </Badge>
-            <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-[0.9] uppercase">
+            <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">
               Materiais <br />
-              <span className="text-gradient-brand">de Aula</span>
+              <span className="text-accent">de aula</span>
             </h1>
             <p className="text-white/50 text-sm font-medium max-w-sm leading-relaxed">
               Todos os conteúdos compartilhados pelos seus professores, organizados para você.
@@ -496,7 +471,7 @@ export default function StudentMaterialsPage() {
             <FolderOpen className="h-9 w-9 text-slate-300" />
           </div>
           <div>
-            <p className="font-black italic text-primary text-lg">Nenhum material encontrado</p>
+            <p className="u-display text-primary text-lg">Nenhum material encontrado</p>
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilters ? 'Tente ajustar os filtros.' : 'Nenhum material disponível ainda.'}
             </p>
@@ -531,7 +506,7 @@ export default function StudentMaterialsPage() {
                 style={{ animationDelay: `${idx * 60}ms` }}
               >
                 {/* Barra colorida superior */}
-                <div className={`h-1 w-full ${meta.bar} ${!isViewed ? 'opacity-100' : 'opacity-30'} transition-opacity`} />
+                <div className={`h-1.5 w-full ${meta.accent} ${!isViewed ? 'opacity-100' : 'opacity-30'} transition-opacity`} />
 
                 {/* Overlay sutil quando estudado */}
                 {isViewed && (
@@ -542,12 +517,12 @@ export default function StudentMaterialsPage() {
                   {/* Header: ícone + matéria + tipo + botão de marcar */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className={`h-11 w-11 rounded-2xl ${meta.bg} flex items-center justify-center shrink-0 ring-1 ring-inset ${meta.ring}`}>
+                      <div className="h-11 w-11 rounded-control border-2 border-foreground flex items-center justify-center shrink-0">
                         <Icon className={`h-5 w-5 ${meta.color}`} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${meta.badgeBg} ${meta.badgeText}`}>
+                          <span className={`u-label !text-[9px] px-2 py-0.5 rounded-control border-2 ${meta.color} border-current`}>
                             {meta.label}
                           </span>
                           {m.subject && (
@@ -616,7 +591,7 @@ export default function StudentMaterialsPage() {
 
                     <Button
                       onClick={() => handleOpen(m)}
-                      className={`h-9 px-4 rounded-2xl bg-gradient-to-br ${meta.btnFrom} ${meta.btnTo} text-white font-black text-[10px] uppercase tracking-wide shadow-md ${meta.glow} hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-none shrink-0 flex items-center gap-1.5`}
+                      className={`h-9 px-4 rounded-control border-2 border-foreground ${meta.accent} ${meta.onAccent} font-black text-[10px] uppercase tracking-wide transition-all active:translate-x-[2px] active:translate-y-[2px] shrink-0 flex items-center gap-1.5`}
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Abrir
@@ -644,7 +619,7 @@ export default function StudentMaterialsPage() {
                   ${isViewed ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 hover:border-slate-200'}`}
               >
                 {/* Ícone */}
-                <div className={`h-10 w-10 rounded-xl ${meta.bg} flex items-center justify-center shrink-0 ring-1 ring-inset ${meta.ring}`}>
+                <div className="h-10 w-10 rounded-control border-2 border-foreground flex items-center justify-center shrink-0">
                   <Icon className={`h-4 w-4 ${meta.color}`} />
                 </div>
 
@@ -659,7 +634,7 @@ export default function StudentMaterialsPage() {
                         {m.subject}
                       </span>
                     )}
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${meta.badgeBg} ${meta.badgeText}`}>
+                    <span className={`u-label !text-[9px] px-2 py-0.5 rounded-control border-2 shrink-0 ${meta.color} border-current`}>
                       {meta.label}
                     </span>
                     {isViewed && (
@@ -689,7 +664,7 @@ export default function StudentMaterialsPage() {
                   </button>
                   <Button
                     onClick={() => handleOpen(m)}
-                    className={`h-8 px-3 rounded-xl bg-gradient-to-br ${meta.btnFrom} ${meta.btnTo} text-white font-black text-[10px] border-none shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1`}
+                    className={`h-8 px-3 rounded-control border-2 border-foreground ${meta.accent} ${meta.onAccent} font-black text-[10px] transition-all active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1`}
                   >
                     <BookOpen className="h-3 w-3" />
                     Abrir

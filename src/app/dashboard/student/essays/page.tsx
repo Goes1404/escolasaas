@@ -472,40 +472,41 @@ export default function StudentEssayPage() {
   return (
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* ── Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
-        <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Escrever redação leva minutos, às vezes horas: nível baixo, com o
+          cabeçalho em nível médio fazendo a costura com o resto do produto. */}
+      <div className="relative rounded-card overflow-hidden border-2 border-foreground bg-card p-6">
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="h-3 w-3 text-white/80" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">Aurora IA Ativa</p>
+                <Sparkles className="h-3 w-3 text-primary" />
+                <p className="u-label">Aurora IA ativa</p>
               </div>
-              <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">Lab de Redação</h1>
-              <p className="text-white/80 text-xs font-semibold mt-1">Auditoria por IA · critérios INEP</p>
+              <h1 className="u-page-title text-2xl leading-[1.15]">Lab de redação</h1>
+              <p className="text-muted-foreground text-xs font-semibold mt-1.5">Auditoria por IA · critérios INEP</p>
             </div>
             <div className="relative shrink-0">
               <svg className="h-16 w-16 -rotate-90" viewBox="0 0 56 56">
-                <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth="3" />
+                <circle cx="28" cy="28" r="24" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
                 <circle cx="28" cy="28" r="24" fill="none"
-                  stroke={charCount >= 1000 ? "#a7f3d0" : charCount >= 500 ? "#fed7aa" : "#fde68a"}
-                  strokeWidth="3" strokeLinecap="round"
+                  stroke={charCount >= 1000 ? "#4CCCED" : charCount >= 500 ? "#EDE04C" : "#ED3474"}
+                  strokeWidth="3" strokeLinecap="butt"
                   strokeDasharray={2 * Math.PI * 24}
                   strokeDashoffset={(2 * Math.PI * 24) * (1 - Math.min(charCount, 1500) / 1500)}
                   style={{ transition: "stroke-dashoffset 0.4s ease-out, stroke 0.3s" }}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-sm font-black text-white leading-none italic">{charCount}</span>
-                <span className="text-[7px] font-bold text-white/70 uppercase tracking-wider mt-0.5">/ 1500</span>
+                <span className="u-num text-sm leading-none">{charCount}</span>
+                <span className="u-label !text-[7px] mt-0.5">/ 1500</span>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Button
               onClick={() => { setCustomTheme(!customTheme); setTheme(""); setSupportingTexts([]); setResult(null); setFromPhoto(false); }}
-              className={`h-11 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
-                customTheme ? "bg-white/20 border-white/30 text-white" : "bg-transparent border-white/20 text-white/70 hover:text-white hover:bg-white/10"
+              className={`h-11 rounded-control font-black text-[10px] uppercase tracking-widest transition-all border-2 ${
+                customTheme ? "bg-foreground border-foreground text-background" : "bg-transparent border-foreground text-foreground hover:bg-foreground/5"
               }`}
             >
               {customTheme ? "Sair do Manual" : "Tema Manual"}
@@ -513,7 +514,7 @@ export default function StudentEssayPage() {
             <Button
               onClick={handleGenerateTopic}
               disabled={loadingTopic || loadingGrading}
-              className="h-11 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-[10px] uppercase tracking-widest border border-white/25 disabled:opacity-40"
+              className="h-11 rounded-control bg-primary hover:bg-primary/90 text-primary-foreground font-black text-[10px] uppercase tracking-widest border-2 border-foreground disabled:opacity-40"
             >
               {loadingTopic ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
               Gerar com IA
@@ -524,24 +525,23 @@ export default function StudentEssayPage() {
 
       {/* ── Banner Tema da Semana ── */}
       {weeklyTheme && (
-        <div className="relative overflow-hidden rounded-card border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm">
-          <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-200/30 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-4">
           <div className="relative z-10 flex items-start gap-3">
-            <div className="h-9 w-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
-              <Calendar className="h-4 w-4 text-amber-600" />
+            <div className="h-9 w-9 rounded-control bg-foreground flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-background" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-widest text-amber-700">Tema da Semana</p>
-              <p className="text-sm font-black italic text-amber-900 leading-snug mt-0.5">{weeklyTheme.title}</p>
+              <p className="u-label !text-foreground/60">Tema da semana</p>
+              <p className="u-display text-sm text-foreground leading-snug mt-0.5">{weeklyTheme.title}</p>
               {weeklyTheme.description && (
-                <p className="text-[11px] text-amber-700/70 font-medium mt-1 leading-snug">{weeklyTheme.description}</p>
+                <p className="text-[11px] text-foreground/70 font-medium mt-1 leading-snug">{weeklyTheme.description}</p>
               )}
               {weeklyTheme.source && (
-                <p className="text-[10px] text-amber-600 font-bold mt-1">Fonte: {weeklyTheme.source}</p>
+                <p className="text-[10px] text-foreground/60 font-bold mt-1">Fonte: {weeklyTheme.source}</p>
               )}
               <button
                 onClick={() => { setTheme(weeklyTheme.title); setCustomTheme(false); }}
-                className="mt-2 h-7 px-3 rounded-xl bg-amber-600 text-white font-black text-[9px] uppercase tracking-widest hover:bg-amber-700 transition-colors"
+                className="mt-2 h-7 px-3 rounded-control bg-foreground text-background font-black text-[9px] uppercase tracking-widest transition-colors"
               >
                 Usar este tema
               </button>
@@ -570,7 +570,7 @@ export default function StudentEssayPage() {
                 <Sparkles className="h-3 w-3 text-orange-500" />
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#0F7A95]">Tema Sintonizado</p>
               </div>
-              <h2 className="text-base font-black italic text-primary leading-snug">
+              <h2 className="u-display text-base text-primary leading-snug">
                 {theme || "Aguardando geração de tema..."}
               </h2>
             </>
@@ -657,7 +657,7 @@ export default function StudentEssayPage() {
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
                 Será corrigida com este tema
               </p>
-              <p className="text-xs font-black italic text-primary leading-snug mt-1">{theme}</p>
+              <p className="u-display text-xs text-primary leading-snug mt-1">{theme}</p>
               <p className="text-[10px] font-medium text-slate-500 mt-1.5 leading-snug">
                 Escreveu sobre outro assunto? Troque o tema antes de enviar — fugir do tema zera a redação.
               </p>
@@ -676,7 +676,7 @@ export default function StudentEssayPage() {
           <Button
             onClick={handleSubmitEssay}
             disabled={loadingGrading || !text || !theme.trim()}
-            className="btn-shimmer w-full h-13 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black rounded-2xl shadow-xl shadow-orange-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40 group"
+            className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-control border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all text-xs uppercase tracking-widest disabled:opacity-40 group"
           >
             {loadingGrading ? (
               <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Sincronizando Auditoria...</span>
@@ -695,42 +695,50 @@ export default function StudentEssayPage() {
       {result && (
         <div id="audit-results" className="space-y-5 animate-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 px-1">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Diagnóstico</p>
-            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+            <div className="h-0.5 flex-1 bg-border" />
+            <p className="u-label">Diagnóstico</p>
+            <div className="h-0.5 flex-1 bg-border" />
           </div>
 
           {/* Score Card */}
-          <div className="relative bg-[#0d0d0f] border border-[#4CCCED]/20 rounded-card overflow-hidden p-6 animate-in zoom-in-95 duration-500">
-            <div className="absolute inset-0 pointer-events-none animate-pulse" style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(76,204,237,0.25) 0%, transparent 60%)", animationDuration: "3s" }} />
-            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full pointer-events-none opacity-40" style={{ background: "radial-gradient(circle, rgba(76,204,237,0.4) 0%, transparent 60%)", filter: "blur(40px)" }} />
+          {/* Terceira tela de resultado do produto, e a terceira a usar a
+              mesma faixa de veredito: ciano acima de 70%, amarelo acima de
+              50%, rosa abaixo. Saiu o glow que pulsava em loop de 3s. */}
+          <div className="relative aurora-dark rounded-card border-2 border-foreground shadow-hard overflow-hidden animate-in zoom-in-95 duration-500">
+            <div className={`h-2 w-full ${
+              (result.total_score || 0) >= 700 ? "bg-primary"
+              : (result.total_score || 0) >= 500 ? "bg-brand-yellow" : "bg-brand-pink"
+            }`} />
+            <div className="p-6">
             <div className="relative z-10 flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Star className="h-3 w-3 text-orange-400 fill-orange-400 animate-pulse" />
-                  <Badge className="bg-[#4CCCED]/20 text-orange-400 border-none font-black text-[9px] px-2 py-0.5 uppercase tracking-widest">Pontuação Final</Badge>
+                  <Star className="h-3 w-3 text-accent fill-accent" />
+                  <span className="u-label !text-white/70">Pontuação final</span>
                 </div>
-                <h2 className="text-6xl sm:text-7xl font-black italic tracking-tighter leading-[0.85] text-white drop-shadow-xl">{result.total_score}</h2>
-                <p className="text-[10px] font-bold text-white/55 uppercase tracking-widest mt-2">de 1000 pontos</p>
+                <h2 className="u-num text-6xl sm:text-7xl leading-[0.95] text-white">{result.total_score}</h2>
+                <p className="u-label !text-white/55 mt-2">de 1000 pontos</p>
               </div>
               <div className="relative shrink-0">
                 <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="#fb923c" strokeWidth="4" strokeLinecap="round"
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
+                  <circle cx="40" cy="40" r="34" fill="none" strokeWidth="5" strokeLinecap="butt"
+                    stroke={(result.total_score || 0) >= 700 ? "#4CCCED" : (result.total_score || 0) >= 500 ? "#EDE04C" : "#ED3474"}
                     strokeDasharray={2 * Math.PI * 34}
                     strokeDashoffset={(2 * Math.PI * 34) * (1 - (result.total_score || 0) / 1000)}
                     style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1)" }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-base font-black text-orange-400 leading-none italic">{Math.round(((result.total_score || 0) / 1000) * 100)}</span>
-                  <span className="text-[7px] font-bold text-white/55 uppercase tracking-wider mt-0.5">%</span>
+                  <span className="u-num text-base text-white leading-none">{Math.round(((result.total_score || 0) / 1000) * 100)}</span>
+                  <span className="u-label !text-[7px] !text-white/55 mt-0.5">%</span>
                 </div>
               </div>
             </div>
-            <div className="relative z-10 mt-5 pt-5 border-t border-white/8">
-              <MessageSquareQuote className="h-4 w-4 text-orange-400 mb-2" />
-              <p className="text-xs font-medium italic text-white/70 leading-relaxed">"{result.general_feedback}"</p>
+            <div className="relative z-10 mt-5 pt-5 border-t-2 border-white/15">
+              <MessageSquareQuote className="h-4 w-4 text-accent mb-2" />
+              <p className="text-xs font-medium text-white/70 leading-relaxed">"{result.general_feedback}"</p>
+            </div>
             </div>
           </div>
 
@@ -752,7 +760,7 @@ export default function StudentEssayPage() {
                     <div className={`p-2 rounded-xl border ${info.bg}`}><Icon className={`h-4 w-4 ${info.color}`} /></div>
                     <div className="text-right">
                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Nota</p>
-                      <p className="text-2xl font-black italic text-primary leading-none">{comp.score}</p>
+                      <p className="u-num text-2xl text-primary leading-none">{comp.score}</p>
                     </div>
                   </div>
                   <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${info.color}`}>{info.label}</p>
@@ -779,7 +787,7 @@ export default function StudentEssayPage() {
                   <div className="h-7 w-7 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center">
                     <AlertCircle className="h-3.5 w-3.5 text-red-600" />
                   </div>
-                  <h3 className="text-sm font-black italic text-red-700 uppercase tracking-wide">Raio-X de Desvios</h3>
+                  <h3 className="u-display text-sm text-red-700">Raio-X de desvios</h3>
                 </div>
               </div>
               <div className="p-4 space-y-3">
@@ -807,7 +815,7 @@ export default function StudentEssayPage() {
                   <div className="h-7 w-7 rounded-xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 flex items-center justify-center">
                     <Zap className="h-3.5 w-3.5 text-orange-400" />
                   </div>
-                  <h3 className="text-sm font-black italic text-orange-400 uppercase tracking-wide">Plano de Evolução</h3>
+                  <h3 className="u-display text-sm text-accent">Plano de evolução</h3>
                 </div>
               </div>
               <div className="p-4 space-y-2.5">
@@ -951,7 +959,7 @@ export default function StudentEssayPage() {
             const rd = selectedEntry.result_data;
             return (
               <>
-                <SheetHeader className="p-4 md:p-6 pb-4 border-b border-slate-100 bg-gradient-to-r from-orange-500 to-amber-500 text-white sticky top-0 z-10">
+                <SheetHeader className="p-4 md:p-6 pb-4 border-b-2 border-foreground bg-brand-yellow text-foreground sticky top-0 z-10">
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
                       <svg className="h-14 w-14 -rotate-90" viewBox="0 0 56 56">
@@ -967,7 +975,7 @@ export default function StudentEssayPage() {
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <SheetTitle className="text-white font-black italic text-base leading-snug line-clamp-2">{selectedEntry.theme}</SheetTitle>
+                      <SheetTitle className="u-display text-foreground text-base leading-snug line-clamp-2">{selectedEntry.theme}</SheetTitle>
                       <p className="text-white/75 text-[10px] font-bold mt-1 flex items-center gap-1">
                         <Calendar className="h-2.5 w-2.5" />
                         {format(new Date(selectedEntry.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
@@ -1007,7 +1015,7 @@ export default function StudentEssayPage() {
                                 <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed mt-0.5 line-clamp-2">{comp.feedback}</p>
                               </div>
                               <div className="text-right shrink-0">
-                                <span className="text-xl font-black italic text-primary">{comp.score}</span>
+                                <span className="u-num text-xl text-primary">{comp.score}</span>
                                 <span className="text-[9px] font-bold text-slate-400 block">/ 200</span>
                               </div>
                             </div>
