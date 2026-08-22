@@ -46,6 +46,10 @@
 
     /* Sombra dura deslocada: a assinatura da landing, em dose mínima.
        Só no elemento primário da tela, nunca em toda superfície. */
+    /* Elevação discreta: substitui o shadow-2xl/xl difuso herdado. Um degrau
+       curto e uma linha de contato — é o suficiente para separar superfícies
+       sem competir com a sombra dura, que marca o que é acionável. */
+    --shadow-elev: 0 1px 2px hsl(var(--foreground) / 0.06), 0 4px 12px hsl(var(--foreground) / 0.07);
     --shadow-hard: 3px 3px 0 hsl(var(--foreground) / 0.9);
     --shadow-hard-accent: 3px 3px 0 hsl(var(--accent));
 
@@ -108,6 +112,11 @@
     --brand-yellow: 55 82% 61%;
     --brand-slate: 192 21% 49%;
     --brand-olive: 54 10% 39%;
+
+    /* No escuro, `--foreground` é claro: derivar a elevação dele viraria um
+       brilho, não uma sombra. Aqui ela é preta e mais funda, que é como a
+       profundidade se lê sobre fundo escuro. */
+    --shadow-elev: 0 1px 2px hsl(0 0% 0% / 0.5), 0 6px 18px hsl(0 0% 0% / 0.45);
 
     /* Sidebar */
     --sidebar-background: 0 0% 4%;
@@ -459,17 +468,16 @@
   animation: float-y 4s ease-in-out infinite;
 }
 
-/* Gradient text — títulos com gradiente laranja→âmbar */
-.text-gradient-brand {
-  background: linear-gradient(135deg, hsl(226 71% 40%) 0%, hsl(217 91% 60%) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* Prevent italic character clipping on layout boundaries */
-  padding-left: 0.1em;
-  padding-right: 0.25em;
-  margin-left: -0.1em;
-  margin-right: -0.25em;
+/* Destaque dentro de um título.
+   Era um gradiente azul recortado no texto (herança de outra identidade), e o
+   irmão `-fire` ainda animava o gradiente em loop de 4s. Texto com gradiente
+   recortado cobra caro: `-webkit-text-fill-color: transparent` derruba o
+   contraste que o leitor de tela e o modo de alto contraste esperam, e exigia
+   remendo de padding/margin negativo para o itálico não ser cortado.
+   Agora é cor chapada da paleta — o destaque continua, o custo sai. */
+.text-gradient-brand,
+.text-gradient-fire {
+  color: hsl(var(--accent));
 }
 
 /* Noise overlay — textura sutil em cards dark */
@@ -525,26 +533,12 @@
 
 /* Text neon glow */
 .text-glow-orange {
-  text-shadow:
-    0 0 8px  rgba(76, 204, 237, 0.90),
-    0 0 24px rgba(76, 204, 237, 0.55),
-    0 0 60px rgba(76, 204, 237, 0.25);
+  /* Glow difuso é o dialeto antigo. Mantida como no-op para não quebrar as
+     telas que ainda a referenciam. */
 }
 
 /* Fire gradient text — enhanced */
-.text-gradient-fire {
-  background: linear-gradient(135deg, #4CCCED 0%, #0F7A95 40%, #ED3474 70%, #EDE04C 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradient-shift 4s ease infinite;
-  /* Prevent clipping */
-  padding-left: 0.1em;
-  padding-right: 0.25em;
-  margin-left: -0.1em;
-  margin-right: -0.25em;
-}
+
 @keyframes gradient-shift {
   0%   { background-position: 0% center; }
   50%  { background-position: 100% center; }

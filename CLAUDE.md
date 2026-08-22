@@ -223,11 +223,24 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
 - **Sombra dura**: `shadow-hard` / `<Button variant="arcade">` — a assinatura
   da landing em dose de app. Só no **CTA primário** da tela; em toda superfície
   vira poluição nas telas densas.
+- **Elevação**: `--shadow-elev` em `globals.css`, e as classes `shadow-2xl` /
+  `shadow-xl` do Tailwind foram **reapontadas** para ela. As 279 ocorrências do
+  "flutuar difuso" antigo, espalhadas por 88 arquivos, seguem o sistema sem
+  edição arquivo a arquivo — mesmo truque usado com a escala de raio. Tem valor
+  próprio no escuro (derivar de `--foreground` viraria brilho, não sombra).
+  Regra de leitura: **elevação separa superfícies, sombra dura marca o que é
+  acionável.** Se as duas competirem, a tela perde a hierarquia.
 - **Utilitários** em `globals.css`: `.u-label`, `.u-display`, `.u-num`,
   `.u-page-title`, `.u-surface`.
 - **Cores da marca por classe**: `bg-brand-pink` / `-yellow` / `-slate` /
   `-olive` (as variáveis já existiam, faltava expor no Tailwind). As telas de
   nível alto usam as três cores do produto como blocos chapados.
+- **Destaque em título**: `.text-gradient-brand` / `.text-gradient-fire` agora
+  são **cor chapada do acento**. Eram gradiente recortado no texto, e o `-fire`
+  ainda animava em loop de 4s. `-webkit-text-fill-color: transparent` derruba o
+  contraste que o modo de alto contraste espera e exigia remendo de margem
+  negativa para o itálico não ser cortado. As classes continuam existindo para
+  não quebrar as telas que as usam.
 - **Celebração**: `celebrate()` / `celebrateOnce(chave)` / `haptic()` em
   `src/lib/celebrate.ts` — confete na paleta do produto, com guarda de
   `prefers-reduced-motion` e canvas próprio. Use `celebrateOnce` em tela que

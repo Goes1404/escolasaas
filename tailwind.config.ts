@@ -100,6 +100,14 @@ export default {
       boxShadow: {
         hard: 'var(--shadow-hard)',
         'hard-accent': 'var(--shadow-hard-accent)',
+        // `shadow-2xl` era o "flutuar difuso" do estilo antigo e estava em 279
+        // lugares, 88 arquivos — o oposto da linguagem chapada do sistema. Em
+        // vez de editar arquivo por arquivo, reaponta-se o token, como já foi
+        // feito com a escala de raio na fase 1. Quem usa a classe passa a
+        // receber uma elevação discreta; a sombra que ainda EXISTE de verdade
+        // é a dura, e ela continua reservada ao primário.
+        '2xl': 'var(--shadow-elev)',
+        xl: 'var(--shadow-elev)',
       },
       keyframes: {
         'accordion-down': {
