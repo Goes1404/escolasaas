@@ -181,7 +181,7 @@ export default function SecretaryFinancePage() {
         @media print{.noprint{display:none;}}
       </style></head><body>
         <div class="container">
-          <div class="header"><div class="logo">Plataforma</div><div class="sub">Recibo de Pagamento</div></div>
+          <div class="header"><div class="logo">Dalí</div><div class="sub">Recibo de Pagamento</div></div>
           <div class="title">Recibo</div>
           <div class="amount">${esc(fmtBRL(Number(p.amount)))}</div>
           <div class="content">

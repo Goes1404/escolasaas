@@ -49,13 +49,14 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata = {
-  title: 'Plataforma EAD | Sistema de Ensino para Escolas e Cursinhos',
+  title: 'Dalí | Plataforma de estudo e gestão escolar',
   description: 'Plataforma de gestão educacional e aprendizado adaptativo: simulados, correção de redação com IA e mentoria para preparação de vestibulares e exames.',
   keywords: 'plataforma educacional, sistema de ensino, simulados online, correção de redação com IA',
   // manifest gerado por src/app/manifest.ts (/manifest.webmanifest). Não
   // declarar aqui também — evita <link rel="manifest"> duplicado.
   icons: {
     icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
@@ -66,7 +67,7 @@ export const metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Plataforma EAD",
+    title: "Dalí",
     // Era "black-translucent": no iPhone isso faz o conteúdo subir para trás
     // da barra de status, e o topo da tela fica ilegível sobre o fundo claro.
     statusBarStyle: "default"
@@ -74,7 +75,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#1E40AF',
+  themeColor: '#09090f',
   width: 'device-width',
   initialScale: 1,
 };

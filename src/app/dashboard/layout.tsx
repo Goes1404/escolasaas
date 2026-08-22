@@ -466,7 +466,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden gap-0.5">
-              <span className="text-sm font-black text-white italic leading-tight">{tenant.branding.appName}</span>
+              <span className="u-display text-sm text-white leading-tight">{tenant.branding.appName}</span>
             </div>
           </div>
         </SidebarHeader>

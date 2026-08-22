@@ -1383,7 +1383,7 @@ export default function DashboardHome() {
               <Image src={logoUrl} alt="Logo" fill className="object-contain" sizes="40px" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-primary">Plataforma Educacional</p>
+              <p className="u-label text-primary">{tenant.branding.appName}</p>
             </div>
           </div>
           <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">{new Date().getFullYear()}</p>

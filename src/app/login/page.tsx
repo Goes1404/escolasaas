@@ -60,7 +60,7 @@ export default function LoginPage() {
       {/* ── Footer ── */}
       <footer className="relative z-10 border-t border-white/5 py-4 text-center">
         <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest">
-          © 2026 Plataforma EAD
+          © 2026 Dalí
         </p>
         <div className="flex items-center justify-center gap-4 mt-1.5">
           <Link href="#" className="text-[9px] text-white/20 hover:text-white/50 transition-colors uppercase tracking-widest">Privacidade</Link>

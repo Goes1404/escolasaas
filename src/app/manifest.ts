@@ -31,13 +31,14 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   return {
     name: `${tenant.branding.appName} — Sistema de Ensino`,
     short_name: tenant.branding.appName,
-    description: 'Plataforma de estudos: simulados, provas, redação com correção por IA e trilhas de aprendizado.',
+    description: 'Simulados, provas, redação com correção por IA e trilhas de aprendizado.',
     // O aluno que instala já é aluno: cai direto no painel. Sem sessão, o
     // middleware manda para o login e volta depois.
     start_url: '/dashboard/home',
     display: 'standalone',
-    // Branco para casar com o fundo do logo e com a tela de abertura.
-    background_color: '#ffffff',
+    // Tinta do sistema: é o fundo do próprio ícone, então a tela de
+    // abertura não pisca de uma cor para outra ao abrir o app instalado.
+    background_color: '#09090f',
     theme_color: tenant.branding.primaryColor,
     orientation: 'portrait-primary',
     lang: 'pt-BR',

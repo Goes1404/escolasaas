@@ -1,7 +1,34 @@
 # Status do deploy (Supabase + Vercel)
 
 Arquivo de memória para retomar o trabalho sem precisar re-investigar tudo.
-Atualizado em 21/08/2026, sessão de cherry-pick do repo antigo → escolasaas.
+Atualizado em 22/08/2026 (renomeação da marca para Dalí).
+
+## Marca: Dalí (22/08)
+
+O produto deixou de se chamar "Plataforma EAD"/"Compromisso" e passou a ser
+**Dalí**. O Compromisso continua existindo — como primeiro cliente, não como
+nome do produto.
+
+Já aplicado, em código e em banco:
+
+- `DEFAULT_TENANT` (`src/lib/tenant.ts`) e a **linha `slug='default'` da tabela
+  `tenants`** em produção: `name`/`appName` = `Dalí`, `logoUrl` =
+  `/logo-dali.svg`. Versionado em `supabase/migrations/20260822120000_marca_dali.sql`.
+- Landing (nav, preloader, rodapé), `metadata` da landing e do layout raiz,
+  `appleWebApp.title`, manifest do PWA, login, primeiro acesso, `LoadingShell`,
+  `PhoneGate` e o recibo da secretaria.
+- Ícones do PWA/favicon **regerados** do desenho novo (`npx tsx
+  scripts/gen-icons.ts`). `themeColor` saiu do azul `#1E40AF` — que não existe
+  mais na paleta — para a tinta `#09090f`.
+- Componentes órfãos da landing antiga removidos (`HeroBook`, `HeroShowcase`,
+  `DashboardMockup`, `FeatureBentoGrid`, `FlowSection`, `FluidAccessSection`,
+  `BottomSections`) — eram os últimos a apontar para `/images/default-logo.png`.
+- Removida também `src/app/guardian/%5Btoken%5D/` — duplicata desatualizada e
+  URL-encoded da rota do portal do responsável, criada por engano no commit de
+  multi-tenant. A rota boa é `guardian/[token]`.
+
+**Pendente da marca:** nada em código. Se um dia houver domínio próprio, é lá
+que o nome aparece publicamente pela primeira vez.
 
 ## Projeto Supabase em uso
 

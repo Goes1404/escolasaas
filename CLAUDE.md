@@ -2,9 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Projeto: Cursinho Compromisso LMS
+# Projeto: Dalí
 
-Plataforma de gestão educacional e aprendizado adaptativo para alunos do cursinho Compromisso (Santana de Parnaíba). Voltada ao ENEM e ETEC, com papéis: `admin`, `teacher`, `student`.
+Plataforma de gestão educacional e aprendizado adaptativo, nascida no cursinho
+Compromisso (Santana de Parnaíba). Voltada ao ENEM e ETEC, com papéis: `admin`,
+`teacher`, `student`.
+
+**O produto é o Dalí; o Compromisso é o primeiro cliente.** A plataforma é
+white-label: o nome e o logo do painel vêm de `tenants.branding` (resolvido pelo
+host em `src/lib/get-tenant.ts`). Nunca escreva "Dalí" fixo numa tela de
+dashboard — lá vale `tenant.branding.appName`. O nome fixo só aparece onde a
+tela é do produto e não de uma escola: landing, metadata, PWA, login e primeiro
+acesso.
+
+## 🎭 Marca
+
+O nome é uma referência ao surrealismo, **não a Salvador Dalí**. Isso não é
+detalhe jurídico solto: as obras dele estão protegidas até ~2060 (Lei 9.610/98)
+e a Fundação Gala-Salvador Dalí defende ativamente nome e imagem. Por isso a
+identidade **nunca** usa o rosto do artista, o bigode, nem ícone de obra
+específica (relógio derretido, elefante de pernas longas, gaveta no corpo).
+
+O que a logo usa é o surrealismo como *linguagem*: a matéria que amolece. O
+símbolo é a própria letra **D derretendo** — desenho original, em
+`src/components/LogoDali.tsx` (`LogoDali` e `LogoDaliLockup`).
+
+| Onde | Arquivo |
+|------|---------|
+| Componente React (nav, preloader, rodapé) | `src/components/LogoDali.tsx` |
+| Símbolo solto, para `tenants.branding.logoUrl` | `public/logo-dali.svg` |
+| Favicon vetorial | `public/icon.svg` |
+| PNGs do PWA (192/512/maskable/apple/badge) | `public/icons/` |
+
+A geometria é **uma só**, em `src/lib/logo-dali-geometry.ts`: o componente
+React e o gerador de ícones leem os mesmos paths. Os PNGs são gerados, não
+desenhados — `npx tsx scripts/gen-icons.ts` rasteriza com `sharp`. Mudou o
+traço? Edite a geometria e **rode o script**, senão o ícone da tela de início
+do celular continua com o logo antigo e o app parece pirata.
 
 ## 🚧 Deploy em andamento — ler antes de mexer em Supabase/Vercel
 

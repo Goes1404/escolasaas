@@ -26,11 +26,11 @@ export interface TenantConfig {
 
 export const DEFAULT_TENANT: TenantConfig = {
   id: '00000000-0000-0000-0000-000000000000',
-  name: 'Plataforma Educacional',
+  name: 'Dalí',
   slug: 'default',
   branding: {
-    appName: 'Plataforma EAD',
-    logoUrl: '/images/default-logo.png',
+    appName: 'Dalí',
+    logoUrl: '/logo-dali.svg',
     primaryColor: '#4CCCED',
     secondaryColor: '#ED3474',
     accentColor: '#EDE04C',

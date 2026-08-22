@@ -21,6 +21,7 @@ import { TextPlugin } from "gsap/TextPlugin";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { useGSAP } from "@gsap/react";
 import Lenis from "lenis";
+import { LogoDali } from "@/components/LogoDali";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, TextPlugin, ScrambleTextPlugin, useGSAP);
 
@@ -634,7 +635,7 @@ export default function LandingExperience() {
           <div id="l-curtain-a" className="l-curtain l-curtain-a" aria-hidden="true" />
           <div id="l-preloader" className="l-preloader" aria-hidden="true">
             <span className="l-label !text-[var(--paper)]">
-              Compromisso<span className="text-[var(--cyan-text)]">*</span> carregando fase
+              <LogoDali className="inline-block h-3 w-3 mr-1 align-[-1px] text-[var(--cyan-text)]" /> Dalí carregando fase
             </span>
             <span id="l-counter" className="l-display text-6xl md:text-8xl text-[var(--yellow-text)]">
               000
@@ -647,7 +648,7 @@ export default function LandingExperience() {
         {/* ── Nav ── */}
         <header className="relative z-20 flex items-center justify-between px-5 md:px-12 py-5">
           <span className="l-label !text-[var(--paper)] !text-[0.72rem]">
-            Compromisso<span className="text-[var(--pink-text)]">*</span>
+            <LogoDali className="inline-block h-4 w-4 mr-1.5 align-[-3px] text-[var(--pink-text)]" />Dalí
           </span>
           <nav className="flex items-center gap-6">
             <a
@@ -970,7 +971,7 @@ export default function LandingExperience() {
         {/* ── Rodapé ── */}
         <footer className="relative z-10 px-5 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="l-label">
-            Compromisso<span className="text-[var(--pink-text)]">*</span> — Santana de Parnaíba, SP
+            <LogoDali className="inline-block h-3 w-3 mr-1 align-[-1px] text-[var(--pink-text)]" />Dalí — Santana de Parnaíba, SP
           </span>
           <div className="flex items-center gap-8">
             <button onClick={() => go("/login")} className="l-underline l-label">

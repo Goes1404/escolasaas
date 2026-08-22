@@ -109,7 +109,7 @@ function PrimeiroAcessoContent() {
             <div className="w-8 h-8 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/10 shrink-0">
               <Sparkles className="h-4 w-4 text-white/70" />
             </div>
-            <span className="text-white/50 font-black text-[10px] uppercase tracking-[0.3em]">Plataforma</span>
+            <span className="u-label !text-white/50">Dalí</span>
           </div>
           <Link
             href="/login"

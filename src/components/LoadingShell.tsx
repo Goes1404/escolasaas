@@ -23,7 +23,7 @@ export function LoadingShell() {
       </div>
       
       <div className="flex flex-col items-center gap-3 z-10">
-        <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-none">Plataforma</h2>
+        <h2 className="u-page-title text-2xl text-white leading-none">Dalí</h2>
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '-0.3s' }} />
           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '-0.15s' }} />
