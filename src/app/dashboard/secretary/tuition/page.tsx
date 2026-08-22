@@ -410,7 +410,7 @@ export default function TuitionPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Verde, vermelho e neutro: aqui a cor é SINAL de estado do dinheiro,
             não decoração — é o uso que a doutrina permite em nível baixo. O
             azul de "em aberto" saiu porque não existe na paleta e nada
@@ -418,27 +418,27 @@ export default function TuitionPage() {
         <Card className="rounded-card">
           <CardContent className="p-6">
             <div className="u-label flex items-center gap-2"><DollarSign className="h-3.5 w-3.5" /> Previsto</div>
-            <p className="u-num text-2xl mt-2">{brl(kpi.previsto)}</p>
+            <p className="u-num text-2xl tabular-nums mt-2">{brl(kpi.previsto)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.total} fatura(s)</p>
           </CardContent>
         </Card>
         <Card className="rounded-card">
           <CardContent className="p-6">
             <div className="u-label !text-emerald-600 flex items-center gap-2"><TrendingUp className="h-3.5 w-3.5" /> Recebido</div>
-            <p className="u-num text-2xl mt-2 text-emerald-600">{brl(kpi.recebido)}</p>
+            <p className="u-num text-2xl tabular-nums mt-2 text-emerald-600">{brl(kpi.recebido)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.pagas} paga(s)</p>
           </CardContent>
         </Card>
         <Card className="rounded-card">
           <CardContent className="p-6">
             <div className="u-label flex items-center gap-2"><Wallet className="h-3.5 w-3.5" /> Em aberto</div>
-            <p className="u-num text-2xl mt-2">{brl(kpi.emAberto)}</p>
+            <p className="u-num text-2xl tabular-nums mt-2">{brl(kpi.emAberto)}</p>
           </CardContent>
         </Card>
         <Card className="rounded-card">
           <CardContent className="p-6">
             <div className="u-label !text-red-600 flex items-center gap-2"><AlertTriangle className="h-3.5 w-3.5" /> Inadimplência</div>
-            <p className="u-num text-2xl mt-2 text-red-600">{kpi.inadimplencia}%</p>
+            <p className="u-num text-2xl tabular-nums mt-2 text-red-600">{kpi.inadimplencia}%</p>
           </CardContent>
         </Card>
       </div>

@@ -33,64 +33,64 @@ export function examTypeLabel(type: string | null | undefined): string {
 }
 
 type ExamTypeStyles = {
-  /** Classes do chip/badge. */
+  /** Chip/badge do tipo, em superfície neutra com traço da cor. */
   chip: string;
-  /** Sombra colorida do card. */
-  glow: string;
-  /** Gradiente do anel/realce. */
-  ring: string;
+  /** Cor chapada de destaque (faixa do card, botão). */
+  accent: string;
+  /** Tinta que se lê SOBRE `accent`. Amarelo pede texto escuro; sem isto o
+      botão do tipo ETEC nascia branco sobre amarelo, ilegível. */
+  onAccent: string;
   /** Rótulo de exibição. */
   label: string;
 };
 
 /**
- * Cores e rótulo por tipo, usados nos cards de prova do aluno.
- * FUVEST/USP compartilham a paleta azul; ETEC/FATEC a verde.
+ * Cor por tipo de prova.
+ *
+ * Aqui a cor é CATEGÓRICA — diz de que exame é a prova —, então ela fica; o que
+ * saiu foram os gradientes e as sombras coloridas, que eram decoração, e as
+ * cores de fora da paleta (roxo/fúcsia, azul/índigo, esmeralda/teal).
+ *
+ * Havia ainda uma divergência silenciosa: `EXAM_TYPE_BADGE`, usado nas telas de
+ * admin e professor, pintava ENEM de azul enquanto esta função pintava de roxo.
+ * O mesmo exame mudava de cor conforme quem olhava. Agora as duas derivam do
+ * mesmo mapa.
  */
-export function examTypeStyles(type: string | null | undefined): ExamTypeStyles {
-  const t = (type || '').toLowerCase();
-  const label = examTypeLabel(type);
+const EXAM_TONE = {
+  enem:    { accent: 'bg-primary',      onAccent: 'text-primary-foreground', chip: 'border-primary text-primary' },
+  fuvest:  { accent: 'bg-brand-pink',   onAccent: 'text-white',              chip: 'border-brand-pink text-brand-pink' },
+  etec:    { accent: 'bg-brand-yellow', onAccent: 'text-foreground',         chip: 'border-brand-yellow text-foreground' },
+  unicamp: { accent: 'bg-brand-slate',  onAccent: 'text-white',              chip: 'border-brand-slate text-brand-slate' },
+  outro:   { accent: 'bg-foreground',   onAccent: 'text-background',         chip: 'border-foreground text-foreground' },
+} as const;
 
-  if (t === 'enem') {
-    return {
-      chip: 'bg-purple-100 text-purple-700 border-purple-200',
-      glow: 'shadow-purple-500/20',
-      ring: 'from-purple-600 to-fuchsia-600',
-      label,
-    };
-  }
-  if (t.includes('fuvest') || t === 'usp') {
-    return {
-      chip: 'bg-blue-100 text-blue-700 border-blue-200',
-      glow: 'shadow-blue-500/20',
-      ring: 'from-blue-600 to-indigo-600',
-      label,
-    };
-  }
-  if (t.includes('etec') || t.includes('fatec')) {
-    return {
-      chip: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      glow: 'shadow-emerald-500/20',
-      ring: 'from-emerald-600 to-teal-600',
-      label,
-    };
-  }
+function toneKeyFor(type: string | null | undefined): keyof typeof EXAM_TONE {
+  const t = (type || '').toLowerCase();
+  if (t === 'enem') return 'enem';
+  if (t.includes('fuvest') || t === 'usp') return 'fuvest';
+  if (t.includes('etec') || t.includes('fatec')) return 'etec';
+  if (t.includes('unicamp')) return 'unicamp';
+  return 'outro';
+}
+
+export function examTypeStyles(type: string | null | undefined): ExamTypeStyles {
+  const tone = EXAM_TONE[toneKeyFor(type)];
   return {
-    chip: 'bg-orange-100 text-orange-700 border-orange-200',
-    glow: 'shadow-orange-500/20',
-    ring: 'from-orange-500 to-amber-500',
-    label,
+    chip: `bg-transparent border-2 ${tone.chip}`,
+    accent: tone.accent,
+    onAccent: tone.onAccent,
+    label: examTypeLabel(type),
   };
 }
 
 /** Classes curtas de badge para as telas de gestão (admin/professor). */
 export const EXAM_TYPE_BADGE: Record<ExamType, string> = {
-  enem: 'bg-blue-100 text-blue-700',
-  etec: 'bg-purple-100 text-purple-700',
-  fuvest: 'bg-orange-100 text-orange-700',
-  unicamp: 'bg-green-100 text-green-700',
-  usp: 'bg-rose-100 text-rose-700',
-  outro: 'bg-zinc-100 text-zinc-600',
+  enem:    `bg-transparent border-2 ${EXAM_TONE.enem.chip}`,
+  etec:    `bg-transparent border-2 ${EXAM_TONE.etec.chip}`,
+  fuvest:  `bg-transparent border-2 ${EXAM_TONE.fuvest.chip}`,
+  unicamp: `bg-transparent border-2 ${EXAM_TONE.unicamp.chip}`,
+  usp:     `bg-transparent border-2 ${EXAM_TONE.fuvest.chip}`,
+  outro:   `bg-transparent border-2 ${EXAM_TONE.outro.chip}`,
 };
 
 /**

@@ -647,7 +647,7 @@ export default function ProvasCompletasPage() {
         <div className="h-14 w-14 rounded-2xl bg-red-100 border border-red-200 flex items-center justify-center">
           <AlertCircle className="h-7 w-7 text-red-600" />
         </div>
-        <p className="text-red-600 font-black italic text-sm">{errorMsg}</p>
+        <p className="text-red-600 font-bold text-sm">{errorMsg}</p>
         <Button
           onClick={fetchExams}
           className="h-11 px-5 rounded-xl bg-white border border-slate-200 text-primary font-black text-xs uppercase tracking-widest shadow-sm hover:bg-slate-50"
@@ -664,29 +664,28 @@ export default function ProvasCompletasPage() {
     return (
       <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Hero */}
-        <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
-          <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-          <Scroll className="absolute right-4 top-4 h-20 w-20 text-white/10" />
+        {/* Escolher a prova é decisão, não festa: cabeçalho em nível médio
+            sobre superfície neutra. O laranja/âmbar não existe na paleta. */}
+        <div className="relative rounded-card overflow-hidden border-2 border-foreground bg-card p-6">
+          <Scroll className="absolute right-4 top-4 h-20 w-20 text-foreground/[0.06]" />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-3 w-3 text-white/80" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
-                Área de Treinamento
-              </p>
+              <Sparkles className="h-3 w-3 text-primary" />
+              <p className="u-label">Área de treinamento</p>
             </div>
-            <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
-              Provas Completas
+            <h1 className="u-page-title text-2xl leading-[1.15]">
+              Provas completas
             </h1>
-            <p className="text-white/80 text-xs font-semibold mt-1 max-w-md leading-relaxed">
+            <p className="text-muted-foreground text-xs font-semibold mt-1.5 max-w-md leading-relaxed">
               Treine resistência e gestão de tempo com provas anteriores sob simulado real.
             </p>
 
             <div className="flex items-center gap-2 mt-4">
-              <Badge className="bg-white/20 text-white border border-white/30 font-black text-[9px] uppercase tracking-widest px-2 h-5">
-                {exams.length} provas
+              <Badge className="u-label bg-transparent border-2 border-foreground px-2 h-5 rounded-control">
+                <span className="u-num mr-1.5">{exams.length}</span>provas
               </Badge>
-              <Badge className="bg-white/20 text-white border border-white/30 font-black text-[9px] uppercase tracking-widest px-2 h-5">
-                {exams.filter((e) => e.question_count > 0).length} c/ questões
+              <Badge className="u-label bg-transparent border-2 border-foreground px-2 h-5 rounded-control">
+                <span className="u-num mr-1.5">{exams.filter((e) => e.question_count > 0).length}</span>c/ questões
               </Badge>
             </div>
           </div>
@@ -732,7 +731,7 @@ export default function ProvasCompletasPage() {
         {visibleGroups.length === 0 ? (
           <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
             <BookOpen className="h-9 w-9 mx-auto mb-2 text-slate-300" />
-            <p className="text-sm font-black italic text-slate-400 uppercase tracking-widest">
+            <p className="u-label">
               {exams.length === 0
                 ? "Nenhuma prova cadastrada"
                 : `Nenhuma prova de ${examTypeStyles(typeFilter).label}`}
@@ -763,17 +762,17 @@ export default function ProvasCompletasPage() {
                 >
                   {isSpecial && <FlameEmberCanvas className="absolute inset-0 h-full w-full pointer-events-none z-0 opacity-45" />}
                   <div>
-                    <div className={`h-1 w-full bg-gradient-to-r ${s.ring}`} />
+                    <div className={`h-1.5 w-full ${s.accent}`} />
 
                     <div className="p-5 pb-2 space-y-4 relative z-10">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           {selectedExam.year && (
-                            <p className="text-4xl font-black italic text-primary leading-none tracking-tighter">
+                            <p className="u-num text-4xl leading-none">
                               {selectedExam.year}
                             </p>
                           )}
-                          <Badge className={`${s.chip} border font-black text-[9px] uppercase tracking-widest px-1.5 h-4 mt-1.5`}>
+                          <Badge className={`${s.chip} u-label !text-[9px] px-1.5 h-5 mt-1.5 rounded-control`}>
                             {s.label}
                           </Badge>
                         </div>
@@ -835,7 +834,7 @@ export default function ProvasCompletasPage() {
                       </div>
 
                       <div>
-                        <h3 className={`text-sm font-black italic leading-snug line-clamp-2 ${isSpecial ? "text-orange-400 group-hover:text-orange-300" : "text-primary"}`}>
+                        <h3 className={`u-display text-sm leading-snug line-clamp-2 ${isSpecial ? "text-brand-pink" : "text-primary"}`}>
                           {selectedExam.title}
                         </h3>
                         {selectedExam.description && (
@@ -852,7 +851,7 @@ export default function ProvasCompletasPage() {
                       {selectedExam.pdf_url && (
                         <div className="flex gap-2">
                           <Link href={`/dashboard/student/provas/${selectedExam.id}`} className="flex-1">
-                            <button className={`w-full h-11 rounded-xl bg-gradient-to-r ${s.ring} text-white font-black text-[10px] uppercase tracking-widest shadow-lg ${s.glow} transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-2`}>
+                            <button className={`w-full h-11 rounded-control border-2 border-foreground ${s.accent} ${s.onAccent} font-black text-[10px] uppercase tracking-widest transition-all active:translate-x-[2px] active:translate-y-[2px] touch-manipulation flex items-center justify-center gap-2`}>
                               <FileText className="h-3.5 w-3.5" />
                               PDF Interativo
                             </button>
@@ -868,7 +867,7 @@ export default function ProvasCompletasPage() {
                       {selectedExam.question_count > 0 && progressByExam[selectedExam.id] && (
                         <button
                           onClick={() => startExam(selectedExam, true)}
-                          className="w-full h-11 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
+                          className="w-full h-11 rounded-control border-2 border-foreground bg-brand-yellow text-foreground font-black text-[10px] uppercase tracking-widest transition-all active:translate-x-[2px] active:translate-y-[2px] touch-manipulation flex items-center justify-center gap-2"
                         >
                           <Play className="h-3.5 w-3.5" />
                           Continuar (questao {Math.min(progressByExam[selectedExam.id].currentIndex + 1, progressByExam[selectedExam.id].total)}/{progressByExam[selectedExam.id].total})
@@ -956,7 +955,7 @@ export default function ProvasCompletasPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[9px] font-black uppercase tracking-[0.25em] text-indigo-600">Evolução</p>
-                      <h3 className="font-black italic text-primary text-base leading-snug line-clamp-2">{evolutionExam.title}</h3>
+                      <h3 className="u-display text-primary text-base leading-snug line-clamp-2">{evolutionExam.title}</h3>
                     </div>
                     <button
                       onClick={() => setEvolutionExam(null)}
@@ -1035,7 +1034,7 @@ export default function ProvasCompletasPage() {
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-orange-600">
                 Simulado em andamento
               </p>
-              <p className="text-sm font-black italic text-primary truncate leading-snug">
+              <p className="u-display text-sm text-primary truncate leading-snug">
                 {activeExam?.title}
               </p>
             </div>
@@ -1065,7 +1064,7 @@ export default function ProvasCompletasPage() {
             </div>
             <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full transition-all duration-300"
+                className="h-full bg-primary rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -1206,7 +1205,7 @@ export default function ProvasCompletasPage() {
                     />
                     <div className="flex gap-2.5 flex-1">
                       <span
-                        className={`font-black italic text-sm shrink-0 ${
+                        className={`u-display text-sm shrink-0 ${
                           isSelected ? "text-orange-600" : "text-slate-400"
                         }`}
                       >
@@ -1241,8 +1240,8 @@ export default function ProvasCompletasPage() {
                 onClick={goNext}
                 className={`h-12 rounded-2xl flex items-center justify-center gap-1.5 font-black text-[10px] uppercase tracking-widest shadow-lg transition-all active:scale-95 touch-manipulation ${
                   isLast
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30"
-                    : "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-orange-500/30"
+                    ? "bg-emerald-600 text-white border-2 border-foreground"
+                    : "bg-primary text-primary-foreground border-2 border-foreground"
                 }`}
               >
                 {isLast ? (
@@ -1277,7 +1276,7 @@ export default function ProvasCompletasPage() {
               <Pause className="h-9 w-9 text-white" />
             </div>
             <div className="text-center space-y-1.5">
-              <p className="text-white font-black italic text-xl tracking-tight">Simulado pausado</p>
+              <p className="u-display text-white text-xl">Simulado pausado</p>
               <p className="text-white/60 text-xs font-medium">O cronômetro está parado. Respire e volte quando quiser.</p>
             </div>
             <div className="flex items-center gap-2 px-4 h-11 rounded-2xl bg-white/10 border border-white/20 text-white font-black">
@@ -1337,7 +1336,7 @@ export default function ProvasCompletasPage() {
                       {unanswered.length > 0 ? <AlertCircle className="h-6 w-6" /> : <CheckCircle2 className="h-6 w-6" />}
                     </div>
                     <div>
-                      <p className="font-black italic text-primary text-lg leading-none">Finalizar prova?</p>
+                      <p className="u-display text-primary text-lg leading-tight">Finalizar prova?</p>
                       <p className="text-xs text-slate-500 font-medium mt-1">Esta ação não pode ser desfeita.</p>
                     </div>
                   </div>
@@ -1378,7 +1377,7 @@ export default function ProvasCompletasPage() {
                         setShowFinishConfirm(false);
                         finishExam(answers);
                       }}
-                      className="h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                      className="h-12 rounded-control bg-emerald-600 text-white border-2 border-foreground font-black text-[10px] uppercase tracking-widest transition-all active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-1.5"
                     >
                       <Save className="h-3.5 w-3.5" /> Finalizar
                     </button>
@@ -1403,44 +1402,43 @@ export default function ProvasCompletasPage() {
       <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* Score Hero */}
-        <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl ${
-          isGood
-            ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 shadow-emerald-200"
-            : "bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-orange-200"
-        }`}>
-          <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+        {/* Mesmo vocabulário do resultado de simulado: card escuro com faixa
+            chapada no topo carregando o veredito. Duas telas de resultado
+            precisam ser lidas da mesma forma. */}
+        <div className="relative aurora-dark rounded-card border-2 border-foreground shadow-hard overflow-hidden">
+          <div className={`h-2 w-full ${pct >= 70 ? "bg-primary" : pct >= 50 ? "bg-brand-yellow" : "bg-brand-pink"}`} />
+          <div className="relative z-10 flex flex-col items-center text-center space-y-4 p-6">
             <div className="flex items-center gap-2">
-              <Award className={`h-4 w-4 ${isGood ? "text-emerald-200" : "text-amber-200"}`} />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
+              <Award className="h-4 w-4 text-accent" />
+              <p className="u-label !text-white/70">
                 {pct >= 80 ? "Excelente rendimento" : pct >= 60 ? "Bom trabalho" : "Continue praticando"}
               </p>
             </div>
-            <h2 className="text-lg font-black italic text-white tracking-tighter leading-none">
+            <h2 className="u-display text-lg text-white leading-tight">
               {activeExam?.title}
             </h2>
 
             {/* SVG gauge */}
             <div className="relative flex items-center justify-center h-40 w-40">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r={radius} fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth="10" />
+                <circle cx="80" cy="80" r={radius} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="10" />
                 <circle
                   cx="80"
                   cy="80"
                   r={radius}
                   fill="none"
-                  stroke="rgba(255,255,255,0.9)"
+                  stroke={pct >= 70 ? "#4CCCED" : pct >= 50 ? "#EDE04C" : "#ED3474"}
                   strokeWidth="10"
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1)" }}
                 />
               </svg>
               <div className="absolute flex flex-col items-center">
-                <span className="text-4xl font-black italic text-white tracking-tighter leading-none">{pct}</span>
-                <span className="text-sm font-black text-white/70 italic">%</span>
-                <span className="text-[8px] font-black uppercase tracking-widest text-white/60 mt-1">
+                <span className="u-num text-4xl text-white leading-none">{pct}</span>
+                <span className="u-num text-sm text-white/70">%</span>
+                <span className="u-label !text-[8px] !text-white/60 mt-1">
                   Aproveitamento
                 </span>
               </div>
@@ -1473,7 +1471,7 @@ export default function ProvasCompletasPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-black italic text-primary tracking-tighter leading-none tabular-nums">
+                  <span className="u-num text-2xl text-primary leading-none tabular-nums">
                     {Math.round(finishedTri)}
                   </span>
                   {finishedTriBand && (
@@ -1562,7 +1560,7 @@ export default function ProvasCompletasPage() {
                             : "bg-white border-slate-100 text-slate-600"
                         }`}
                       >
-                        <span className="font-black italic w-4 shrink-0">{opt.key})</span>
+                        <span className="u-display w-4 shrink-0">{opt.key}</span>
                         <span className="leading-normal flex-1">{opt.text}</span>
                         {isCorrectOpt && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />}
                       </div>
