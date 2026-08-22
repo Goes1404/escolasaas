@@ -11,12 +11,20 @@ import { useTenant } from "@/components/TenantProvider";
 export function LoginForm() {
   const { tenant } = useTenant();
   const logoUrl = tenant.branding.logoUrl;
+
+  // O placeholder trazia `seu.nome@compromisso.com` fixo no código: numa
+  // plataforma white-label, a segunda escola veria o domínio de outra no
+  // próprio campo de login.
+  //
+  // Também não dá para derivá-lo de `contactEmail` — o e-mail de SUPORTE da
+  // escola não é o domínio de LOGIN dos alunos, e mostrar um domínio errado é
+  // pior do que não mostrar nenhum. Quem não sabe o próprio e-mail tem a tela
+  // de primeiro acesso, que existe exatamente para isso.
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading]   = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [focused, setFocused]   = useState<string | null>(null);
   const [aviso, setAviso]       = useState<string | null>(null);
   const params = useSearchParams();
 
@@ -62,63 +70,53 @@ export function LoginForm() {
     // elemento LCP e um fade a partir de opacity:0 adia o LCP até o fim da
     // animação (~720ms). Transform é compositor-only e não atrasa o LCP.
     <div className="w-full max-w-[420px] animate-in slide-in-from-bottom-4 zoom-in-95 duration-500 ease-out">
-      {/* ── Outer glow ring ── */}
-      <div className="border-prism rounded-card">
-        <div className="glass-login rounded-card p-8 md:p-10 relative overflow-hidden">
-
-          {/* Inner shimmer top */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/40 to-transparent pointer-events-none" />
-
-          {/* Subtle inner orb */}
-          <div
-            className="absolute top-[-40px] right-[-40px] w-[180px] h-[180px] rounded-full pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, rgba(76,204,237,0.12) 0%, transparent 70%)",
-              filter: "blur(30px)",
-            }}
-          />
+      {/* O card era vidro: `backdrop-filter: blur(28px) saturate(160%)` sobre
+          uma superfície de 420px, mais uma borda-prisma em gradiente. Blur de
+          fundo é dos efeitos mais caros que existem, e esta é a primeira tela
+          que o aparelho do aluno pinta. Agora é superfície sólida com a borda
+          e a sombra do sistema. */}
+      <div className="rounded-card border-2 border-white/15 bg-[#0d0d12] p-8 md:p-10 relative overflow-hidden">
+        <div className="absolute inset-0 dot-grid opacity-[0.06] pointer-events-none" />
 
           {/* ── Logo ── */}
-          <div className="flex justify-center mb-6">
-            <div className="relative w-44 h-14">
-              <Image src={logoUrl} alt="Logo" fill unoptimized priority className="object-contain drop-shadow-[0_0_12px_rgba(76,204,237,0.5)]" />
+          <div className="relative flex justify-center mb-6">
+            <div className="relative w-32 h-14">
+              <Image src={logoUrl} alt="Logo" fill unoptimized priority className="object-contain" />
             </div>
           </div>
 
           {/* ── Heading (contém o H1 = elemento LCP; sem fade pra pintar já) ── */}
-          <div className="text-center mb-8 space-y-2">
-            <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full mb-1">
-              <Sparkles className="h-3 w-3 text-orange-400" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-400">{tenant.branding.appName}</span>
+          {/* Dizia "Portal do Aluno", mas professor, secretaria e admin entram
+              por aqui também — três dos cinco papéis liam um título que não era
+              deles e ficavam em dúvida se estavam na tela certa. */}
+          <div className="relative text-center mb-8 space-y-2">
+            <div className="inline-flex items-center gap-2 border-2 border-white/20 px-3 py-1 rounded-control mb-1">
+              <Sparkles className="h-3 w-3 text-accent" />
+              <span className="u-label !text-white/70">{tenant.branding.appName}</span>
             </div>
-            <h1 className="text-2xl font-black italic tracking-tighter text-white leading-tight">
-              Portal do <span className="text-gradient-fire">Aluno</span>
+            <h1 className="u-page-title text-2xl text-white leading-[1.2]">
+              Entrar na <span className="text-accent">plataforma</span>
             </h1>
             <p className="text-xs text-white/40 font-semibold">
-              Acesse sua jornada de alto desempenho.
+              Alunos, professores e equipe usam o mesmo acesso.
             </p>
           </div>
 
           {/* ── Form ── */}
-          <form
-            onSubmit={handleLogin}
-            className="space-y-4"
-          >
+          <form onSubmit={handleLogin} className="relative space-y-4">
             {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40 ml-1">
-                E-mail de Acesso
+              <label htmlFor="email" className="u-label !text-white/40 ml-1">
+                E-mail de acesso
               </label>
-              <div className={`relative transition-all duration-200 ${focused === 'email' ? 'drop-shadow-[0_0_8px_rgba(76,204,237,0.25)]' : ''}`}>
+              <div className="relative">
                 <input
                   id="email"
                   type="email"
-                  placeholder="seu.nome@compromisso.com"
+                  placeholder="seu e-mail de acesso"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocused('email')}
-                  onBlur={() => setFocused(null)}
-                  className="input-dark w-full h-12 rounded-xl px-4 text-sm font-semibold"
+                  className="w-full h-12 rounded-control border-2 border-white/20 bg-white/[0.04] px-4 text-sm font-semibold text-white placeholder:text-white/30 outline-none transition-colors focus:border-primary"
                   required
                   disabled={loading}
                   autoComplete="email"
@@ -128,19 +126,17 @@ export function LoginForm() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40 ml-1">
+              <label htmlFor="password" className="u-label !text-white/40 ml-1">
                 Senha
               </label>
-              <div className={`relative transition-all duration-200 ${focused === 'password' ? 'drop-shadow-[0_0_8px_rgba(76,204,237,0.25)]' : ''}`}>
+              <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocused('password')}
-                  onBlur={() => setFocused(null)}
-                  className="input-dark w-full h-12 rounded-xl px-4 pr-12 text-sm font-semibold"
+                  className="w-full h-12 rounded-control border-2 border-white/20 bg-white/[0.04] px-4 pr-12 text-sm font-semibold text-white placeholder:text-white/30 outline-none transition-colors focus:border-primary"
                   required
                   disabled={loading}
                   autoComplete="current-password"
@@ -148,7 +144,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-orange-400 transition-colors p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-primary transition-colors p-1"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -158,15 +154,15 @@ export function LoginForm() {
 
             {/* Sessão expirada — informativo, não é erro do aluno */}
             {aviso && !authError && (
-              <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/25 p-3.5 rounded-xl animate-in fade-in slide-in-from-top-1 duration-300">
-                <ShieldCheck className="h-4 w-4 text-amber-300 shrink-0" />
-                <p className="text-amber-200 text-xs font-bold">{aviso}</p>
+              <div className="flex items-center gap-3 border-2 border-accent/40 bg-accent/10 p-3.5 rounded-control animate-in fade-in slide-in-from-top-1 duration-300">
+                <ShieldCheck className="h-4 w-4 text-accent shrink-0" />
+                <p className="text-accent text-xs font-bold">{aviso}</p>
               </div>
             )}
 
             {/* Error */}
             {authError && (
-              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/25 p-3.5 rounded-xl animate-in fade-in slide-in-from-top-1 zoom-in-95 duration-300">
+              <div className="flex items-center gap-3 border-2 border-red-500/50 bg-red-500/10 p-3.5 rounded-control animate-in fade-in slide-in-from-top-1 zoom-in-95 duration-300">
                 <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
                 <p className="text-red-300 text-xs font-bold">{authError}</p>
               </div>
@@ -176,7 +172,7 @@ export function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-orange-neon w-full h-14 rounded-xl text-white font-black text-sm uppercase tracking-wider italic mt-2 transition-transform active:scale-[0.975] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-control bg-primary text-primary-foreground border-2 border-primary-foreground/80 shadow-hard-accent font-black text-sm uppercase tracking-wider mt-2 transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -185,8 +181,8 @@ export function LoginForm() {
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Entrar no Portal
-                  <span className="text-white/60">→</span>
+                  Entrar
+                  <span className="opacity-60">→</span>
                 </span>
               )}
             </button>
@@ -195,7 +191,7 @@ export function LoginForm() {
             <div className="text-center pt-1">
               <Link
                 href="/forgot-password"
-                className="text-[11px] font-bold text-white/40 hover:text-orange-400 transition-colors"
+                className="text-[11px] font-bold text-white/50 hover:text-primary transition-colors underline underline-offset-4 decoration-white/20"
               >
                 Esqueci minha senha
               </Link>
@@ -203,16 +199,12 @@ export function LoginForm() {
           </form>
 
           {/* ── Trust badge ── */}
-          <div className="mt-8 pt-5 border-t border-white/5 flex items-center justify-center gap-2">
-            <ShieldCheck className="h-3.5 w-3.5 text-white/20" />
-            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
-              Acesso seguro · Dados criptografados
+          <div className="relative mt-8 pt-5 border-t-2 border-white/10 flex items-center justify-center gap-2">
+            <ShieldCheck className="h-3.5 w-3.5 text-white/35 shrink-0" />
+            <span className="u-label !text-[8px] !tracking-[0.16em] !text-white/35 whitespace-nowrap">
+              Acesso seguro · dados criptografados
             </span>
           </div>
-
-          {/* Bottom shimmer line */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/20 to-transparent pointer-events-none" />
-        </div>
       </div>
     </div>
   );
