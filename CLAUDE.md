@@ -6,6 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Plataforma de gestão educacional e aprendizado adaptativo para alunos do cursinho Compromisso (Santana de Parnaíba). Voltada ao ENEM e ETEC, com papéis: `admin`, `teacher`, `student`.
 
+## 🚧 Deploy em andamento — ler antes de mexer em Supabase/Vercel
+
+Detalhe completo em `docs/DEPLOY_STATUS.md` (atualize esse arquivo, não só este
+resumo, sempre que o status mudar). Resumo:
+
+- **Supabase em uso**: projeto `sgkgsjmfcsgfxliwvwjg` — as 110 migrations de
+  `/supabase/migrations` já estão aplicadas nele. Não é o projeto que estava
+  configurado por padrão; confira antes de assumir qual é o ativo.
+- **Usuários de teste** (criados por `scripts/seed-test-users.mjs`, senha
+  `mudar123` para os 4): `admin@compromisso.com`, `secretaria@compromisso.com`
+  (staff), `professor@compromisso.com`, `aluno@compromisso.com`.
+- **Pendente na Vercel** (projeto `escolasaas`, team
+  `sq1matheusgsilva-7306s-projects`): confirmar se as env vars de Production
+  já foram trocadas para apontar pro Supabase acima (estavam apontando para
+  `wyqfyrfkudxroumggnnp`, projeto errado) e se "Vercel Authentication" (SSO
+  protection) já foi desligada — enquanto ligada, ninguém fora do time
+  consegue acessar o site. Ver `docs/DEPLOY_STATUS.md` para o passo a passo.
+
 ## 🛠 Comandos
 
 ```bash
