@@ -16,6 +16,7 @@ import {
 import { arquetipo } from '@/lib/mascote';
 import { ArenaMascote } from '@/components/mascote/ArenaMascote';
 import { SeletorArquetipo } from '@/components/mascote/SeletorArquetipo';
+import { celebrate } from '@/lib/celebrate';
 
 /**
  * A casa do bichinho.
@@ -29,6 +30,8 @@ import { SeletorArquetipo } from '@/components/mascote/SeletorArquetipo';
  * de como o bicho se alimenta e a compra de proteção com espaço para dizer o
  * que ela faz.
  */
+const CHAVE_NIVEL = 'pet:ultimo-nivel';
+
 export default function BichinhoPage() {
   const { toast } = useToast();
   const [bicho, setBicho] = useState<Bichinho | null>(null);
@@ -58,6 +61,25 @@ export default function BichinhoPage() {
 
   useEffect(() => { void carregar(); }, []);
 
+  /**
+   * Festa quando o bicho SOBE de nível.
+   *
+   * O nível vem de `dias_estudo`, que só cresce — então comparar com o último
+   * nível visto (guardado localmente) é o que separa "subiu agora" de "sempre
+   * esteve nesse nível". Sem o guard do zero, toda primeira visita celebraria.
+   */
+  useEffect(() => {
+    if (!bicho?.existe) return;
+    let anterior = 0;
+    try {
+      anterior = Number(localStorage.getItem(CHAVE_NIVEL) ?? 0);
+      localStorage.setItem(CHAVE_NIVEL, String(bicho.nivel));
+    } catch {
+      return; // storage bloqueado: sem histórico, sem festa falsa
+    }
+    if (anterior > 0 && bicho.nivel > anterior) return celebrate();
+  }, [bicho?.existe, bicho?.nivel]);
+
   async function adotar() {
     const escolhido = nome.trim();
     if (!escolhido) {
@@ -67,6 +89,7 @@ export default function BichinhoPage() {
     setSalvando(true);
     try {
       setBicho(await adotarBichinho(especie, escolhido));
+      celebrate();
       toast({
         title: `${escolhido} é seu! ${arquetipo(especie).emoji}`,
         description: 'Ele cresce a cada dia que você estuda.',
@@ -158,14 +181,14 @@ export default function BichinhoPage() {
     return (
       <div className="p-6 md:p-10 max-w-3xl mx-auto">
         <div className="rounded-card border border-rose-100 bg-rose-50 p-8 text-center space-y-4">
-          <p className="text-lg font-black italic text-rose-900">{erro ?? 'Erro ao carregar.'}</p>
+          <p className="u-page-title text-lg text-rose-900">{erro ?? 'Erro ao carregar.'}</p>
           <p className="text-sm font-medium text-rose-700/70">
             Pode ser a conexão. Tente de novo em instantes.
           </p>
           <button
             type="button"
             onClick={() => void carregar()}
-            className="h-12 px-8 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest"
+            className="h-12 px-8 rounded-control bg-rose-600 hover:opacity-90 text-white border-2 border-foreground u-label !text-white"
           >
             Tentar de novo
           </button>
@@ -179,7 +202,7 @@ export default function BichinhoPage() {
     return (
       <div className="p-6 md:p-10 max-w-3xl mx-auto space-y-6">
         <header className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter text-primary">
+          <h1 className="u-page-title text-[clamp(1.7rem,7vw,2.4rem)] text-primary">
             Escolha seu bichinho
           </h1>
           <p className="text-sm md:text-base font-medium text-muted-foreground leading-relaxed max-w-xl">
@@ -188,11 +211,11 @@ export default function BichinhoPage() {
           </p>
         </header>
 
-        <div className="rounded-card bg-white shadow-2xl border border-slate-100 p-8 space-y-7">
+        <div className="rounded-card bg-card shadow-hard border-2 border-foreground p-8 space-y-7">
           <SeletorArquetipo valor={especie} onChange={setEspecie} />
 
           <div className="space-y-3">
-            <label htmlFor="nome" className="text-[11px] font-black uppercase tracking-widest text-slate-400 block">
+            <label htmlFor="nome" className="u-label block">
               Como ele se chama?
             </label>
             <input
@@ -201,13 +224,13 @@ export default function BichinhoPage() {
               onChange={ev => setNome(ev.target.value)}
               maxLength={20}
               placeholder="Ex.: Tobias"
-              className="w-full rounded-2xl border-2 border-slate-100 px-5 py-4 text-base font-bold outline-none focus-visible:border-orange-400"
+              className="w-full rounded-control border-2 border-slate-100 px-5 py-4 text-base font-bold outline-none focus-visible:border-primary"
             />
             <button
               type="button"
               onClick={adotar}
               disabled={salvando}
-              className="w-full h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 transition-all"
+              className="w-full h-14 rounded-control bg-primary text-primary-foreground border-2 border-foreground shadow-hard u-label !text-primary-foreground !text-xs disabled:opacity-60 flex items-center justify-center gap-2 transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
             >
               {salvando && <Loader2 className="h-4 w-4 animate-spin" />}
               Adotar {arquetipo(especie).nome}
@@ -237,46 +260,54 @@ export default function BichinhoPage() {
 
       {/* Nível, humor e progresso — o que a moldura da arena não comporta sem
           virar HUD de jogo. */}
-      <div className={`rounded-card shadow-2xl overflow-hidden text-white ${
+      {/* Nível alto: cor CHAPADA da paleta em vez de gradiente, e o humor é
+          que escolhe a cor — ciano quando o bicho está bem, amarelo quando
+          está com fome, escuro quando o aluno sumiu. */}
+      <div className={`rounded-card border-2 border-foreground shadow-hard overflow-hidden ${
         animado
-          ? 'bg-gradient-to-br from-orange-500 via-rose-500 to-red-600'
+          ? 'bg-primary text-primary-foreground'
           : bicho.humor === 'com_fome'
-            ? 'bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600'
-            : 'bg-gradient-to-br from-slate-700 to-slate-900'
+            ? 'bg-accent text-accent-foreground'
+            : 'bg-foreground text-background'
       }`}>
-        <div className="p-8 text-center space-y-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter">{apelido}</h1>
-            <p className="text-[11px] font-black uppercase tracking-widest text-white/60">
+        <div className="p-6 md:p-8 text-center space-y-4">
+          <div className="space-y-1.5">
+            <h1 className="u-page-title text-[clamp(1.6rem,7vw,2.4rem)]">{apelido}</h1>
+            <p className="u-label !text-current opacity-70">
               Nível {bicho.nivel} · {nomeDoNivel(bicho.nivel)} · {humor.rotulo}
             </p>
           </div>
-          <p className="text-sm font-bold text-white/85 max-w-sm mx-auto leading-relaxed">
+          <p className="text-sm font-bold opacity-90 max-w-sm mx-auto leading-relaxed">
             {humor.emoji} {humor.fala(apelido)}
           </p>
 
           <div className="pt-2 space-y-1.5 max-w-md mx-auto">
-            <div className="flex items-baseline justify-between text-[10px] font-black uppercase tracking-widest text-white/60">
-              <span>{bicho.dias_estudo} {bicho.dias_estudo === 1 ? 'dia' : 'dias'} de estudo</span>
-              <span>{faltam == null ? 'Nível máximo' : `Faltam ${faltam}`}</span>
+            <div className="flex items-baseline justify-between">
+              <span className="u-label !text-current !text-[9px] opacity-70">
+                <span className="u-num">{bicho.dias_estudo}</span> {bicho.dias_estudo === 1 ? 'dia' : 'dias'} de estudo
+              </span>
+              <span className="u-label !text-current !text-[9px] opacity-70">
+                {faltam == null ? 'Nível máximo' : `Faltam ${faltam}`}
+              </span>
             </div>
-            <div className="h-2.5 rounded-full bg-white/15 overflow-hidden">
-              <div className="h-full rounded-full bg-white/85 transition-all" style={{ width: `${pct}%` }} />
+            {/* Barra com traço firme, no lugar do pill translúcido. */}
+            <div className="h-3 rounded-control border-2 border-current overflow-hidden">
+              <div className="h-full bg-current transition-all" style={{ width: `${pct}%` }} />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 border-t border-white/10">
+        <div className="grid grid-cols-3 border-t-2 border-current/25">
           {[
             { icone: <Flame className="h-3 w-3" />, rot: 'Ofensiva', val: bicho.ofensiva },
             { icone: <Shield className="h-3 w-3" />, rot: 'Proteções', val: bicho.protecoes },
             { icone: <Trophy className="h-3 w-3" />, rot: 'XP livre', val: bicho.saldo },
           ].map((c, i) => (
-            <div key={c.rot} className={`p-5 text-center ${i < 2 ? 'border-r border-white/10' : ''}`}>
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-1 flex items-center justify-center gap-1">
+            <div key={c.rot} className={`p-4 md:p-5 text-center ${i < 2 ? 'border-r-2 border-current/25' : ''}`}>
+              <p className="u-label !text-current !text-[8px] opacity-70 mb-1 flex items-center justify-center gap-1">
                 {c.icone} {c.rot}
               </p>
-              <p className="text-3xl font-black tabular-nums">{c.val}</p>
+              <p className="u-num text-2xl md:text-3xl">{c.val}</p>
             </div>
           ))}
         </div>
@@ -303,14 +334,15 @@ export default function BichinhoPage() {
       )}
 
       {/* Ação principal: o que alimenta o bicho é estudar. */}
+      {/* CTA da tela: recebe a sombra dura (a assinatura só vale no primário). */}
       <Link
         href="/dashboard/student/simulados"
-        className="flex items-center justify-between gap-4 rounded-card bg-primary text-white p-6 shadow-xl active:scale-[0.99] transition-transform"
+        className="flex items-center justify-between gap-4 rounded-card bg-brand-pink text-white p-6 border-2 border-foreground shadow-hard transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
       >
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Alimentar</p>
-          <p className="text-lg font-black italic">Responder uma questão</p>
-          <p className="text-xs font-medium text-white/60 mt-0.5">
+          <p className="u-label !text-white/70 !text-[9px]">Alimentar</p>
+          <p className="u-page-title text-lg mt-0.5">Responder uma questão</p>
+          <p className="text-xs font-medium text-white/70 mt-1">
             É o que faz {apelido} crescer — e mantém sua ofensiva.
           </p>
         </div>
@@ -318,12 +350,12 @@ export default function BichinhoPage() {
       </Link>
 
       {/* Loja */}
-      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-card border-2 border-border p-7 space-y-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-orange-500" />
-          <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Loja</h2>
+          <Sparkles className="h-4 w-4 text-accent-foreground fill-accent" />
+          <h2 className="u-label !text-xs">Loja</h2>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-control bg-slate-50 p-5">
           <div className="min-w-0">
             <p className="text-base font-black text-slate-800 flex items-center gap-2">
               <Shield className="h-4 w-4 text-emerald-600" /> Proteção de ofensiva
@@ -337,7 +369,7 @@ export default function BichinhoPage() {
             type="button"
             onClick={comprar}
             disabled={!podeComprar || salvando}
-            className="h-12 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+            className="h-12 px-6 rounded-control bg-emerald-600 hover:opacity-90 text-white border-2 border-foreground font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
           >
             {salvando && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {bicho.protecoes >= 2
@@ -354,10 +386,10 @@ export default function BichinhoPage() {
           adotado uma capivara ficaria preso a ela sem nunca ver o boneco novo.
           Trocar não custa nada e não mexe em nível, ofensiva nem XP — a espécie
           nunca teve economia atrelada, e a migration original já dizia isso. */}
-      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-card border-2 border-border p-7 space-y-4">
         <div className="flex items-center gap-2">
-          <Wand2 className="h-4 w-4 text-violet-500" />
-          <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Trocar de bichinho</h2>
+          <Wand2 className="h-4 w-4 text-brand-pink" />
+          <h2 className="u-label !text-xs">Trocar de bichinho</h2>
         </div>
 
         {trocando ? (
@@ -370,7 +402,7 @@ export default function BichinhoPage() {
             <SeletorArquetipo valor={especie} onChange={escolherNaTroca} />
 
             <div className="space-y-2">
-              <label htmlFor="nome-troca" className="text-[11px] font-black uppercase tracking-widest text-slate-400 block">
+              <label htmlFor="nome-troca" className="u-label block">
                 Nome {especie === bicho.especie ? 'dele' : `do ${arquetipo(especie).nome.toLowerCase()}`}
               </label>
               <input
@@ -379,13 +411,13 @@ export default function BichinhoPage() {
                 onChange={ev => setNomeTroca(ev.target.value)}
                 maxLength={20}
                 placeholder={apelidoDe(bicho, especie) ? undefined : 'Ainda sem nome — escolha um'}
-                className="w-full rounded-2xl border-2 border-slate-100 px-5 py-3.5 text-base font-bold outline-none focus-visible:border-violet-400"
+                className="w-full rounded-control border-2 border-slate-100 px-5 py-3.5 text-base font-bold outline-none focus-visible:border-brand-pink"
               />
               {/* Só aparece quando o campo já veio preenchido pela memória —
                   é a prova de que trocar de volta não obriga a reinventar o
                   nome, que é o problema que essa tela veio resolver. */}
               {apelidoDe(bicho, especie) && (
-                <p className="text-[11px] font-medium text-violet-500">
+                <p className="text-[11px] font-medium text-brand-pink">
                   Era assim que {arquetipo(especie).nome.toLowerCase()} se chamava da última vez.
                 </p>
               )}
@@ -395,7 +427,7 @@ export default function BichinhoPage() {
               <button
                 type="button"
                 onClick={() => setTrocando(false)}
-                className="h-12 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest"
+                className="h-12 px-6 rounded-control bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest"
               >
                 Cancelar
               </button>
@@ -403,7 +435,7 @@ export default function BichinhoPage() {
                 type="button"
                 onClick={trocar}
                 disabled={salvando || !nomeTroca.trim() || (especie === bicho.especie && nomeTroca.trim() === bicho.nome)}
-                className="flex-1 h-12 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-[11px] uppercase tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
+                className="flex-1 h-12 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {salvando && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 {especie === bicho.especie && nomeTroca.trim() === bicho.nome
@@ -413,7 +445,7 @@ export default function BichinhoPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-control bg-slate-50 p-5">
             <p className="text-xs font-medium text-slate-500 leading-relaxed max-w-sm">
               Existem dez bichinhos diferentes. Trocar é de graça, não afeta seu
               progresso, e cada um guarda o próprio nome.
@@ -421,7 +453,7 @@ export default function BichinhoPage() {
             <button
               type="button"
               onClick={() => { escolherNaTroca(bicho.especie ?? 'lobinho'); setTrocando(true); }}
-              className="h-12 px-6 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-[11px] uppercase tracking-widest shrink-0"
+              className="h-12 px-6 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest shrink-0"
             >
               Escolher outro
             </button>
@@ -430,10 +462,10 @@ export default function BichinhoPage() {
       </section>
 
       {/* Escada de níveis */}
-      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-card border-2 border-border p-7 space-y-4">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-slate-400" />
-          <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Níveis</h2>
+          <h2 className="u-label !text-xs">Níveis</h2>
         </div>
         <div className="space-y-1.5">
           {NIVEIS.map((rotulo, i) => {
@@ -443,11 +475,11 @@ export default function BichinhoPage() {
             return (
               <div
                 key={rotulo}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-2.5 ${
-                  atual ? 'bg-orange-50 border border-orange-200' : alcancado ? 'bg-slate-50' : ''
+                className={`flex items-center gap-3 rounded-control px-4 py-2.5 ${
+                  atual ? 'bg-primary/10 border-2 border-foreground' : alcancado ? 'bg-muted/40' : ''
                 }`}
               >
-                <span className={`text-xs font-black tabular-nums w-6 ${alcancado ? 'text-orange-600' : 'text-slate-300'}`}>
+                <span className={`u-num text-xs w-6 ${alcancado ? 'text-primary' : 'text-muted-foreground/40'}`}>
                   {nivel}
                 </span>
                 <span className={`flex-1 text-sm font-bold ${alcancado ? 'text-slate-800' : 'text-slate-400'}`}>
