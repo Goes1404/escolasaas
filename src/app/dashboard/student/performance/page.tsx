@@ -146,7 +146,7 @@ export default function StudentPerformancePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="text-primary font-black italic uppercase tracking-widest animate-pulse">Sincronizando BI...</p>
+        <p className="u-label text-primary animate-pulse">Sincronizando BI…</p>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function StudentPerformancePage() {
 
       {/* ── HERO — compact on mobile ── */}
       <div className="aurora-dark dot-grid rounded-2xl md:rounded-[3rem] p-5 md:p-10 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-56 h-56 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
+        
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-3">

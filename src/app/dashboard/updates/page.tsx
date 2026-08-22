@@ -55,7 +55,7 @@ export default function UpdatesPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-black italic text-xl md:text-2xl tracking-tighter leading-tight">Novidades</h1>
+            <h1 className="u-page-title text-xl md:text-2xl leading-[1.15]">Novidades</h1>
             <p className="text-white/80 text-xs md:text-sm font-medium">
               Tudo que mudou e o que chegou de novo na plataforma
             </p>

@@ -338,7 +338,7 @@ export default function LearningTrailsPage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="mt-6 text-primary font-black italic uppercase tracking-[0.3em] text-[10px] animate-pulse">Sintonizando Estúdio...</p>
+        <p className="u-label mt-6 text-primary animate-pulse">Sintonizando estúdio…</p>
       </div>
     );
   }
@@ -348,12 +348,10 @@ export default function LearningTrailsPage() {
       {/* Hero Banner */}
       <section className="aurora-dark relative overflow-hidden rounded-card p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
         <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-card" />
-        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-[80px] hidden md:block" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-primary/10 rounded-full blur-[60px] hidden md:block" />
         <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
           <Badge className="bg-primary/10 text-primary border border-primary/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider shadow-xl">PLATAFORMA EAD</Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black italic tracking-tighter leading-[0.95] uppercase break-words px-2">
-            Sua Rota de <br /><span className="text-gradient-brand italic">Alta Performance</span>
+          <h1 className="u-page-title text-3xl sm:text-4xl md:text-6xl leading-[1.1] break-words px-2">
+            Sua rota de <br /><span className="text-accent">alta performance</span>
           </h1>
           <p className="text-sm md:text-xl text-gray-400 font-medium italic leading-relaxed max-w-xl mx-auto">
             Escolha um dos eixos temáticos e inicie sua jornada guiada rumo ao sucesso acadêmico.
@@ -482,7 +480,7 @@ export default function LearningTrailsPage() {
               <FolderOpen className={`h-6 w-6 ${getSubjectConfig(activeCategory).color}`} />
             </div>
             <div>
-              <h2 className="text-2xl font-black italic tracking-tighter text-slate-800 leading-none">
+              <h2 className="u-display text-2xl text-slate-800 leading-tight">
                 {activeCategory}
               </h2>
               <p className="text-xs text-muted-foreground mt-1">

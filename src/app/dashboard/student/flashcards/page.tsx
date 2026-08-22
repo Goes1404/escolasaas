@@ -123,7 +123,7 @@ function FlipCard({
 
       {/* Back */}
       <motion.div
-        className="absolute inset-0 w-full rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 shadow-xl flex flex-col p-8 gap-5 overflow-y-auto"
+        className="absolute inset-0 w-full rounded-card bg-primary text-primary-foreground border-2 border-foreground flex flex-col p-8 gap-5 overflow-y-auto"
         style={{ backfaceVisibility: 'hidden', rotateY: 180 }}
         animate={{ rotateY: revealed ? 360 : 180 }}
         transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
@@ -341,11 +341,11 @@ export default function FlashcardsPage() {
     const elapsed = Math.round((Date.now() - startTime.current) / 60000);
     return (
       <div className="max-w-lg mx-auto px-4 pb-24 space-y-6 animate-in fade-in duration-700">
-        <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-white shadow-2xl">
+        <div className="relative overflow-hidden rounded-card aurora-dark border-2 border-foreground shadow-hard p-8 text-white">
           <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="relative z-10 text-center space-y-4">
             <div className="text-6xl">🎉</div>
-            <h1 className="text-3xl font-black italic tracking-tighter">Sessão Concluída!</h1>
+            <h1 className="u-page-title text-3xl leading-[1.15]">Sessão concluída</h1>
             <p className="text-white/60 text-sm">
               {session.reviewed === 0 ? 'Nenhum card disponível para hoje.' : `${session.reviewed} cards revisados em ~${elapsed} min`}
             </p>
@@ -376,7 +376,7 @@ export default function FlashcardsPage() {
   return (
     <div className="max-w-lg mx-auto px-4 pb-24 space-y-5 animate-in fade-in duration-700">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 p-6 text-white shadow-2xl">
+      <section className="relative overflow-hidden rounded-card aurora-dark border-2 border-foreground p-6 text-white">
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="relative z-10 flex items-start justify-between gap-4">
@@ -384,7 +384,7 @@ export default function FlashcardsPage() {
             <span className="text-[9px] font-black uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full border border-white/20 inline-flex items-center gap-1.5">
               <Brain className="h-2.5 w-2.5" /> Flash Cards
             </span>
-            <h1 className="text-2xl font-black italic tracking-tighter leading-tight">
+            <h1 className="u-page-title text-2xl leading-[1.15]">
               Revisão<br />
               <span className="text-white/60">Espaçada 🧠</span>
             </h1>

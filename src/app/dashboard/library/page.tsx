@@ -138,8 +138,6 @@ export default function LibraryPage() {
       {/* ── HERO BANNER ── */}
       <section className="aurora-dark relative overflow-hidden rounded-card p-8 md:p-12 text-white shadow-2xl border border-white/5 group">
         <div className="absolute inset-0 dot-grid opacity-15 pointer-events-none rounded-card" />
-        <div className="absolute top-[-25%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-[85px] hidden md:block" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-primary/10 rounded-full blur-[60px] hidden md:block" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 w-full">
           <div className="space-y-4 max-w-2xl">
@@ -147,8 +145,8 @@ export default function LibraryPage() {
               <Sparkles className="h-3.5 w-3.5 text-accent" />
               <span className="text-[9px] font-black uppercase tracking-widest text-white/80">Biblioteca Digital</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-none uppercase">
-              Acervo de <br /><span className="text-gradient-brand italic">Alta Performance</span>
+            <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">
+              Acervo de <br /><span className="text-accent">alta performance</span>
             </h1>
             <p className="text-xs md:text-sm text-gray-300 font-medium italic leading-relaxed">
               Acesse apostilas, videoaulas e materiais de apoio recomendados pelo corpo docente para acelerar seus estudos.
@@ -260,7 +258,7 @@ export default function LibraryPage() {
         ) : (
           <div className="py-24 text-center border-4 border-dashed border-muted/20 rounded-[3rem] bg-white/50 animate-in zoom-in-95 duration-500">
             <FileText className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="font-black italic text-xl text-primary/40">Biblioteca em Sincronização</p>
+            <p className="u-display text-xl text-primary/40">Biblioteca em sincronização</p>
             <p className="text-sm text-muted-foreground mt-2">Nenhum material encontrado para os filtros atuais.</p>
           </div>
         )}

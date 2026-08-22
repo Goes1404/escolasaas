@@ -121,7 +121,7 @@ export default function AuroraSupportPage() {
       <div className="flex items-center justify-between px-2 shrink-0">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-black italic tracking-tight text-primary uppercase">
+            <h1 className="u-page-title text-2xl md:text-3xl text-primary">
               Engine de Comunicação
             </h1>
             <Badge className="bg-accent/10 text-accent font-black text-[8px] uppercase tracking-widest border-none px-3">SINAL ATIVO</Badge>
@@ -197,7 +197,7 @@ export default function AuroraSupportPage() {
                   <div className={`p-5 md:p-6 rounded-card text-sm leading-relaxed shadow-sm max-w-[85%] md:max-w-[75%] font-medium ${
                     msg.role === 'assistant' 
                       ? msg.isError 
-                        ? 'bg-red-50 text-red-700 border border-red-100 rounded-tl-none font-black italic flex items-start gap-3'
+                        ? 'bg-red-50 text-red-700 border border-red-100 rounded-tl-none font-bold flex items-start gap-3'
                         : 'bg-muted/20 text-foreground rounded-tl-none' 
                       : 'bg-primary text-white rounded-tr-none'
                   }`}>

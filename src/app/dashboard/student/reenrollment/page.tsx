@@ -108,7 +108,7 @@ export default function StudentReenrollmentPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
-        <h1 className="text-3xl font-black italic text-primary flex items-center gap-3">
+        <h1 className="u-page-title text-3xl flex items-center gap-3">
           <FileSignature className="h-8 w-8" /> Rematrícula
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -137,7 +137,7 @@ export default function StudentReenrollmentPage() {
         <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6 md:p-8 space-y-5">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h2 className="font-black italic text-xl">{campaign.title}</h2>
+              <h2 className="u-display text-xl">{campaign.title}</h2>
               {agreement.status === "aceito" && (
                 <Badge className="bg-emerald-100 text-emerald-700 font-black"><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aceito</Badge>
               )}

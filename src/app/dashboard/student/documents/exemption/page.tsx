@@ -212,7 +212,7 @@ export default function ExemptionSimulationPage() {
               <div className="h-12 w-12 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-6 shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
                 <Scale className="h-6 w-6" />
               </div>
-              <CardTitle className="text-2xl font-black italic">A Regra de 1,5 SM</CardTitle>
+              <CardTitle className="u-display text-2xl">A regra de 1,5 SM</CardTitle>
               <CardDescription className="text-white/60 font-medium italic">O critério oficial do Governo Federal.</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
@@ -338,7 +338,7 @@ export default function ExemptionSimulationPage() {
                     {result.eligible ? <CheckCircle2 className="h-10 w-10" /> : <FileWarning className="h-10 w-10" />}
                   </div>
                   <div className="text-center md:text-left space-y-1">
-                    <h3 className="text-2xl md:text-4xl font-black italic tracking-tighter leading-none">
+                    <h3 className="u-display text-2xl md:text-4xl leading-tight">
                       {result.eligible ? "Elegível para Isenção" : "Fora do Critério de Isenção"}
                     </h3>
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-80">
@@ -350,7 +350,7 @@ export default function ExemptionSimulationPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-6 bg-white rounded-3xl border-2 border-muted/10 flex flex-col gap-1 shadow-inner group hover:border-accent/30 transition-all">
                       <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sua Renda Per Capita</span>
-                      <span className={`text-3xl font-black italic ${result.eligible ? 'text-green-600' : 'text-red-600'}`}>R$ {result.perCapita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      <span className={`u-num text-3xl ${result.eligible ? 'text-green-600' : 'text-red-600'}`}>R$ {result.perCapita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                       <p className="text-[8px] font-bold text-muted-foreground mt-2 uppercase">Valor por cada morador da casa</p>
                     </div>
                     <div className="p-6 bg-white rounded-3xl border-2 border-muted/10 flex flex-col gap-1 shadow-inner">

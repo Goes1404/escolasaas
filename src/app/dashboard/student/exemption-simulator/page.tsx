@@ -66,7 +66,7 @@ export default function ExemptionSimulatorPage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 shadow-2xl shadow-emerald-200 p-6">
+      <div className="relative rounded-card overflow-hidden border-2 border-foreground bg-emerald-700 shadow-2xl shadow-emerald-200 p-6">
         <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
@@ -75,7 +75,7 @@ export default function ExemptionSimulatorPage() {
               Apoio Social
             </p>
           </div>
-          <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
+          <h1 className="u-page-title text-2xl leading-[1.15]">
             Simulador de Isenção
           </h1>
           <p className="text-white/80 text-xs font-semibold mt-1">
@@ -151,7 +151,7 @@ export default function ExemptionSimulatorPage() {
           <Button
             onClick={handleSimulation}
             disabled={isLoading || !familyIncome || !schoolType || !hasCadUnico}
-            className="w-full h-13 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40 group"
+            className="w-full h-14 bg-emerald-600 text-white font-black rounded-control border-2 border-foreground shadow-emerald-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40 group"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function ExemptionSimulatorPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h3
-                className={`font-black italic text-base leading-tight ${
+                className={`font-black text-base leading-snug ${
                   result.isEligible ? "text-emerald-700" : "text-red-700"
                 }`}
               >

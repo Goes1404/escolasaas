@@ -385,7 +385,7 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
         {groups.map((g) => (
           <div key={g.examId} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="min-w-0 flex-1 truncate text-sm font-black italic text-slate-800">{g.title}</p>
+              <p className="min-w-0 flex-1 truncate u-display text-sm text-slate-800">{g.title}</p>
               {(() => {
                 const tag = examTypeTag(g.examType);
                 if (!tag) return null;
@@ -418,7 +418,7 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{n}a tentativa</p>
                     {att ? (
                       <div className="mt-1">
-                        <p className="text-lg font-black italic tabular-nums text-slate-950 leading-none">
+                        <p className="u-num text-lg tabular-nums text-slate-950 leading-none">
                           {att.tri != null ? att.tri : `${pct}%`}
                         </p>
                         <p className="text-[9px] font-bold text-slate-400 mt-0.5">
@@ -588,7 +588,7 @@ export default function ReportCardPage() {
               <GraduationCap className="h-3 w-3" />
               {trackLabel}
             </span>
-            <h1 className="mt-3 text-3xl font-black italic tracking-tighter md:text-4xl">Meu Boletim</h1>
+            <h1 className="u-page-title mt-3 text-3xl md:text-4xl leading-[1.15]">Meu boletim</h1>
             <p className="mt-2 max-w-xl text-sm font-semibold text-white/60">
               Escolha uma leitura simples ou uma visao completa do desempenho.
             </p>

@@ -91,7 +91,7 @@ export default function LiveClassesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {liveNow.map((live) => (
               <Card key={live.id} className="border-none shadow-2xl bg-slate-950 text-white rounded-[3rem] md:rounded-[4rem] overflow-hidden group border-l-[16px] border-red-600 relative transition-all hover:-translate-y-2 duration-500">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-[120px]" />
+                
                 <CardContent className="p-8 md:p-16 space-y-10 relative z-10">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-3">
@@ -105,12 +105,12 @@ export default function LiveClassesPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mentor Responsável</p>
-                      <p className="font-black italic text-accent text-xl md:text-3xl mt-1">{live.teacher_name || "Especialista"}</p>
+                      <p className="u-display text-accent text-xl md:text-3xl mt-1">{live.teacher_name || "Especialista"}</p>
                     </div>
                   </div>
                   
                   <div className="space-y-5">
-                    <h3 className="text-2xl md:text-5xl font-black italic leading-[1] group-hover:text-accent transition-colors tracking-tight uppercase">{live.title}</h3>
+                    <h3 className="u-display text-2xl md:text-5xl leading-[1.1] group-hover:text-accent transition-colors">{live.title}</h3>
                     <p className="text-sm md:text-xl text-slate-400 line-clamp-2 italic font-medium leading-relaxed opacity-80">{live.description || "Inicie agora sua participação nesta mentoria técnica obrigatória."}</p>
                   </div>
 
@@ -142,7 +142,7 @@ export default function LiveClassesPage() {
               <MonitorPlay className="h-12 w-12 text-primary/20" />
             </div>
             <div className="space-y-3">
-              <p className="font-black italic text-3xl text-primary uppercase tracking-tighter">Silêncio no Estúdio</p>
+              <p className="u-display text-3xl text-primary">Silêncio no estúdio</p>
               <p className="text-sm md:text-xl text-muted-foreground font-medium italic">Nenhuma mentoria externa agendada para as próximas horas.</p>
             </div>
           </Card>
@@ -154,7 +154,7 @@ export default function LiveClassesPage() {
                   <div className="flex items-center gap-8 md:gap-12 w-full md:w-auto">
                     <div className="h-24 w-24 md:h-32 md:w-32 rounded-card md:rounded-card bg-slate-50 text-primary flex flex-col items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-700">
                       <span className="text-[10px] md:text-[14px] font-black uppercase opacity-60 tracking-widest">{format(new Date(live.start_time), 'MMM', { locale: ptBR })}</span>
-                      <span className="text-3xl md:text-6xl font-black italic leading-none mt-1">{format(new Date(live.start_time), 'dd')}</span>
+                      <span className="u-num text-3xl md:text-6xl leading-none mt-1">{format(new Date(live.start_time), 'dd')}</span>
                     </div>
                     <div className="min-w-0 flex-1 space-y-3">
                       <div className="flex flex-wrap items-center gap-3">
@@ -173,7 +173,7 @@ export default function LiveClassesPage() {
                   
                   <div className="flex items-center justify-between w-full md:w-auto gap-10 md:gap-20 border-t md:border-t-0 pt-8 md:pt-0 border-muted/10">
                     <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-4 text-primary font-black italic text-2xl md:text-5xl">
+                      <div className="flex items-center gap-4 text-primary u-num text-2xl md:text-5xl">
                         <Clock className="h-6 w-6 md:h-10 md:w-10 text-accent" />
                         {format(new Date(live.start_time), 'HH:mm')}
                       </div>

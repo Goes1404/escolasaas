@@ -149,7 +149,7 @@ export default function StudentDocumentsUploadPage() {
         <div className="relative z-10 space-y-4">
           <div className="space-y-2">
             <Badge className="bg-accent text-accent-foreground border-none font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2">Envios Oficiais</Badge>
-            <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-none">Enviar <span className="text-white">Documentos</span></h1>
+            <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">Enviar <span className="text-white">Documentos</span></h1>
             <p className="text-sm md:text-lg text-white/90 font-medium italic">Envie seus atestados, comprovantes e outros documentos para a secretaria.</p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function StudentDocumentsUploadPage() {
               <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-white" />
               </div>
-              <CardTitle className="text-2xl font-black italic text-white leading-none">Enviar Documento</CardTitle>
+              <CardTitle className="u-display text-2xl text-white leading-tight">Enviar documento</CardTitle>
               <CardDescription className="text-white/70 font-medium italic text-sm mt-1">
                 Envie documentos em formato PDF ou Imagem.
               </CardDescription>

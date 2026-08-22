@@ -451,7 +451,7 @@ export default function SimuladoPage() {
             <div className="h-16 w-16 rounded-3xl bg-[#4CCCED]/10 border border-[#4CCCED]/25 flex items-center justify-center mb-6">
               <Timer className="h-8 w-8 text-orange-500 animate-pulse" />
             </div>
-            <h2 className={`text-2xl font-black italic mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>Simulado Pausado</h2>
+            <h2 className={`u-display text-2xl mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>Simulado pausado</h2>
             <p className={`text-xs font-semibold mb-6 max-w-xs leading-relaxed ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
               O cronômetro está congelado. Faça uma pausa rápida para respirar e retome quando estiver pronto para focar.
             </p>
@@ -558,7 +558,7 @@ export default function SimuladoPage() {
         {/* Global Progress Bar */}
         <div className="h-1 bg-white/5 w-full shrink-0 relative overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-orange-500 via-amber-400 to-emerald-400 transition-all duration-500"
+            className="h-full bg-primary transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -938,7 +938,7 @@ export default function SimuladoPage() {
             <ClipboardList className="h-5 w-5 text-orange-400" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Prática Inteligente</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black italic text-white leading-none tracking-tight mb-2">
+          <h1 className="u-page-title text-3xl md:text-4xl text-white leading-[1.15] mb-2">
             Gerador de Listas
           </h1>
           <p className="text-white/60 font-semibold text-xs leading-relaxed max-w-sm mb-6">
@@ -1099,7 +1099,7 @@ export default function SimuladoPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500/5 to-amber-500/5 rounded-2xl border border-[#4CCCED]/10">
+              <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-card border border-[#4CCCED]/10">
                 <div className="h-9 w-9 rounded-xl bg-[#4CCCED]/15 flex items-center justify-center shrink-0">
                   <Timer className="h-4.5 w-4.5 text-orange-500" />
                 </div>

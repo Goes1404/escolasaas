@@ -115,7 +115,7 @@ export default function StudentAdmissionCentral() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <Badge className="bg-accent text-accent-foreground border-none font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2">Padrão SiSU/ProUni</Badge>
-              <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-none">Checklist de <span className="text-white">Matrícula</span></h1>
+              <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">Checklist de <span className="text-white">Matrícula</span></h1>
               <p className="text-sm md:text-lg text-white/90 font-medium italic">Gerencie seus dados e organize sua documentação oficial.</p>
             </div>
             <div className="flex flex-col items-end gap-3 bg-white/10 p-6 rounded-card border border-white/10 backdrop-blur-md">
@@ -169,7 +169,7 @@ export default function StudentAdmissionCentral() {
             <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-accent/20 rounded-full blur-2xl" />
             <CardHeader className="p-8 relative z-10">
               <div className="h-14 w-14 rounded-3xl bg-white/10 flex items-center justify-center mb-6 shadow-xl"><Cloud className="h-8 w-8 text-white" /></div>
-              <CardTitle className="text-2xl font-black italic">Nuvem de Documentos</CardTitle>
+              <CardTitle className="u-display text-2xl">Nuvem de documentos</CardTitle>
               <CardDescription className="text-white/90 font-medium font-bold italic">Use o Google Drive para não perder nada.</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6 relative z-10">

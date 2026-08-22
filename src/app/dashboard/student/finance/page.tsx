@@ -90,7 +90,7 @@ export default function StudentFinancePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black italic text-primary flex items-center gap-3">
+        <h1 className="u-page-title text-3xl flex items-center gap-3">
           <Wallet className="h-8 w-8" /> Financeiro
         </h1>
         <p className="text-muted-foreground text-sm mt-1">

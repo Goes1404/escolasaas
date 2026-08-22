@@ -271,7 +271,7 @@ export default function NotesGraphPage() {
         </div>
         <div className="absolute -inset-2 rounded-card border-2 border-primary/20 animate-ping" />
       </div>
-      <p className="text-sm font-black italic text-primary/60 uppercase tracking-widest animate-pulse">
+      <p className="u-label text-primary/60 animate-pulse">
         Construindo grafo...
       </p>
     </div>
@@ -294,7 +294,7 @@ export default function NotesGraphPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           <Network className="h-4 w-4 text-primary" />
-          <h1 className="text-xs md:text-sm font-black italic text-white uppercase tracking-tight hidden sm:block">
+          <h1 className="u-display text-xs md:text-sm text-white hidden sm:block">
             Grafo do Conhecimento
           </h1>
         </div>
@@ -372,7 +372,7 @@ export default function NotesGraphPage() {
           <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-8">
             <Network className="h-16 w-16 text-slate-700" />
             <div className="space-y-2">
-              <p className="text-white font-black italic text-xl">Nenhuma nota ainda</p>
+              <p className="u-display text-white text-xl">Nenhuma nota ainda</p>
               <p className="text-slate-500 font-medium text-sm max-w-xs">
                 Crie notas no caderno e use <code className="bg-slate-800 px-1.5 py-0.5 rounded text-primary font-mono text-xs">[[nome da nota]]</code> para criar conexões.
               </p>
@@ -524,7 +524,7 @@ export default function NotesGraphPage() {
               {hovNote.title.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="font-black italic text-white text-base leading-tight truncate max-w-[200px]">{hovNote.title}</p>
+              <p className="u-display text-white text-base leading-tight truncate max-w-[200px]">{hovNote.title}</p>
               <div className="flex items-center gap-3 mt-1">
                 {hovSubj && <span className="text-[10px] font-black uppercase text-slate-400">{hovSubj.name}</span>}
                 <span className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-1">
@@ -573,7 +573,7 @@ export default function NotesGraphPage() {
             </div>
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Hub Principal</p>
-              <p className="text-xs font-black italic text-white leading-tight truncate max-w-[120px]">{topNote.title}</p>
+              <p className="u-display text-xs text-white leading-tight truncate max-w-[120px]">{topNote.title}</p>
             </div>
             <span className="text-[9px] font-black text-primary">{degree[topNote.id]}×</span>
           </div>

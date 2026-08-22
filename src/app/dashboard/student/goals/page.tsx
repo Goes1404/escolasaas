@@ -268,7 +268,7 @@ export default function GoalsPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black italic text-primary leading-none">Minhas Metas</h1>
+          <h1 className="u-page-title text-3xl md:text-4xl leading-[1.15]">Minhas metas</h1>
           <p className="text-muted-foreground font-medium italic mt-1">Defina objetivos claros, alcance-os com constância.</p>
         </div>
         <Button
@@ -404,12 +404,12 @@ export default function GoalsPage() {
       )}
 
       {/* CERTIFICADO DE ENGAJAMENTO */}
-      <section className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8 shadow-xl">
+      <section className="bg-card border-2 border-foreground rounded-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8">
         <div className="space-y-2 text-left">
           <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-600 px-3 py-1 rounded-full border border-amber-500/30">
             Recompensa de Prestígio 🏆
           </span>
-          <h3 className="text-xl md:text-2xl font-black italic text-primary leading-none uppercase tracking-tighter">
+          <h3 className="u-display text-xl md:text-2xl text-primary leading-tight">
             Certificado de Engajamento
           </h3>
           <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">
@@ -429,7 +429,7 @@ export default function GoalsPage() {
           disabled={streak < 7 && level < 3}
           className={`h-13 px-8 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg transition-all border-none ${
             streak >= 7 || level >= 3 
-              ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white hover:scale-105 active:scale-95' 
+              ? 'bg-primary text-primary-foreground border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none' 
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'
           }`}
         >
@@ -446,7 +446,7 @@ export default function GoalsPage() {
                 <Target className="h-5 w-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-lg md:text-xl font-black italic text-emerald-700 uppercase tracking-tighter leading-none">Nova Meta</DialogTitle>
+                <DialogTitle className="u-display text-lg md:text-xl text-emerald-700 leading-tight">Nova meta</DialogTitle>
                 <DialogDescription className="text-xs font-bold text-emerald-600 mt-1">Defina um objetivo claro e mensurável</DialogDescription>
               </div>
             </div>

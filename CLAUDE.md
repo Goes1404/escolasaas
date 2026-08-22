@@ -260,6 +260,29 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
   carrega o veredito — ciano ≥70%, amarelo ≥50%, rosa abaixo — no lugar de três
   gradientes escuros quase idênticos. Anel de nota e os três números em `u-num`.
 
+### Todas as 32 telas do aluno estão no sistema (fase 3)
+
+Nenhuma rota alcançável pelo aluno tem mais `font-black italic`, gradiente fora
+da paleta, `text-gradient-*` ou blob difuso. O que sobrou de gradiente é
+neutro e funcional (scrim sobre imagem, divisor que esmaece) — deixe.
+
+Três lições que valem para as telas de gestão, ainda pendentes:
+
+1. **A dose vem do tempo de permanência, não do assunto.** Redação parece
+   nobre, mas o aluno passa uma hora lá: é nível baixo. O resultado da mesma
+   redação dura segundos: é alto.
+2. **Toda tela de resultado usa a mesma faixa de veredito** — ciano acima de
+   70%, amarelo acima de 50%, rosa abaixo. Valem para simulado, prova e
+   redação. Quem responde "como eu fui?" se lê do mesmo jeito.
+3. **`u-display` é CAIXA ALTA.** Em título curto serve; em frase, não. O
+   veredito da isenção e a bolha de erro do suporte são sentenças — ali só sai
+   o itálico. Nunca varra `font-black italic` sem olhar o texto.
+
+Quando a cor é **categórica** (tipo de exame, tipo de material), ela fica: diz
+o que a coisa é. O que sai é o gradiente, o glow e a cor de fora da paleta. E
+todo mapa de cor precisa de um par `accent` + `onAccent` — sem a segunda,
+nasce texto branco sobre amarelo, que já aconteceu duas vezes aqui.
+
 ### Telas já convertidas para nível baixo
 
 - `secretary/tuition` (primeira, fase 3): serve de molde para as outras telas

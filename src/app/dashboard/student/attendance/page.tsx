@@ -191,8 +191,8 @@ export default function StudentAttendancePage() {
       {/* ── Hero ── */}
       <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl ${
         isStellar
-          ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 shadow-emerald-200"
-          : "bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-orange-200"
+          ? "bg-emerald-600 border-2 border-foreground"
+          : "bg-brand-yellow border-2 border-foreground"
       }`}>
         <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
@@ -202,7 +202,7 @@ export default function StudentAttendancePage() {
               {isStellar ? "Frequência exemplar" : "Aluno"}
             </p>
           </div>
-          <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none mb-4">
+          <h1 className="u-page-title text-2xl leading-[1.15] mb-4">
             Minha Frequência
           </h1>
 
@@ -286,7 +286,7 @@ export default function StudentAttendancePage() {
                 onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                 onPaste={handleOtpPaste}
                 onFocus={(e) => e.target.select()}
-                className={`h-14 w-12 sm:w-14 rounded-xl border-2 text-center text-2xl font-black italic font-mono uppercase outline-none transition-all touch-manipulation ${
+                className={`h-14 w-12 sm:w-14 rounded-control border-2 text-center u-num text-2xl outline-none transition-all touch-manipulation ${
                   filled
                     ? "bg-orange-100 border-orange-400 text-orange-700 shadow-lg shadow-orange-200"
                     : "bg-slate-50 border-slate-200 text-slate-400 focus:border-orange-400 focus:bg-white"
@@ -299,7 +299,7 @@ export default function StudentAttendancePage() {
         <Button
           onClick={handleOpenImpact}
           disabled={checkingIn || checkinCode.length < 4}
-          className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-xl shadow-orange-500/30 disabled:opacity-40 disabled:shadow-none uppercase tracking-widest"
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs rounded-control border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-40 uppercase tracking-widest"
         >
           <CheckCircle2 className="h-4 w-4 mr-1.5" />
           Confirmar Presença

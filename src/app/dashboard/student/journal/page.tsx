@@ -111,7 +111,7 @@ export default function JournalPage() {
     <div className="max-w-4xl mx-auto px-2 md:px-4 pb-20 space-y-8">
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl md:text-4xl font-black italic text-primary leading-none flex items-center gap-3">
+        <h1 className="u-page-title text-3xl md:text-4xl leading-[1.15] flex items-center gap-3">
           <span className="h-10 w-10 rounded-2xl bg-violet-100 flex items-center justify-center">
             <BookHeart className="h-5 w-5 text-violet-600" />
           </span>

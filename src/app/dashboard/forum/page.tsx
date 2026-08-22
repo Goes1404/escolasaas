@@ -165,7 +165,7 @@ export default function ForumPage() {
           </DialogTrigger>
           <DialogContent className="rounded-card border-none shadow-2xl p-8 md:p-12 max-w-[95vw] md:max-w-lg bg-white mx-auto">
               <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic text-primary">Iniciar Tópico</DialogTitle>
+                  <DialogTitle className="u-display text-2xl text-primary">Iniciar tópico</DialogTitle>
                   <DialogDescription className="font-medium text-sm italic">Compartilhe sua dúvida ou insight com a rede.</DialogDescription>
               </DialogHeader>
               <div className="space-y-5 py-6">
@@ -229,7 +229,7 @@ export default function ForumPage() {
           {filteredForums?.length === 0 ? (
             <div className="col-span-full py-24 text-center border-4 border-dashed rounded-[3rem] opacity-30">
               <MessageSquare className="h-16 w-16 mx-auto mb-4" />
-              <p className="font-black italic text-xl">Nenhuma discussão encontrada</p>
+              <p className="u-display text-xl">Nenhuma discussão encontrada</p>
             </div>
           ) : (
             filteredForums?.map((forum) => {
@@ -241,7 +241,7 @@ export default function ForumPage() {
                             <div className={`h-12 w-12 rounded-2xl ${styles.bg} ${styles.text} flex items-center justify-center ${styles.hoverBg} ${styles.hoverText} transition-all shadow-inner`}>{getCategoryIcon(forum.category)}</div>
                             <Badge className={`${styles.bg} ${styles.text} border-none font-black text-[8px] uppercase px-3 py-1`}>{forum.category}</Badge>
                         </div>
-                        <CardTitle className="pt-6 text-xl font-black italic text-primary leading-tight group-hover:text-accent transition-colors line-clamp-2 min-h-[3rem]">{forum.name}</CardTitle>
+                        <CardTitle className="pt-6 u-display text-xl text-primary leading-tight group-hover:text-accent transition-colors line-clamp-2 min-h-[3rem]">{forum.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 pt-0 flex-grow">
                         <p className="text-xs md:text-sm text-muted-foreground font-medium italic line-clamp-2 opacity-80">"{forum.description}"</p>
