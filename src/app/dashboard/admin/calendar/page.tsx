@@ -187,7 +187,7 @@ export default function AdminCalendarPage() {
 
       {/* Formulário */}
       {showForm && (
-        <Card className="border-none shadow-2xl rounded-[2.5rem] animate-in slide-in-from-top-4 duration-300">
+        <Card className="border-none shadow-2xl rounded-card animate-in slide-in-from-top-4 duration-300">
           <CardContent className="p-8 space-y-5">
             <h2 className="text-xl font-black text-primary italic">
               {editId ? 'Editar Evento' : 'Criar Evento'}

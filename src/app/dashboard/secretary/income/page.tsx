@@ -222,7 +222,7 @@ export default function SecretaryIncomePage() {
       />
 
       {/* Tabela */}
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex justify-center">
@@ -430,7 +430,7 @@ function StatCard({ label, value, sub, colorClass, icon: Icon }: {
   label: string; value: number; sub: string; colorClass: string; icon: React.ElementType;
 }) {
   return (
-    <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+    <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
       <CardContent className="p-6">
         <div className={`h-10 w-10 rounded-2xl ${colorClass} flex items-center justify-center mb-3 shadow-md`}>
           <Icon className="h-5 w-5 text-white" />

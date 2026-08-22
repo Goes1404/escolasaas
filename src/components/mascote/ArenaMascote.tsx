@@ -65,7 +65,7 @@ export function ArenaMascote({ bicho, tamanho = 'pagina', controles = false, cla
   return (
     <div className={className}>
       <div
-        className={`relative overflow-hidden rounded-[2.5rem] ${grande ? 'aspect-[4/5]' : 'aspect-square'}`}
+        className={`relative overflow-hidden rounded-card ${grande ? 'aspect-[4/5]' : 'aspect-square'}`}
         style={{ background: cenario.ceu }}
       >
         {/* Cenário desfocado: bokeh de fundo, como a profundidade de campo de

@@ -56,14 +56,14 @@ export function DailyQuestionCard({ userId, profile }: Props) {
   }, [userId, profile]);
 
   if (state === 'loading') {
-    return <div className="h-28 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+    return <div className="h-28 rounded-card bg-muted/20 animate-pulse" />;
   }
 
   if (state === 'empty') return null;
 
   return (
     <Link href="/dashboard/student/daily" className="block group">
-      <div className={`gradient-border overflow-hidden rounded-[2.5rem] shadow-xl transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl ${
+      <div className={`gradient-border overflow-hidden rounded-card shadow-xl transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl ${
         state === 'done' && isCorrect  ? 'bg-emerald-500' :
         state === 'done' && !isCorrect ? 'bg-slate-700' :
         'bg-gradient-to-br from-amber-500 to-orange-600'

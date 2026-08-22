@@ -298,7 +298,7 @@ export default function RegisterPage() {
                   <div key="etec">
                     <Label
                       htmlFor="etec"
-                      className={`flex flex-col items-center justify-center rounded-[2rem] border-4 p-8 hover:bg-white cursor-pointer transition-all h-full text-center group ${
+                      className={`flex flex-col items-center justify-center rounded-card border-4 p-8 hover:bg-white cursor-pointer transition-all h-full text-center group ${
                         profileType === "etec" ? "border-accent bg-white shadow-xl ring-8 ring-accent/5" : "border-transparent bg-white/50"
                       }`}
                     >
@@ -314,7 +314,7 @@ export default function RegisterPage() {
                   <div key="enem">
                     <Label
                       htmlFor="enem"
-                      className={`flex flex-col items-center justify-center rounded-[2rem] border-4 p-8 hover:bg-white cursor-pointer transition-all h-full text-center group ${
+                      className={`flex flex-col items-center justify-center rounded-card border-4 p-8 hover:bg-white cursor-pointer transition-all h-full text-center group ${
                         profileType === "enem" ? "border-accent bg-white shadow-xl ring-8 ring-accent/5" : "border-transparent bg-white/50"
                       }`}
                     >

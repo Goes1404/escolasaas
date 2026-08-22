@@ -189,7 +189,7 @@ export default function StudentAttendancePage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className={`relative rounded-[2rem] overflow-hidden p-6 shadow-2xl ${
+      <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl ${
         isStellar
           ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 shadow-emerald-200"
           : "bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-orange-200"
@@ -255,7 +255,7 @@ export default function StudentAttendancePage() {
       )}
 
       {/* ── Check-in (OTP-style) ── */}
-      <div className="bg-white border border-orange-200 shadow-sm rounded-[1.5rem] p-5 space-y-4">
+      <div className="bg-white border border-orange-200 shadow-sm rounded-card p-5 space-y-4">
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center shrink-0">
             <KeyRound className="h-4 w-4 text-orange-600" />
@@ -319,7 +319,7 @@ export default function StudentAttendancePage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Carregando...</p>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="py-16 flex flex-col items-center gap-3 border border-dashed border-slate-200 rounded-[1.5rem]">
+          <div className="py-16 flex flex-col items-center gap-3 border border-dashed border-slate-200 rounded-card">
             <ClipboardCheck className="h-8 w-8 text-slate-300" />
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhuma aula registrada</p>
           </div>
@@ -411,7 +411,7 @@ export default function StudentAttendancePage() {
         open={impactOpen}
         onOpenChange={(v) => { if (!v) { setImpactOpen(false); setConfirmoInput(""); } }}
       >
-        <DialogContent className="sm:max-w-lg rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden bg-[#131316]">
+        <DialogContent className="sm:max-w-lg rounded-card border-none shadow-2xl p-0 overflow-hidden bg-[#131316]">
           <DialogHeader className="p-6 pb-4 border-b border-red-500/20 bg-red-500/5">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-500/30">

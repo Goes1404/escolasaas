@@ -260,19 +260,19 @@ export default function RepairExamImagesPage() {
 
       {/* Resumo */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-none shadow-lg rounded-[2rem] bg-white">
+        <Card className="border-none shadow-lg rounded-card bg-white">
           <CardContent className="p-5 text-center">
             <p className="text-2xl font-black text-primary">{questions.length}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Questões</p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-[2rem] bg-white">
+        <Card className="border-none shadow-lg rounded-card bg-white">
           <CardContent className="p-5 text-center">
             <p className="text-2xl font-black text-amber-500">{pendingQuestions.length}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Sem imagem</p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-[2rem] bg-white">
+        <Card className="border-none shadow-lg rounded-card bg-white">
           <CardContent className="p-5 text-center">
             <p className="text-2xl font-black text-green-600">{phase === 'done' ? appliedCount : proposedCount}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">
@@ -283,7 +283,7 @@ export default function RepairExamImagesPage() {
       </div>
 
       {phase === 'ready' && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white">
+        <Card className="border-none shadow-xl rounded-card bg-white">
           <CardContent className="p-8 text-center space-y-4">
             {exam?.pdf_url ? (
               <>
@@ -311,7 +311,7 @@ export default function RepairExamImagesPage() {
       )}
 
       {phase === 'extracting' && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white">
+        <Card className="border-none shadow-xl rounded-card bg-white">
           <CardContent className="p-10 text-center space-y-3">
             <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
             <p className="font-black text-primary italic">Analisando o PDF…</p>
@@ -322,7 +322,7 @@ export default function RepairExamImagesPage() {
 
       {(phase === 'review' || phase === 'applying') && (
         <>
-          <Card className="border-none shadow-lg rounded-[2rem] bg-blue-50">
+          <Card className="border-none shadow-lg rounded-card bg-blue-50">
             <CardContent className="p-5 flex items-start gap-3">
               <ImageIcon className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
               <p className="text-xs text-blue-800 font-medium">
@@ -338,7 +338,7 @@ export default function RepairExamImagesPage() {
               const assigned = assignedId ? imageById.get(assignedId) : undefined;
               const availableImages = images.filter(img => !usedImageIds.has(img.id) || img.id === assignedId);
               return (
-                <Card key={q.id} className={`border-none shadow-lg rounded-[2rem] overflow-hidden ${assigned ? 'bg-white' : 'bg-slate-50'}`}>
+                <Card key={q.id} className={`border-none shadow-lg rounded-card overflow-hidden ${assigned ? 'bg-white' : 'bg-slate-50'}`}>
                   <CardContent className="p-5 flex flex-col md:flex-row gap-4 md:items-center">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">
@@ -413,7 +413,7 @@ export default function RepairExamImagesPage() {
       )}
 
       {phase === 'done' && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <div className="h-2 bg-green-400" />
           <CardContent className="p-8 text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
@@ -429,7 +429,7 @@ export default function RepairExamImagesPage() {
       )}
 
       {phase === 'error' && (
-        <Card className="border-none shadow-lg rounded-[2rem] bg-red-50">
+        <Card className="border-none shadow-lg rounded-card bg-red-50">
           <CardContent className="p-6 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
             <div className="flex-1">

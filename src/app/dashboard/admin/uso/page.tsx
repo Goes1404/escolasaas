@@ -280,7 +280,7 @@ export default function UsoPage() {
             for (const i of incidentesIA) porRota.set(i.rota, (porRota.get(i.rota) ?? 0) + 1);
 
             return (
-              <section className={`rounded-[2rem] border p-6 shadow-sm space-y-2 ${
+              <section className={`rounded-card border p-6 shadow-sm space-y-2 ${
                 agora ? 'border-red-200 bg-red-50' : 'border-amber-100 bg-amber-50/40'
               }`}>
                 <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function UsoPage() {
           })()}
 
           {/* ── FUNIL ── */}
-          <section className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm space-y-4">
+          <section className="rounded-card border border-slate-100 bg-white p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Funil de ativação</h2>
@@ -345,7 +345,7 @@ export default function UsoPage() {
           </section>
 
           {/* ── FALHAS ── */}
-          <section className="rounded-[2rem] border border-red-100 bg-red-50/40 p-6 shadow-sm space-y-3">
+          <section className="rounded-card border border-red-100 bg-red-50/40 p-6 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <h2 className="text-sm font-black uppercase tracking-widest text-red-700">O que está falhando</h2>
@@ -370,7 +370,7 @@ export default function UsoPage() {
           </section>
 
           {/* ── DESEMPENHO ── */}
-          <section className="rounded-[2rem] border border-amber-100 bg-amber-50/40 p-6 shadow-sm space-y-3">
+          <section className="rounded-card border border-amber-100 bg-amber-50/40 p-6 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <Timer className="h-4 w-4 text-amber-600" />
               <h2 className="text-sm font-black uppercase tracking-widest text-amber-700">Espera e travamento</h2>
@@ -413,7 +413,7 @@ export default function UsoPage() {
 
           {/* ── TELAS E AÇÕES ── */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <section className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm space-y-3">
+            <section className="rounded-card border border-slate-100 bg-white p-6 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <MonitorSmartphone className="h-4 w-4 text-primary" />
                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Telas mais abertas</h2>
@@ -429,7 +429,7 @@ export default function UsoPage() {
               ))}
             </section>
 
-            <section className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm space-y-3">
+            <section className="rounded-card border border-slate-100 bg-white p-6 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <MonitorSmartphone className="h-4 w-4 text-violet-600" />
                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Alcance da notificação</h2>
@@ -453,7 +453,7 @@ export default function UsoPage() {
               })}
             </section>
 
-            <section className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm space-y-3">
+            <section className="rounded-card border border-slate-100 bg-white p-6 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <MonitorSmartphone className="h-4 w-4 text-emerald-600" />
                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Ações concluídas</h2>

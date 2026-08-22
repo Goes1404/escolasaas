@@ -266,10 +266,10 @@ export default function NotesGraphPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-[calc(100dvh-4rem)] bg-slate-950 gap-5">
       <div className="relative">
-        <div className="h-16 w-16 rounded-[1.5rem] bg-primary/20 flex items-center justify-center">
+        <div className="h-16 w-16 rounded-card bg-primary/20 flex items-center justify-center">
           <Network className="h-8 w-8 text-primary" />
         </div>
-        <div className="absolute -inset-2 rounded-[2rem] border-2 border-primary/20 animate-ping" />
+        <div className="absolute -inset-2 rounded-card border-2 border-primary/20 animate-ping" />
       </div>
       <p className="text-sm font-black italic text-primary/60 uppercase tracking-widest animate-pulse">
         Construindo grafo...

@@ -752,7 +752,7 @@ export default function SimuladoPage() {
         <canvas id="confetti-canvas" className="fixed inset-0 pointer-events-none z-[10000]" />
 
         {/* Premium Gamer Scorecard */}
-        <div className={`rounded-[2.5rem] bg-gradient-to-b ${resultBg} border border-white/5 overflow-hidden shadow-2xl p-6 sm:p-8 space-y-6 text-center relative`}>
+        <div className={`rounded-card bg-gradient-to-b ${resultBg} border border-white/5 overflow-hidden shadow-2xl p-6 sm:p-8 space-y-6 text-center relative`}>
           <div className="absolute top-3 right-3 shrink-0">
             <Badge className="bg-[#4CCCED]/10 text-orange-400 border border-[#4CCCED]/25 font-black text-[9px] uppercase tracking-widest px-2.5 h-6">
               <Trophy className="h-3 w-3 mr-1" />
@@ -854,7 +854,7 @@ export default function SimuladoPage() {
               return (
                 <div 
                   key={`${ans.questionId}-${i}`} 
-                  className={`bg-white rounded-[1.5rem] shadow-sm border overflow-hidden transition-all duration-300
+                  className={`bg-white rounded-card shadow-sm border overflow-hidden transition-all duration-300
                     ${isCorrect ? 'border-emerald-100 hover:border-emerald-200' : 'border-red-100 hover:border-red-200'}`}
                 >
                   {/* Collapsible Accordion Header */}
@@ -986,7 +986,7 @@ export default function SimuladoPage() {
     <div className="max-w-2xl mx-auto pb-24 px-2 sm:px-4 animate-in fade-in duration-500">
 
       {/* ── Hero Banner ── */}
-      <div className="aurora-dark rounded-[2.5rem] p-7 md:p-10 mb-8 relative overflow-hidden shadow-2xl">
+      <div className="aurora-dark rounded-card p-7 md:p-10 mb-8 relative overflow-hidden shadow-2xl">
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
@@ -1057,7 +1057,7 @@ export default function SimuladoPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
-              className="bg-white rounded-[2rem] shadow-md border border-slate-200 p-6 space-y-4"
+              className="bg-white rounded-card shadow-md border border-slate-200 p-6 space-y-4"
             >
               {/* Banca — só faz sentido quando a trilha do aluno tem mais de uma.
                   O aluno de ETEC não vê seletor, porque só existe uma banca para ele. */}
@@ -1134,7 +1134,7 @@ export default function SimuladoPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
-              className="bg-white rounded-[2rem] shadow-md border border-slate-200 p-6 space-y-4"
+              className="bg-white rounded-card shadow-md border border-slate-200 p-6 space-y-4"
             >
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">Tamanho do Simulado Completo</p>
@@ -1221,7 +1221,7 @@ export default function SimuladoPage() {
             const hasCard = r.answers?.length > 0 && r.answerKey;
             const isOpen = expandedOficial === i;
             return (
-              <div key={i} className={`rounded-[1.5rem] border overflow-hidden ${bg}`}>
+              <div key={i} className={`rounded-card border overflow-hidden ${bg}`}>
                 <div className="p-5 flex items-center gap-4">
                   <div className="relative shrink-0">
                     {(() => {

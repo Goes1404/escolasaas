@@ -273,7 +273,7 @@ export default function AdminForumModerationPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -332,7 +332,7 @@ export default function AdminForumModerationPage() {
                                 <Settings2 className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="rounded-[2rem] border-none shadow-2xl p-6 max-w-2xl bg-white">
+                            <DialogContent className="rounded-card border-none shadow-2xl p-6 max-w-2xl bg-white">
                               <DialogHeader>
                                 <DialogTitle className="text-xl font-black italic text-primary">Configurações de Debate</DialogTitle>
                               </DialogHeader>
@@ -426,7 +426,7 @@ export default function AdminForumModerationPage() {
                                 {deletingId === f.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl p-10 max-w-sm">
+                            <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm">
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-2xl font-black italic text-primary">Banir Tópico?</AlertDialogTitle>
                                 <AlertDialogDescription className="font-medium text-sm">

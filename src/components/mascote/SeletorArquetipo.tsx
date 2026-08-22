@@ -30,7 +30,7 @@ export function SeletorArquetipo({
             type="button"
             onClick={() => onChange(a.id)}
             aria-pressed={ativo}
-            className={`rounded-[1.5rem] border-2 transition-all overflow-hidden ${
+            className={`rounded-card border-2 transition-all overflow-hidden ${
               compacto ? 'p-1.5' : 'p-2.5'
             } ${
               ativo

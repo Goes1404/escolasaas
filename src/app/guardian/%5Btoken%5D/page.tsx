@@ -69,7 +69,7 @@ export default function GuardianDashboardPage({ params }: { params: Promise<{ to
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-4">
-        <div className="max-w-md w-full text-center bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl">
+        <div className="max-w-md w-full text-center bg-slate-900 border border-slate-800 rounded-card p-8 shadow-2xl">
           <div className="h-16 w-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Award className="h-8 w-8 text-red-500" />
           </div>
@@ -117,7 +117,7 @@ export default function GuardianDashboardPage({ params }: { params: Promise<{ to
         </header>
 
         {/* Hero Card */}
-        <section className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800/80 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden">
+        <section className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800/80 rounded-card p-8 md:p-10 shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 dot-grid opacity-10 pointer-events-none" />
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -207,7 +207,7 @@ export default function GuardianDashboardPage({ params }: { params: Promise<{ to
         </section>
 
         {/* Informações Extras & Dica */}
-        <section className="bg-slate-900/30 border border-slate-800/50 rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-4 justify-between">
+        <section className="bg-slate-900/30 border border-slate-800/50 rounded-card p-6 flex flex-col md:flex-row items-center gap-4 justify-between">
           <div className="flex items-center gap-3 text-left">
             <Trophy className="h-8 w-8 text-amber-500 shrink-0" />
             <div>

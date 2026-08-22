@@ -50,7 +50,7 @@ function typeMeta(type: string) {
 // ─── skeletons ────────────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="rounded-[2rem] bg-white border border-slate-100 overflow-hidden animate-pulse flex flex-col">
+    <div className="rounded-card bg-white border border-slate-100 overflow-hidden animate-pulse flex flex-col">
       <div className="aspect-[3/4] bg-slate-100" />
       <div className="p-5 space-y-3 flex-1">
         <div className="h-3 w-16 bg-slate-100 rounded-full" />
@@ -137,7 +137,7 @@ export default function BooksPage() {
     <div className="pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── HERO ── */}
-      <div className="aurora-dark rounded-[2.5rem] p-7 md:p-10 mb-8 relative overflow-hidden">
+      <div className="aurora-dark rounded-card p-7 md:p-10 mb-8 relative overflow-hidden">
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -298,7 +298,7 @@ function BookCard({ item }: { item: any }) {
   return (
     <Link
       href={`/dashboard/library/book/${item.id}`}
-      className="group flex flex-col rounded-[2rem] bg-white border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      className="group flex flex-col rounded-card bg-white border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
     >
       <div className={`aspect-[3/4] relative overflow-hidden shrink-0 bg-gradient-to-br ${grad}`}>
         {hasImage ? (

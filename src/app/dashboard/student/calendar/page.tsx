@@ -118,7 +118,7 @@ export default function StudentCalendarPage() {
     <div className="max-w-3xl mx-auto px-2 md:px-4 pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── HERO ── */}
-      <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-orange-500 via-rose-500 to-red-600 p-6 shadow-2xl shadow-orange-200">
+      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-rose-500 to-red-600 p-6 shadow-2xl shadow-orange-200">
         <div className="absolute -right-10 -top-10 opacity-10 pointer-events-none">
           <CalendarDays className="h-48 w-48 text-white" />
         </div>
@@ -243,7 +243,7 @@ export default function StudentCalendarPage() {
       {view === "timeline" ? (
         <div className="space-y-6">
           {groupedByMonth.length === 0 ? (
-            <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50">
+            <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-card bg-slate-50">
               <CalendarDays className="h-8 w-8 mx-auto mb-2 text-slate-300" />
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 Nenhum evento agendado
@@ -342,7 +342,7 @@ export default function StudentCalendarPage() {
       ) : (
         /* ── GRADE (calendário) ── */
         <div className="space-y-4">
-          <div className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden p-4 shadow-md">
+          <div className="bg-white border border-slate-100 rounded-card overflow-hidden p-4 shadow-md">
             <style jsx global>{`
               .rdp { color: #1e293b; }
               .rdp-day { color: #475569; border-radius: 0.5rem; font-weight: 600; }

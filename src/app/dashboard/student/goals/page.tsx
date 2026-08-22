@@ -402,7 +402,7 @@ export default function GoalsPage() {
       )}
 
       {/* CERTIFICADO DE ENGAJAMENTO */}
-      <section className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8 shadow-xl">
+      <section className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8 shadow-xl">
         <div className="space-y-2 text-left">
           <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-600 px-3 py-1 rounded-full border border-amber-500/30">
             Recompensa de Prestígio 🏆
@@ -437,7 +437,7 @@ export default function GoalsPage() {
 
       {/* CREATE DIALOG */}
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl p-0 overflow-hidden">
           <DialogHeader className="p-5 md:p-7 pb-4 bg-emerald-50 border-b-2 border-emerald-100">
             <div className="flex items-center gap-3">
               <div className="h-11 w-11 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200 shrink-0">

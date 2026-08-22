@@ -112,7 +112,7 @@ export default function ResetPasswordForm() {
     return (
       <div className="flex flex-col items-center gap-8 text-center animate-in fade-in duration-500">
         <div className="relative">
-          <div className="h-24 w-24 rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-2xl">
+          <div className="h-24 w-24 rounded-card bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-2xl">
             <KeyRound className="h-12 w-12 text-accent" />
           </div>
           <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent animate-ping" />
@@ -143,7 +143,7 @@ export default function ResetPasswordForm() {
   if (authFailed) {
     return (
       <div className="w-full max-w-sm space-y-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="h-24 w-24 rounded-[2rem] bg-red-500/10 border border-red-400/20 flex items-center justify-center mx-auto shadow-2xl">
+        <div className="h-24 w-24 rounded-card bg-red-500/10 border border-red-400/20 flex items-center justify-center mx-auto shadow-2xl">
           <XCircle className="h-12 w-12 text-red-400" />
         </div>
         <div className="space-y-3">
@@ -168,7 +168,7 @@ export default function ResetPasswordForm() {
   if (success) {
     return (
       <div className="w-full max-w-sm space-y-8 text-center animate-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-[2rem] bg-green-500/15 border border-green-400/25 flex items-center justify-center mx-auto shadow-2xl">
+        <div className="h-24 w-24 rounded-card bg-green-500/15 border border-green-400/25 flex items-center justify-center mx-auto shadow-2xl">
           <CheckCircle2 className="h-12 w-12 text-green-400" />
         </div>
         <div className="space-y-2">
@@ -204,7 +204,7 @@ export default function ResetPasswordForm() {
       </div>
 
       {/* Card do formulário */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 space-y-6 shadow-2xl">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-card p-8 space-y-6 shadow-2xl">
         <form onSubmit={handleReset} className="space-y-5">
           {/* Campo senha */}
           <div className="space-y-2">

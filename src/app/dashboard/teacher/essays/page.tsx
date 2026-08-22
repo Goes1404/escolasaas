@@ -200,7 +200,7 @@ export default function AssessmentsGraderPage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* ── Hero (hidden on mobile when essay selected) ── */}
       <div className={`${selectedEssay ? "hidden lg:block" : "block"}`}>
-        <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+        <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -237,7 +237,7 @@ export default function AssessmentsGraderPage() {
       {/* ── Calibração da IA (viés médio vs. correção humana) ── */}
       {calibration && (
         <div className={`${selectedEssay ? "hidden lg:block" : "block"}`}>
-          <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] p-4">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Scale className="h-4 w-4 text-orange-500" />
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
@@ -302,7 +302,7 @@ export default function AssessmentsGraderPage() {
 
         {/* === LIST (always shown on desktop, hidden on mobile when essay selected) === */}
         <div className={`${selectedEssay ? "hidden lg:block" : "block"} w-full lg:w-[320px] shrink-0`}>
-          <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-white shadow-sm">
               <div className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-orange-400/85" />
@@ -377,7 +377,7 @@ export default function AssessmentsGraderPage() {
         {/* === DETAIL === */}
         <div className={`${selectedEssay ? "block" : "hidden lg:block"} flex-1 min-w-0`}>
           {selectedEssay ? (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden">
+            <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
 
               {/* Mobile back button */}
               <div className="lg:hidden p-3 border-b border-slate-100">
@@ -584,7 +584,7 @@ export default function AssessmentsGraderPage() {
               </div>
             </div>
           ) : (
-            <div className="hidden lg:flex flex-col items-center justify-center text-center py-20 bg-white shadow-sm border border-dashed border-slate-200 rounded-[1.5rem] min-h-[400px]">
+            <div className="hidden lg:flex flex-col items-center justify-center text-center py-20 bg-white shadow-sm border border-dashed border-slate-200 rounded-card min-h-[400px]">
               <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
                 <FileText className="h-7 w-7 text-slate-400" />
               </div>

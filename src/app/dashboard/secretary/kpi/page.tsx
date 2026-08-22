@@ -345,7 +345,7 @@ export default function SecretaryKPIPage() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Attendance trend */}
-        <Card className="lg:col-span-3 border-none shadow-2xl rounded-[2.5rem] bg-white">
+        <Card className="lg:col-span-3 border-none shadow-2xl rounded-card bg-white">
           <CardHeader className="p-6 pb-2">
             <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-emerald-500" />
@@ -379,7 +379,7 @@ export default function SecretaryKPIPage() {
         </Card>
 
         {/* Students by class */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-[2.5rem] bg-white">
+        <Card className="lg:col-span-2 border-none shadow-2xl rounded-card bg-white">
           <CardHeader className="p-6 pb-2">
             <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-blue-500" />
@@ -414,7 +414,7 @@ export default function SecretaryKPIPage() {
       {/* Docs + Income row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Document status */}
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+        <Card className="border-none shadow-2xl rounded-card bg-white">
           <CardHeader className="p-6 pb-4">
             <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
               <FileCheck className="h-5 w-5 text-purple-500" />
@@ -475,7 +475,7 @@ export default function SecretaryKPIPage() {
         </Card>
 
         {/* Income distribution */}
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+        <Card className="border-none shadow-2xl rounded-card bg-white">
           <CardHeader className="p-6 pb-4">
             <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-teal-500" />
@@ -561,7 +561,7 @@ export default function SecretaryKPIPage() {
         </CardHeader>
         <CardContent className="p-6 md:p-8 pt-4">
           {kpi.topAbsentees.length === 0 ? (
-            <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-[2rem] text-slate-500">
+            <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-card text-slate-500">
               Nenhum faltante detectado no período.
             </div>
           ) : (

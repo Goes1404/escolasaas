@@ -165,7 +165,7 @@ export default function TeacherStudentsPage() {
   return (
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -277,7 +277,7 @@ export default function TeacherStudentsPage() {
           </p>
         </div>
       ) : filteredStudents.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-slate-200 rounded-[2rem]">
+        <div className="py-20 text-center border border-dashed border-slate-200 rounded-card">
           <Users className="h-10 w-10 mx-auto mb-3 text-white/10" />
           <p className="font-black italic text-slate-400 uppercase tracking-widest text-sm">
             Nenhum registro encontrado
@@ -295,7 +295,7 @@ export default function TeacherStudentsPage() {
               return (
                 <div
                   key={student.id}
-                  className="group relative bg-white shadow-sm border border-slate-200 hover:border-[#4CCCED]/20 rounded-[1.5rem] p-4 transition-all hover:bg-white shadow-sm"
+                  className="group relative bg-white shadow-sm border border-slate-200 hover:border-[#4CCCED]/20 rounded-card p-4 transition-all hover:bg-white shadow-sm"
                 >
                   <div className="flex items-start gap-3">
                     {/* Avatar */}
@@ -430,7 +430,7 @@ export default function TeacherStudentsPage() {
 
       {/* Dialog: Sala / Turma */}
       <Dialog open={!!editingStudent} onOpenChange={(open) => { if (!open) setEditingStudent(null); }}>
-        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden max-w-md bg-white">
+        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-hidden max-w-md bg-white">
           <DialogHeader className="p-8 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 flex items-center justify-center shrink-0">

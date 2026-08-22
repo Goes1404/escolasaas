@@ -310,12 +310,12 @@ export default function AdminStudentProfilePage() {
       </Button>
 
       {/* ── Hero do aluno ── */}
-      <div className="relative rounded-[2.5rem] overflow-hidden bg-primary p-6 md:p-10 shadow-2xl">
+      <div className="relative rounded-card overflow-hidden bg-primary p-6 md:p-10 shadow-2xl">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
 
           {/* Avatar */}
-          <div className="h-20 w-20 md:h-24 md:w-24 rounded-[1.5rem] bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shrink-0">
+          <div className="h-20 w-20 md:h-24 md:w-24 rounded-card bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shrink-0">
             <span className="text-4xl font-black text-white">
               {student.name?.charAt(0)?.toUpperCase() ?? "?"}
             </span>
@@ -365,7 +365,7 @@ export default function AdminStudentProfilePage() {
           </div>
 
           {/* XP bubble */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-[2rem] px-6 py-4 md:px-8 md:py-6 text-center shadow-xl shrink-0 self-start md:self-auto">
+          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-card px-6 py-4 md:px-8 md:py-6 text-center shadow-xl shrink-0 self-start md:self-auto">
             <Zap className="h-6 w-6 text-yellow-300 mx-auto mb-1" />
             <p className="text-4xl font-black text-white italic">{student.xp_points ?? 0}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mt-1">XP Total</p>
@@ -405,7 +405,7 @@ export default function AdminStudentProfilePage() {
             bg: "bg-amber-50",
           },
         ].map((m, i) => (
-          <Card key={i} className="border-none shadow-xl rounded-[2rem] bg-white">
+          <Card key={i} className="border-none shadow-xl rounded-card bg-white">
             <CardContent className="p-4 md:p-6">
               <div className={`h-9 w-9 md:h-11 md:w-11 rounded-2xl ${m.bg} ${m.color} flex items-center justify-center mb-3 md:mb-4 shadow-inner`}>
                 <m.icon className="h-4 w-4 md:h-5 md:w-5" />
@@ -421,7 +421,7 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Boletins em PDF ── */}
       {student && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-4 border-b border-muted/10">
             <CardTitle className="text-xl font-black text-primary italic">Boletins Oficiais em PDF</CardTitle>
             <CardDescription className="italic text-xs">
@@ -538,7 +538,7 @@ export default function AdminStudentProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Radar */}
-        <Card className="lg:col-span-6 border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="lg:col-span-6 border-none shadow-2xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-0">
             <CardTitle className="text-xl font-black text-primary italic">Mapa de Competências</CardTitle>
             <CardDescription className="italic text-xs">Acerto por área do conhecimento.</CardDescription>
@@ -555,7 +555,7 @@ export default function AdminStudentProfilePage() {
         </Card>
 
         {/* Atividade diária */}
-        <Card className="lg:col-span-6 border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="lg:col-span-6 border-none shadow-2xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-0">
             <CardTitle className="text-xl font-black text-primary italic">Atividade Diária</CardTitle>
             <CardDescription className="italic text-xs">Questões acertadas nos últimos 15 dias.</CardDescription>
@@ -568,7 +568,7 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Breakdown por matéria ── */}
       {subjectData.length > 0 && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-4 border-b border-muted/10">
             <div className="flex items-center justify-between">
               <div>
@@ -612,7 +612,7 @@ export default function AdminStudentProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Tentativas de provas */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-4 border-b border-muted/10">
             <div className="flex items-center justify-between">
               <div>
@@ -673,7 +673,7 @@ export default function AdminStudentProfilePage() {
         </Card>
 
         {/* Redações */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-4 border-b border-muted/10">
             <div className="flex items-center justify-between">
               <div>
@@ -722,7 +722,7 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Medalhas ── */}
       {badges.length > 0 && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
           <CardHeader className="p-8 pb-4 border-b border-muted/10">
             <CardTitle className="text-lg font-black text-primary italic">Conquistas & Medalhas</CardTitle>
             <CardDescription className="italic text-xs">{badges.length} medalha{badges.length !== 1 ? "s" : ""} conquistada{badges.length !== 1 ? "s" : ""}.</CardDescription>
@@ -747,17 +747,17 @@ export default function AdminStudentProfilePage() {
       {/* ── Resumo acertos/erros ── */}
       {stats.total > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="border-none shadow-lg rounded-[2rem] bg-emerald-500 text-white overflow-hidden p-6">
+          <Card className="border-none shadow-lg rounded-card bg-emerald-500 text-white overflow-hidden p-6">
             <CheckCircle2 className="h-7 w-7 opacity-40 mb-3" />
             <p className="text-4xl font-black italic">{stats.correct}</p>
             <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">Questões Corretas</p>
           </Card>
-          <Card className="border-none shadow-lg rounded-[2rem] bg-red-400 text-white overflow-hidden p-6">
+          <Card className="border-none shadow-lg rounded-card bg-red-400 text-white overflow-hidden p-6">
             <XCircle className="h-7 w-7 opacity-40 mb-3" />
             <p className="text-4xl font-black italic">{stats.incorrect}</p>
             <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">Questões Erradas</p>
           </Card>
-          <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden p-6 border-l-8 border-primary">
+          <Card className="border-none shadow-lg rounded-card bg-white overflow-hidden p-6 border-l-8 border-primary">
             <Target className="h-7 w-7 text-primary/20 mb-3" />
             <p className="text-4xl font-black italic text-primary">{stats.accuracy}%</p>
             <p className="text-[10px] font-black uppercase tracking-widest mt-1 text-muted-foreground">Taxa de Aproveitamento</p>

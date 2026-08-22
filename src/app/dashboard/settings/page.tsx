@@ -441,7 +441,7 @@ export default function SettingsPage() {
                             key={i} 
                             type="button" 
                             onClick={() => setFormData({...formData, avatar_url: url})} 
-                            className={`relative rounded-[1.5rem] overflow-hidden aspect-square border-[6px] transition-all hover:scale-110 active:scale-90 shadow-xl ${formData.avatar_url === url ? 'border-accent scale-110 ring-8 ring-accent/5' : 'border-white opacity-60 hover:opacity-100'}`}
+                            className={`relative rounded-card overflow-hidden aspect-square border-[6px] transition-all hover:scale-110 active:scale-90 shadow-xl ${formData.avatar_url === url ? 'border-accent scale-110 ring-8 ring-accent/5' : 'border-white opacity-60 hover:opacity-100'}`}
                           >
                             <Avatar className="w-full h-full rounded-none"><AvatarImage src={url} className="object-cover" /></Avatar>
                             {formData.avatar_url === url && (

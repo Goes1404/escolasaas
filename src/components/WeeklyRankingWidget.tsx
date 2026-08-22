@@ -60,11 +60,11 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
   }, [load]);
 
   if (loading) {
-    return <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+    return <div className="h-48 rounded-card bg-muted/20 animate-pulse" />;
   }
 
   return (
-    <div className="gradient-border bg-white rounded-[2.5rem] shadow-xl overflow-hidden group border border-slate-100">
+    <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden group border border-slate-100">
       <div className="p-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">

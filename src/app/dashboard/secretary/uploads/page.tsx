@@ -241,10 +241,10 @@ export default function SecretaryUploadsPage() {
       {/* Lista */}
       {loading ? (
         <div className="space-y-3">
-          {Array(4).fill(0).map((_, i) => <div key={i} className="h-24 rounded-[2rem] bg-white shadow-sm animate-pulse" />)}
+          {Array(4).fill(0).map((_, i) => <div key={i} className="h-24 rounded-card bg-white shadow-sm animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white">
+        <Card className="border-none shadow-xl rounded-card bg-white">
           <CardContent className="py-20 flex flex-col items-center text-center gap-3">
             <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center">
               <FolderOpen className="h-8 w-8 text-primary/30" />
@@ -260,7 +260,7 @@ export default function SecretaryUploadsPage() {
             return (
               <Card
                 key={upload.id}
-                className="border-none shadow-xl rounded-[2rem] bg-white overflow-hidden hover:shadow-2xl transition-all duration-200"
+                className="border-none shadow-xl rounded-card bg-white overflow-hidden hover:shadow-2xl transition-all duration-200"
               >
                 <CardContent className="p-5 flex items-start gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
@@ -335,7 +335,7 @@ export default function SecretaryUploadsPage() {
 
       {/* Modal de Revisão */}
       <Dialog open={!!reviewTarget} onOpenChange={v => { if (!v) setReviewTarget(null); }}>
-        <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl p-0 overflow-hidden">
           <DialogHeader className="p-8 pb-4 bg-slate-50 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">

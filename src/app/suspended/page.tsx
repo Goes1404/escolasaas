@@ -17,7 +17,7 @@ export default function SuspendedPage() {
       <Card className="w-full max-w-lg border-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] bg-white/95 backdrop-blur-xl rounded-[3rem] overflow-hidden animate-in zoom-in-95 duration-700">
         <CardContent className="p-12 text-center space-y-8">
           <div className="flex justify-center">
-            <div className="h-24 w-24 rounded-[2rem] bg-red-50 text-red-600 flex items-center justify-center shadow-xl rotate-3">
+            <div className="h-24 w-24 rounded-card bg-red-50 text-red-600 flex items-center justify-center shadow-xl rotate-3">
               <ShieldAlert className="h-12 w-12" />
             </div>
           </div>
@@ -31,7 +31,7 @@ export default function SuspendedPage() {
             </p>
           </div>
 
-          <div className="p-6 rounded-[2rem] bg-red-50/50 border border-red-100 space-y-2">
+          <div className="p-6 rounded-card bg-red-50/50 border border-red-100 space-y-2">
             <p className="text-xs font-black uppercase text-red-800 tracking-widest">Status da Conta</p>
             <p className="text-sm font-bold text-red-700 italic">SUSPENSÃO TEMPORÁRIA ATIVA</p>
           </div>

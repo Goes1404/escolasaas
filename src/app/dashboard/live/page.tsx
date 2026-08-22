@@ -116,7 +116,7 @@ export default function LiveClassesPage() {
 
                   <Button 
                     asChild 
-                    className="w-full bg-white text-slate-950 hover:bg-accent hover:text-accent-foreground font-black h-16 md:h-24 rounded-2xl md:rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.4)] transition-all border-none group/btn text-lg md:text-2xl"
+                    className="w-full bg-white text-slate-950 hover:bg-accent hover:text-accent-foreground font-black h-16 md:h-24 rounded-2xl md:rounded-card shadow-[0_30px_60px_rgba(0,0,0,0.4)] transition-all border-none group/btn text-lg md:text-2xl"
                   >
                      <Link href={`/dashboard/live/${live.id}`} className="flex items-center justify-center gap-6">
                         ENTRAR NO ESTÚDIO
@@ -138,7 +138,7 @@ export default function LiveClassesPage() {
         
         {upcoming.length === 0 && liveNow.length === 0 ? (
           <Card className="border-none shadow-xl bg-white rounded-[3.5rem] p-24 text-center opacity-40 border-dashed border-4 flex flex-col items-center gap-8">
-            <div className="h-24 w-24 rounded-[2.5rem] bg-slate-50 flex items-center justify-center shadow-inner">
+            <div className="h-24 w-24 rounded-card bg-slate-50 flex items-center justify-center shadow-inner">
               <MonitorPlay className="h-12 w-12 text-primary/20" />
             </div>
             <div className="space-y-3">
@@ -149,10 +149,10 @@ export default function LiveClassesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-8">
             {upcoming.map((live) => (
-              <Card key={live.id} className="border-none shadow-xl bg-white rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden hover:shadow-2xl transition-all duration-500 border-l-[12px] border-primary/5 group">
+              <Card key={live.id} className="border-none shadow-xl bg-white rounded-card md:rounded-[3.5rem] overflow-hidden hover:shadow-2xl transition-all duration-500 border-l-[12px] border-primary/5 group">
                 <CardContent className="p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
                   <div className="flex items-center gap-8 md:gap-12 w-full md:w-auto">
-                    <div className="h-24 w-24 md:h-32 md:w-32 rounded-[2rem] md:rounded-[2.5rem] bg-slate-50 text-primary flex flex-col items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-700">
+                    <div className="h-24 w-24 md:h-32 md:w-32 rounded-card md:rounded-card bg-slate-50 text-primary flex flex-col items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-700">
                       <span className="text-[10px] md:text-[14px] font-black uppercase opacity-60 tracking-widest">{format(new Date(live.start_time), 'MMM', { locale: ptBR })}</span>
                       <span className="text-3xl md:text-6xl font-black italic leading-none mt-1">{format(new Date(live.start_time), 'dd')}</span>
                     </div>

@@ -179,7 +179,7 @@ export default function SecretaryCommunication() {
   return (
     <div className="space-y-5 md:space-y-6 animate-in fade-in duration-500 pb-20 px-1">
       {/* HERO */}
-      <div className="relative aurora-dark rounded-[2rem] p-5 md:p-8 shadow-xl overflow-hidden">
+      <div className="relative aurora-dark rounded-card p-5 md:p-8 shadow-xl overflow-hidden">
         <div className="absolute top-0 right-0 w-56 h-56 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
@@ -197,7 +197,7 @@ export default function SecretaryCommunication() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 md:gap-6">
         {/* COMPOSER */}
-        <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-lg p-5 md:p-6 space-y-4 h-fit">
+        <div className="lg:col-span-2 bg-white rounded-card border border-slate-100 shadow-lg p-5 md:p-6 space-y-4 h-fit">
           <h2 className="font-black text-sm text-slate-900 italic flex items-center gap-2">
             <Send className="h-4 w-4 text-primary" />
             Novo Comunicado
@@ -301,7 +301,7 @@ export default function SecretaryCommunication() {
         </div>
 
         {/* RECENT LIST */}
-        <div className="lg:col-span-3 bg-white rounded-[2rem] border border-slate-100 shadow-lg p-5 md:p-6">
+        <div className="lg:col-span-3 bg-white rounded-card border border-slate-100 shadow-lg p-5 md:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-black text-sm text-slate-900 italic flex items-center gap-2">
               <Clock className="h-4 w-4 text-slate-400" />
@@ -352,7 +352,7 @@ export default function SecretaryCommunication() {
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-[2rem] w-[95vw] sm:max-w-md">
+                      <AlertDialogContent className="rounded-card w-[95vw] sm:max-w-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="font-black italic">Remover comunicado?</AlertDialogTitle>
                           <AlertDialogDescription>

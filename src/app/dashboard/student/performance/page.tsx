@@ -206,7 +206,7 @@ export default function StudentPerformancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
         {/* Radar chart */}
-        <div className="lg:col-span-7 bg-white rounded-2xl md:rounded-[2.5rem] shadow-md border border-slate-100 overflow-hidden">
+        <div className="lg:col-span-7 bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
           <div className="p-4 md:p-8 pb-2 flex items-center justify-between">
             <div>
               <h2 className="font-black text-base md:text-xl text-slate-900 italic">Mapa de Competências</h2>
@@ -227,7 +227,7 @@ export default function StudentPerformancePage() {
 
         <div className="lg:col-span-5 space-y-4">
           {/* Line chart */}
-          <div className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-md border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
             <div className="p-4 md:p-8 pb-2">
               <h2 className="font-black text-base text-slate-900 italic">Atividade Diária</h2>
               <p className="text-xs text-slate-400 italic mt-0.5">Acertos nos últimos 15 dias.</p>
@@ -238,7 +238,7 @@ export default function StudentPerformancePage() {
           </div>
 
           {/* Aurora tip */}
-          <div className="bg-primary rounded-2xl md:rounded-[2rem] p-4 md:p-6 relative overflow-hidden">
+          <div className="bg-primary rounded-2xl md:rounded-card p-4 md:p-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
             <div className="relative z-10 flex items-start gap-4">
               <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
@@ -283,7 +283,7 @@ export default function StudentPerformancePage() {
           <Clock className="h-4 w-4 text-purple-500" />
           Histórico de Simulados
         </h3>
-        <div className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-md border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
           {attempts.length === 0 ? (
             <div className="py-12 text-center text-slate-400 italic text-sm">
               Nenhum simulado finalizado ainda. Ao concluir um simulado, o tempo aparece aqui.

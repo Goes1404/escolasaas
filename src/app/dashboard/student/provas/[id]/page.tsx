@@ -677,7 +677,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                     </p>
                   </div>
                 )}
-                <div className="relative rounded-[1.5rem] overflow-hidden bg-[#0a0a0c] border border-emerald-500/20 p-5">
+                <div className="relative rounded-card overflow-hidden bg-[#0a0a0c] border border-emerald-500/20 p-5">
                   <div
                     className="absolute inset-0 pointer-events-none"
                     style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(16,185,129,0.18) 0%, transparent 60%)" }}

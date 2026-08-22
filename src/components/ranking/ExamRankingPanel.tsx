@@ -240,7 +240,7 @@ export default function ExamRankingPanel() {
   return (
     <div className="space-y-5">
       {/* Cabeçalho */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-card bg-slate-950 p-6 text-white shadow-xl">
         <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(245,158,11,0.5) 0%, transparent 55%)" }} />
         <div className="relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-300">

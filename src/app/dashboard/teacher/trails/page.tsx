@@ -179,7 +179,7 @@ export default function TeacherTrailsPage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -290,7 +290,7 @@ export default function TeacherTrailsPage() {
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sincronizando...</p>
         </div>
       ) : filteredTrails.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+        <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
           <Inbox className="h-8 w-8 mx-auto mb-2 text-white/15" />
           <p className="font-black italic text-xs text-slate-500 uppercase tracking-widest">Nenhuma trilha encontrada</p>
           <p className="text-[10px] text-slate-600 mt-1">Crie uma nova aula ou ajuste a pesquisa</p>
@@ -306,7 +306,7 @@ export default function TeacherTrailsPage() {
               <div
                 key={trail.id}
                 onClick={() => mergeMode && toggleSelect(trail.id)}
-                className={`group relative bg-white shadow-sm border rounded-[1.5rem] overflow-hidden flex flex-col transition-all duration-200 ${
+                className={`group relative bg-white shadow-sm border rounded-card overflow-hidden flex flex-col transition-all duration-200 ${
                   mergeMode ? "cursor-pointer" : ""
                 } ${isSelected ? "border-purple-500/50 bg-purple-500/5" : "border-slate-200 hover:border-slate-200"}`}
               >
@@ -394,7 +394,7 @@ export default function TeacherTrailsPage() {
         setIsCreateDialogOpen(open);
         if (!open) setTimeout(() => { document.body.style.pointerEvents = ""; }, 100);
       }}>
-        <DialogContent className="rounded-[1.5rem] bg-white border border-slate-200 shadow-2xl w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto p-0">
+        <DialogContent className="rounded-card bg-white border border-slate-200 shadow-2xl w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto p-0">
           <DialogHeader className="p-5 pb-0">
             <DialogTitle className="text-lg font-black italic text-slate-800 flex items-center gap-2">
               <Plus className="h-4 w-4 text-orange-400" />
@@ -492,7 +492,7 @@ export default function TeacherTrailsPage() {
         setIsMergeDialogOpen(open);
         if (!open) setTimeout(() => { document.body.style.pointerEvents = ""; }, 100);
       }}>
-        <DialogContent className="rounded-[1.5rem] bg-white border border-slate-200 shadow-2xl max-w-md p-0">
+        <DialogContent className="rounded-card bg-white border border-slate-200 shadow-2xl max-w-md p-0">
           <DialogHeader className="p-5 pb-0">
             <DialogTitle className="text-lg font-black italic text-slate-800 flex items-center gap-2">
               <ListVideo className="h-4 w-4 text-purple-400" />

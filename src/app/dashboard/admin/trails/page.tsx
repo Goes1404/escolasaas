@@ -99,7 +99,7 @@ export default function TrailApprovalPage() {
         </Button>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>

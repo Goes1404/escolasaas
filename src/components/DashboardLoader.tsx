@@ -13,7 +13,7 @@ export function DashboardLoader({ message }: { message?: string }) {
   return (
     <div className="space-y-6 pb-10 animate-in fade-in duration-300" aria-busy="true" aria-label={message ?? "Carregando"}>
       {/* Herói */}
-      <Skeleton className="h-40 w-full rounded-[2rem] md:h-48" />
+      <Skeleton className="h-40 w-full rounded-card md:h-48" />
 
       {/* Ações rápidas */}
       <div className="grid grid-cols-4 gap-3">
@@ -31,8 +31,8 @@ export function DashboardLoader({ message }: { message?: string }) {
 
       {/* Área de widgets */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Skeleton className="h-72 rounded-[2.5rem] lg:col-span-2" />
-        <Skeleton className="h-72 rounded-[2.5rem]" />
+        <Skeleton className="h-72 rounded-card lg:col-span-2" />
+        <Skeleton className="h-72 rounded-card" />
       </div>
     </div>
   );

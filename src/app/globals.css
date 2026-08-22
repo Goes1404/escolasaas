@@ -34,7 +34,20 @@
     --input: 220 13% 75%;
     --ring: 192 82% 61%;
 
-    --radius: 1rem;
+    /* ── Primitivos de forma (fase 1 do sistema visual único) ──────────────
+       Um raio para o produto inteiro. A landing usa canto reto e o dashboard
+       usava 2.5rem — esse era o contraste que fazia os dois parecerem
+       produtos distintos. 14px é a ponte: firme o bastante para conversar com
+       o traço da landing, macio o bastante para as telas densas.
+       Mexer AQUI muda as 132 rotas de uma vez. */
+    --radius: 0.875rem;         /* 14px — containers, cards, modais */
+    --radius-card: 0.875rem;    /* 14px — alias semântico p/ superfícies */
+    --radius-control: 0.625rem; /* 10px — botão, input, chip, select */
+
+    /* Sombra dura deslocada: a assinatura da landing, em dose mínima.
+       Só no elemento primário da tela, nunca em toda superfície. */
+    --shadow-hard: 3px 3px 0 hsl(var(--foreground) / 0.9);
+    --shadow-hard-accent: 3px 3px 0 hsl(var(--accent));
 
     /* Tokens customizados */
     --success: 160 84% 39%;           /* feedback-success #10B981 */
@@ -993,4 +1006,66 @@ input:-webkit-autofill:active {
 @keyframes mascote-sombra-plana {
   0%, 100% { transform: scaleX(1); opacity: 0.25; }
   50%      { transform: scaleX(0.78); opacity: 0.14; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SISTEMA VISUAL ÚNICO — primitivos compartilhados (fase 1)
+
+   A plataforma tem UM sistema com três níveis de intensidade, não dois
+   estilos. O que muda entre uma tela de festa (ranking, mascote) e uma de
+   trabalho (simulado, mensalidades) é a DOSE, nunca a linguagem:
+
+     nível alto  → segundos de uso, momento de emoção: cor chapada de fundo,
+                   sombra dura, animação contínua, display gigante.
+     nível médio → minutos: fundo neutro, acento em detalhe, sombra dura só
+                   no botão primário, animação apenas na entrada.
+     nível baixo → horas (simulado, redação, painel da secretaria): cor só
+                   como sinal semântico, sem sombra dura, sem animação.
+
+   Regra de decisão: quanto mais tempo o usuário passa na tela, menor a
+   intensidade. E toda tela de nível baixo mantém o CABEÇALHO em nível médio
+   (título em display + label mono), que é o que costura tudo — como manchete
+   de jornal: expressiva no topo, corpo sóbrio embaixo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Label/metadado — o mesmo em toda a plataforma e na landing. */
+  .u-label {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Número grande / título de destaque. Nunca em texto corrido. */
+  .u-display {
+    font-family: var(--font-display), 'Arial Black', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+  }
+
+  /* Números tabulares (valores, notas, contadores) — não "dançam" ao animar. */
+  .u-num {
+    font-family: var(--font-display), 'Arial Black', sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* Cabeçalho de tela: a assinatura que aparece mesmo nas telas sóbrias. */
+  .u-page-title {
+    font-family: var(--font-display), 'Arial Black', sans-serif;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  /* Superfície padrão. Substitui o par shadow-2xl + rounded-[2.5rem] que era
+     repetido à mão em ~300 lugares. */
+  .u-surface {
+    border-radius: var(--radius-card);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
 }

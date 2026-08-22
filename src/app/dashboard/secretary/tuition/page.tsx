@@ -409,27 +409,27 @@ export default function TuitionPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest"><DollarSign className="h-4 w-4" /> Previsto</div>
             <p className="text-2xl font-black mt-2">{brl(kpi.previsto)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.total} fatura(s)</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-emerald-600 text-xs font-black uppercase tracking-widest"><TrendingUp className="h-4 w-4" /> Recebido</div>
             <p className="text-2xl font-black mt-2 text-emerald-600">{brl(kpi.recebido)}</p>
             <p className="text-xs text-muted-foreground mt-1">{kpi.pagas} paga(s)</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest"><Wallet className="h-4 w-4" /> Em aberto</div>
             <p className="text-2xl font-black mt-2 text-blue-600">{brl(kpi.emAberto)}</p>
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-red-600 text-xs font-black uppercase tracking-widest"><AlertTriangle className="h-4 w-4" /> Inadimplência</div>
             <p className="text-2xl font-black mt-2 text-red-600">{kpi.inadimplencia}%</p>
@@ -475,7 +475,7 @@ export default function TuitionPage() {
             </Select>
           </div>
 
-          <Card className="shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="shadow-2xl rounded-card overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -552,7 +552,7 @@ export default function TuitionPage() {
 
         {/* ── PLANOS ── */}
         <TabsContent value="planos" className="space-y-4 mt-4">
-          <Card className="shadow-2xl rounded-[2.5rem]">
+          <Card className="shadow-2xl rounded-card">
             <CardContent className="p-6 space-y-4">
               <h3 className="font-black italic text-lg">Novo plano</h3>
               <div className="grid md:grid-cols-4 gap-3">
@@ -579,7 +579,7 @@ export default function TuitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="shadow-2xl rounded-card overflow-hidden">
             <CardContent className="p-0">
               <table className="w-full text-sm">
                 <thead>
@@ -619,7 +619,7 @@ export default function TuitionPage() {
         {/* ── ALUNOS & BOLSAS ── */}
         <TabsContent value="bolsas" className="space-y-4 mt-4">
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="shadow-2xl rounded-[2.5rem]">
+            <Card className="shadow-2xl rounded-card">
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-black italic text-lg flex items-center gap-2"><Wallet className="h-5 w-5" /> Vincular aluno a plano</h3>
                 <div className="space-y-3">
@@ -645,7 +645,7 @@ export default function TuitionPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-2xl rounded-[2.5rem]">
+            <Card className="shadow-2xl rounded-card">
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-black italic text-lg flex items-center gap-2"><BadgePercent className="h-5 w-5" /> Bolsa / desconto</h3>
                 <div className="space-y-3">
@@ -674,7 +674,7 @@ export default function TuitionPage() {
             </Card>
           </div>
 
-          <Card className="shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="shadow-2xl rounded-card overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

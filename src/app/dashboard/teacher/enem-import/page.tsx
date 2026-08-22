@@ -68,7 +68,7 @@ export default function TeacherEnemImportPage() {
         </div>
       </header>
 
-      <Card className="border-none shadow-lg rounded-[2rem] bg-blue-50 border-blue-100">
+      <Card className="border-none shadow-lg rounded-card bg-blue-50 border-blue-100">
         <CardContent className="p-6 space-y-3">
           <div className="flex items-center gap-2 text-blue-700 font-black text-sm">
             <Zap className="h-4 w-4" /> Como funciona
@@ -82,7 +82,7 @@ export default function TeacherEnemImportPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-xl rounded-[2.5rem] bg-white">
+      <Card className="border-none shadow-xl rounded-card bg-white">
         <CardContent className="p-8 space-y-6">
           <div className="space-y-3">
             <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">Selecione o ano</label>
@@ -129,7 +129,7 @@ export default function TeacherEnemImportPage() {
       </Card>
 
       {result && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden animate-in fade-in duration-500">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden animate-in fade-in duration-500">
           <div className="h-2 bg-green-400" />
           <CardContent className="p-8 space-y-6">
             <div className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export default function TeacherEnemImportPage() {
       )}
 
       {error && (
-        <Card className="border-none shadow-lg rounded-[2rem] bg-red-50">
+        <Card className="border-none shadow-lg rounded-card bg-red-50">
           <CardContent className="p-6 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
             <div>
@@ -180,7 +180,7 @@ export default function TeacherEnemImportPage() {
         </Card>
       )}
 
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white/60">
+      <Card className="border-none shadow-sm rounded-card bg-white/60">
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground mb-3">
             <BookOpen className="h-3.5 w-3.5" /> Anos disponíveis na API

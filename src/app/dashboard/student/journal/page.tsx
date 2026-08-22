@@ -121,7 +121,7 @@ export default function JournalPage() {
       </div>
 
       {/* TODAY */}
-      <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-xl space-y-6">
+      <div className="bg-white rounded-card p-6 md:p-8 border border-slate-100 shadow-xl space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <p className="text-[10px] font-black uppercase tracking-widest text-violet-700 bg-violet-50 px-3 py-1.5 rounded-full">
             Hoje · {formatDate(today())}

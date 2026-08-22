@@ -89,7 +89,7 @@ function FlipCard({
     >
       {/* Front */}
       <motion.div
-        className="absolute inset-0 w-full rounded-[2rem] bg-white border border-slate-200 shadow-xl flex flex-col items-center p-6 md:p-8 gap-4 cursor-pointer select-none overflow-y-auto"
+        className="absolute inset-0 w-full rounded-card bg-white border border-slate-200 shadow-xl flex flex-col items-center p-6 md:p-8 gap-4 cursor-pointer select-none overflow-y-auto"
         style={{ backfaceVisibility: 'hidden' }}
         animate={{ rotateY: revealed ? 180 : 0 }}
         transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
@@ -123,7 +123,7 @@ function FlipCard({
 
       {/* Back */}
       <motion.div
-        className="absolute inset-0 w-full rounded-[2rem] bg-gradient-to-br from-violet-600 to-indigo-700 shadow-xl flex flex-col p-8 gap-5 overflow-y-auto"
+        className="absolute inset-0 w-full rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 shadow-xl flex flex-col p-8 gap-5 overflow-y-auto"
         style={{ backfaceVisibility: 'hidden', rotateY: 180 }}
         animate={{ rotateY: revealed ? 360 : 180 }}
         transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
@@ -341,7 +341,7 @@ export default function FlashcardsPage() {
     const elapsed = Math.round((Date.now() - startTime.current) / 60000);
     return (
       <div className="max-w-lg mx-auto px-4 pb-24 space-y-6 animate-in fade-in duration-700">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-white shadow-2xl">
+        <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-white shadow-2xl">
           <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="relative z-10 text-center space-y-4">
             <div className="text-6xl">🎉</div>
@@ -376,7 +376,7 @@ export default function FlashcardsPage() {
   return (
     <div className="max-w-lg mx-auto px-4 pb-24 space-y-5 animate-in fade-in duration-700">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-violet-600 to-indigo-700 p-6 text-white shadow-2xl">
+      <section className="relative overflow-hidden rounded-card bg-gradient-to-br from-violet-600 to-indigo-700 p-6 text-white shadow-2xl">
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="relative z-10 flex items-start justify-between gap-4">

@@ -152,7 +152,7 @@ export default function TeacherLiveStudioPage({ params }: { params: Promise<{ id
                  <span className="text-[10px] font-black uppercase text-white/60 tracking-[0.2em]">Sinal Monitorado</span>
               </div>
 
-              <div className="h-48 w-48 rounded-[2.5rem] bg-accent/5 border-2 border-accent/20 flex items-center justify-center relative shadow-inner">
+              <div className="h-48 w-48 rounded-card bg-accent/5 border-2 border-accent/20 flex items-center justify-center relative shadow-inner">
                  <User className="h-24 w-24 text-accent/20" />
               </div>
 
@@ -163,7 +163,7 @@ export default function TeacherLiveStudioPage({ params }: { params: Promise<{ id
                  </p>
               </div>
 
-              <div className="absolute bottom-10 flex items-center gap-4 bg-white/5 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/10">
+              <div className="absolute bottom-10 flex items-center gap-4 bg-white/5 backdrop-blur-3xl p-6 rounded-card border border-white/10">
                  <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-white"><Mic className="h-6 w-6" /></Button>
                  <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-white"><Video className="h-6 w-6" /></Button>
                  <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl bg-accent text-accent-foreground"><MonitorUp className="h-6 w-6" /></Button>

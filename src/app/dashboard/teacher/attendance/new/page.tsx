@@ -135,7 +135,7 @@ export default function NewAttendanceSessionPage() {
       </Link>
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-slate-100 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-slate-100 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -162,7 +162,7 @@ export default function NewAttendanceSessionPage() {
       {/* ── Form ── */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden"
+        className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden"
       >
         <div className="p-4 border-b border-slate-100 bg-white shadow-sm">
           <div className="flex items-center gap-2">

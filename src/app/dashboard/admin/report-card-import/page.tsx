@@ -140,7 +140,7 @@ export default function ReportCardImportPage() {
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileDrop}
             onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-primary/30 hover:border-primary/60 bg-primary/2 hover:bg-primary/5 rounded-[2.5rem] p-12 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all group"
+            className="border-2 border-dashed border-primary/30 hover:border-primary/60 bg-primary/2 hover:bg-primary/5 rounded-card p-12 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all group"
           >
             <div className="h-16 w-16 rounded-2xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
               <FileSpreadsheet className="h-8 w-8 text-primary" />
@@ -200,7 +200,7 @@ export default function ReportCardImportPage() {
 
       {step === "done" && result && (
         <div className="space-y-5">
-          <div className="relative bg-[#0d0d0f] rounded-[2.5rem] p-8 overflow-hidden">
+          <div className="relative bg-[#0d0d0f] rounded-card p-8 overflow-hidden">
             <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(76,204,237,0.25) 0%, transparent 65%)" }} />
             <div className="relative z-10 flex items-center gap-5">
               <div className="h-16 w-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">

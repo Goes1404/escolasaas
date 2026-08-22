@@ -136,8 +136,8 @@ export default function LibraryPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       
       {/* ── HERO BANNER ── */}
-      <section className="aurora-dark relative overflow-hidden rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl border border-white/5 group">
-        <div className="absolute inset-0 dot-grid opacity-15 pointer-events-none rounded-[2.5rem]" />
+      <section className="aurora-dark relative overflow-hidden rounded-card p-8 md:p-12 text-white shadow-2xl border border-white/5 group">
+        <div className="absolute inset-0 dot-grid opacity-15 pointer-events-none rounded-card" />
         <div className="absolute top-[-25%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-[85px] hidden md:block" />
         <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-primary/10 rounded-full blur-[60px] hidden md:block" />
         
@@ -207,7 +207,7 @@ export default function LibraryPage() {
         {filteredResources.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredResources.map((item, index) => (
-              <Card key={item.id} className="gradient-border overflow-hidden border-none shadow-xl hover:shadow-2xl hover:-translate-y-1.5 hover:glow-orange-strong transition-all duration-300 group bg-white rounded-[2.5rem] flex flex-col h-full">
+              <Card key={item.id} className="gradient-border overflow-hidden border-none shadow-xl hover:shadow-2xl hover:-translate-y-1.5 hover:glow-orange-strong transition-all duration-300 group bg-white rounded-card flex flex-col h-full">
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0">
                   <Image
                     src={getSafeLibraryImage(item.image_url, item.category)}

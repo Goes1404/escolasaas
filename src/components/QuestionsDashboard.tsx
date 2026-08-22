@@ -103,7 +103,7 @@ export function QuestionsDashboard() {
     <div className="space-y-6 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <h2 className="text-2xl font-black text-primary italic px-2">Análise Industrial do Banco</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all">
+            <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Volume Total</CardTitle>
                     <div className="p-2 rounded-xl bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
@@ -115,7 +115,7 @@ export function QuestionsDashboard() {
                     <p className="text-[10px] font-bold text-muted-foreground mt-2">ITENS NO REPOSITÓRIO</p>
                 </CardContent>
             </Card>
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all">
+            <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Exploração de Rede</CardTitle>
                     <div className="p-2 rounded-xl bg-accent/5 text-accent group-hover:bg-accent group-hover:text-white transition-colors">
@@ -129,7 +129,7 @@ export function QuestionsDashboard() {
             </Card>
         </div>
 
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
             <CardHeader className="p-8 pb-0">
                 <CardTitle className="text-lg font-black text-primary italic">Distribuição Geográfica de Matérias</CardTitle>
             </CardHeader>
@@ -148,10 +148,10 @@ function DashboardSkeleton() {
         <div className="space-y-6 mb-10 animate-pulse">
             <Skeleton className="h-8 w-48 rounded-lg" />
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Skeleton className="h-40 rounded-[2.5rem]" />
-                <Skeleton className="h-40 rounded-[2.5rem]" />
+                <Skeleton className="h-40 rounded-card" />
+                <Skeleton className="h-40 rounded-card" />
             </div>
-            <Skeleton className="h-[400px] rounded-[2.5rem]" />
+            <Skeleton className="h-[400px] rounded-card" />
         </div>
     );
 }

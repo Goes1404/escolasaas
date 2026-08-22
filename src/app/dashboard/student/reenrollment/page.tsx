@@ -117,7 +117,7 @@ export default function StudentReenrollmentPage() {
       </div>
 
       {!campaign && (
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-10 text-center text-muted-foreground">
             Nenhuma campanha de rematrícula aberta no momento.
           </CardContent>
@@ -125,7 +125,7 @@ export default function StudentReenrollmentPage() {
       )}
 
       {campaign && !agreement && (
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-10 text-center text-muted-foreground">
             A campanha {campaign.title} está aberta, mas sua pendência ainda não foi gerada.
             Fale com a secretaria.
@@ -134,7 +134,7 @@ export default function StudentReenrollmentPage() {
       )}
 
       {campaign && agreement && (
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6 md:p-8 space-y-5">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-black italic text-xl">{campaign.title}</h2>

@@ -233,7 +233,7 @@ export default function FirstAccessPage() {
         </div>
 
         {/* ════ card ════ */}
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-card shadow-2xl overflow-hidden">
 
           {/* ══ STEP 1: SENHA ══ */}
           {step === 1 && (

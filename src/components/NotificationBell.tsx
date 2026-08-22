@@ -168,7 +168,7 @@ export function NotificationBell() {
 
         <DropdownMenuContent
           align="end"
-          className="w-[min(340px,calc(100vw-1rem))] md:w-[390px] rounded-[2rem] border-none shadow-2xl p-0 bg-white overflow-hidden animate-in zoom-in-95 duration-200"
+          className="w-[min(340px,calc(100vw-1rem))] md:w-[390px] rounded-card border-none shadow-2xl p-0 bg-white overflow-hidden animate-in zoom-in-95 duration-200"
         >
           {/* Cabeçalho */}
           <DropdownMenuLabel className="px-5 py-4 border-b border-slate-100">
@@ -264,7 +264,7 @@ export function NotificationBell() {
 
             {/* Card — slide-up no mobile, centrado no desktop */}
             <div
-              className="relative z-10 w-full sm:max-w-lg bg-white sm:rounded-[2rem] rounded-t-[2rem] overflow-hidden shadow-2xl flex flex-col max-h-[90dvh]"
+              className="relative z-10 w-full sm:max-w-lg bg-white sm:rounded-card rounded-t-[2rem] overflow-hidden shadow-2xl flex flex-col max-h-[90dvh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Cabeçalho com gradiente por prioridade */}

@@ -74,7 +74,7 @@ function BentoCard({
       ref={cardRef}
       variants={cardVariants}
       onMouseMove={handleMouseMove}
-      className={`group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-7 md:p-8 shadow-2xl transition-[border-color,transform] duration-300 hover:border-primary/40 hover:-translate-y-1 noise ${
+      className={`group relative flex flex-col overflow-hidden rounded-card border border-white/10 bg-white/[0.03] backdrop-blur-xl p-7 md:p-8 shadow-2xl transition-[border-color,transform] duration-300 hover:border-primary/40 hover:-translate-y-1 noise ${
         isScrollActive ? `is-active border-primary/40 ${reduceMotion ? "" : "-translate-y-1"}` : ""
       } ${className}`}
     >

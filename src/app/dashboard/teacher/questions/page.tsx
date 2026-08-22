@@ -452,7 +452,7 @@ export default function QuestionBankPage() {
 
             <QuestionsDashboard />
 
-            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+            <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
                 <CardHeader className="bg-slate-50/50 border-b border-dashed p-6">
                     <div className="flex flex-wrap bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl border w-fit mx-auto md:mx-0 shadow-sm">
                         <Button variant={entryMode === 'bulk' ? 'default' : 'ghost'} onClick={() => setEntryMode('bulk')}
@@ -563,7 +563,7 @@ export default function QuestionBankPage() {
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
-                                        <div className="h-[380px] bg-slate-900 rounded-[2rem] overflow-hidden border-4 border-slate-800 shadow-2xl">
+                                        <div className="h-[380px] bg-slate-900 rounded-card overflow-hidden border-4 border-slate-800 shadow-2xl">
                                             <iframe src={pdfUrl} className="w-full h-full border-none" />
                                         </div>
                                     </div>
@@ -613,7 +613,7 @@ export default function QuestionBankPage() {
 
                             {/* Image gallery */}
                             {autoImageQueue.length > 0 && (
-                                <div className="mt-6 p-6 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 animate-in fade-in duration-500">
+                                <div className="mt-6 p-6 bg-slate-50 rounded-card border border-dashed border-slate-200 animate-in fade-in duration-500">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                         <div>
                                             <Label className="text-sm font-black uppercase text-primary flex items-center gap-2">
@@ -832,7 +832,7 @@ export default function QuestionBankPage() {
 
                             {/* Gabarito em lote — provas como a da FUVEST publicam o gabarito
                                 num PDF separado, então as questões saem da extração sem resposta. */}
-                            <Card className="border-none shadow-lg bg-white p-5 rounded-[2rem]">
+                            <Card className="border-none shadow-lg bg-white p-5 rounded-card">
                                 <button
                                     type="button"
                                     onClick={() => setShowAnswerKeyPanel(v => !v)}
@@ -911,7 +911,7 @@ export default function QuestionBankPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {paginatedQuestions.map((q: ParsedQuestion & { _confirmed_answer?: boolean }, i: number) => (
                                     <Card key={q._tempId}
-                                        className={`border-none shadow-lg bg-white p-6 rounded-[2rem] relative group transition-all duration-300 ${dragOverId === q._tempId ? 'ring-4 ring-primary bg-primary/5 scale-[1.02] z-10' : 'hover:shadow-xl'}`}
+                                        className={`border-none shadow-lg bg-white p-6 rounded-card relative group transition-all duration-300 ${dragOverId === q._tempId ? 'ring-4 ring-primary bg-primary/5 scale-[1.02] z-10' : 'hover:shadow-xl'}`}
                                         onPaste={(e: React.ClipboardEvent) => {
                                             for (let j = 0; j < e.clipboardData.items.length; j++) {
                                                 if (e.clipboardData.items[j].type.includes('image')) {
@@ -943,7 +943,7 @@ export default function QuestionBankPage() {
                                         </div>
 
                                         {q._uploadingImage && (
-                                            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center rounded-[2rem] animate-in fade-in">
+                                            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center rounded-card animate-in fade-in">
                                                 <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
                                                 <span className="text-xs font-black text-primary uppercase tracking-widest">Anexando Imagem...</span>
                                             </div>
@@ -1178,7 +1178,7 @@ export default function QuestionBankPage() {
                     )}
 
                     <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
-                        <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl">
+                        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl">
                             <DialogHeader>
                                 <DialogTitle className="text-2xl font-black italic text-primary">Resumo da Importação</DialogTitle>
                             </DialogHeader>
@@ -1223,7 +1223,7 @@ export default function QuestionBankPage() {
                     </Dialog>
 
                     <Dialog open={!!duplicateWarning} onOpenChange={(open) => !open && setDuplicateWarning(null)}>
-                        <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl">
+                        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl">
                             <DialogHeader>
                                 <DialogTitle className="text-2xl font-black italic text-red-600 flex items-center gap-3">
                                     <AlertTriangle className="h-6 w-6" /> Atenção: Duplicatas

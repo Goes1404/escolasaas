@@ -63,8 +63,8 @@ export function LoginForm() {
     // animação (~720ms). Transform é compositor-only e não atrasa o LCP.
     <div className="w-full max-w-[420px] animate-in slide-in-from-bottom-4 zoom-in-95 duration-500 ease-out">
       {/* ── Outer glow ring ── */}
-      <div className="border-prism rounded-[2rem]">
-        <div className="glass-login rounded-[2rem] p-8 md:p-10 relative overflow-hidden">
+      <div className="border-prism rounded-card">
+        <div className="glass-login rounded-card p-8 md:p-10 relative overflow-hidden">
 
           {/* Inner shimmer top */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/40 to-transparent pointer-events-none" />

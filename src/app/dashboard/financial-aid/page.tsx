@@ -207,7 +207,7 @@ export default function FinancialAidPage() {
         
         {/* Coluna 1: Instruções e Regras */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none shadow-xl bg-primary text-white rounded-2xl md:rounded-[2.5rem] overflow-hidden relative group transition-all duration-500">
+          <Card className="border-none shadow-xl bg-primary text-white rounded-2xl md:rounded-card overflow-hidden relative group transition-all duration-500">
             <div className="absolute top-0 right-0 w-28 h-28 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
             <CardHeader className="p-5 md:p-8">
               <div className="h-10 w-10 rounded-xl bg-accent text-accent-foreground flex items-center justify-center mb-4 shadow-xl">
@@ -252,7 +252,7 @@ export default function FinancialAidPage() {
 
         {/* Coluna 2: Formulário e Resultado */}
         <div className="lg:col-span-8 space-y-8">
-          <Card className="shadow-xl border-none bg-white rounded-2xl md:rounded-[2.5rem] overflow-hidden">
+          <Card className="shadow-xl border-none bg-white rounded-2xl md:rounded-card overflow-hidden">
             <CardHeader className="bg-muted/10 p-5 md:p-8 border-b border-muted/20">
               <div className="flex items-center justify-between">
                 <div>
@@ -333,7 +333,7 @@ export default function FinancialAidPage() {
 
           {result && !loading && (
             <div className="animate-in zoom-in-95 slide-in-from-top-10 duration-700">
-              <Card className={`border-none shadow-xl rounded-2xl md:rounded-[2.5rem] overflow-hidden ${result.eligible ? 'bg-green-50/50' : 'bg-red-50/50'}`}>
+              <Card className={`border-none shadow-xl rounded-2xl md:rounded-card overflow-hidden ${result.eligible ? 'bg-green-50/50' : 'bg-red-50/50'}`}>
                 <div className={`p-5 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${result.eligible ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                   <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center shrink-0 shadow-xl">
                     {result.eligible ? <CheckCircle2 className="h-7 w-7" /> : <FileWarning className="h-7 w-7" />}

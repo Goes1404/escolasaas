@@ -219,7 +219,7 @@ export default function ForumDetailPage() {
                   <Users className="h-3.5 w-3.5" /> Gerenciar Membros
                 </Button>
               </DialogTrigger>
-              <DialogContent className="rounded-[2.5rem] p-10 bg-white border-none shadow-2xl max-w-2xl">
+              <DialogContent className="rounded-card p-10 bg-white border-none shadow-2xl max-w-2xl">
                 <DialogHeader>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
@@ -315,7 +315,7 @@ export default function ForumDetailPage() {
                                 {format(new Date(post.created_at), "HH:mm")}
                               </span>
                             </div>
-                            <div className={`px-5 py-3.5 rounded-[1.5rem] shadow-sm max-w-[90%] md:max-w-[75%] text-sm font-medium leading-relaxed ${
+                            <div className={`px-5 py-3.5 rounded-card shadow-sm max-w-[90%] md:max-w-[75%] text-sm font-medium leading-relaxed ${
                               isMe 
                                 ? 'bg-primary text-white rounded-tr-none' 
                                 : 'bg-white text-primary rounded-tl-none border border-primary/5'

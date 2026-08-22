@@ -17,7 +17,7 @@ export function LoadingShell() {
         <div className="absolute h-24 w-24 border-2 border-primary/40 rounded-full animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite_0.5s]" />
         
         {/* Core Container */}
-        <div className="relative h-20 w-20 rounded-[2rem] bg-white/5 backdrop-blur-xl flex items-center justify-center border border-white/10 shadow-[0_0_40px_rgba(76,204,237,0.2)]">
+        <div className="relative h-20 w-20 rounded-card bg-white/5 backdrop-blur-xl flex items-center justify-center border border-white/10 shadow-[0_0_40px_rgba(76,204,237,0.2)]">
           <BookOpen className="h-10 w-10 text-primary animate-pulse" />
         </div>
       </div>

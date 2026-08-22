@@ -30,7 +30,7 @@ export function GamificationWidget({ userId }: Props) {
   const allBadges = Object.keys(BADGE_META) as BadgeType[];
 
   return (
-    <div className="gradient-border bg-white rounded-[2.5rem] shadow-xl overflow-hidden glow-orange group">
+    <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden glow-orange group">
       <div className="aurora-dark dot-grid p-6 space-y-5 text-white">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">

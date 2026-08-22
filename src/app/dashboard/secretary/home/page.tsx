@@ -172,7 +172,7 @@ export default function SecretaryDashboard() {
       {/* Ações Rápidas (CEO style operational hubs) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         {/* Hub Matrículas */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
           <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
             <div>
               <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 shadow-sm w-fit mb-5 shadow-inner">
@@ -192,7 +192,7 @@ export default function SecretaryDashboard() {
         </Card>
 
         {/* Hub Frequência */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
           <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
             <div>
               <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm w-fit mb-5 shadow-inner">
@@ -212,7 +212,7 @@ export default function SecretaryDashboard() {
         </Card>
 
         {/* Hub Certidões */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
+        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
           <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
             <div>
               <div className="p-4 rounded-2xl bg-purple-50 text-purple-600 shadow-sm w-fit mb-5 shadow-inner">
@@ -277,7 +277,7 @@ export default function SecretaryDashboard() {
                 {Array(3).fill(0).map((_, i) => <div key={i} className="h-[68px] rounded-2xl bg-amber-50/50 animate-pulse" />)}
               </div>
             ) : absentees.length === 0 ? (
-              <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-[2rem] text-slate-500">
+              <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-card text-slate-500">
                 Nenhum aluno com faltas críticas no momento. Excelente!
               </div>
             ) : (

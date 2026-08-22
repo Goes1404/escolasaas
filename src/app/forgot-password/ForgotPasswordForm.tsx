@@ -159,7 +159,7 @@ export function ForgotPasswordForm() {
 
   if (success) {
     return (
-      <Card className="w-full max-w-md border-none shadow-2xl bg-white/95 backdrop-blur-md rounded-[2rem] p-8 text-center space-y-6">
+      <Card className="w-full max-w-md border-none shadow-2xl bg-white/95 backdrop-blur-md rounded-card p-8 text-center space-y-6">
         <div className="flex justify-center">
           <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle2 className="h-10 w-10 text-emerald-600" />
@@ -179,7 +179,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-md border-none shadow-2xl overflow-hidden bg-white/95 backdrop-blur-md rounded-[2rem]">
+    <Card className="w-full max-w-md border-none shadow-2xl overflow-hidden bg-white/95 backdrop-blur-md rounded-card">
       <CardHeader className="space-y-1 pb-6 pt-8 text-center bg-primary/5 border-b border-dashed">
         <div className="flex justify-center mb-4">
           <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center">

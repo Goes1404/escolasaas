@@ -144,7 +144,7 @@ export default function StudentDocumentsUploadPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 px-1">
-      <section className="bg-primary p-8 md:p-12 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl">
+      <section className="bg-primary p-8 md:p-12 rounded-card text-white relative overflow-hidden shadow-2xl">
         <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-accent/20 rounded-full blur-3xl" />
         <div className="relative z-10 space-y-4">
           <div className="space-y-2">
@@ -158,7 +158,7 @@ export default function StudentDocumentsUploadPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulário de Upload */}
         <div className="lg:col-span-1">
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden sticky top-4">
+          <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden sticky top-4">
             <CardHeader className="bg-primary p-8">
               <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-white" />
@@ -256,7 +256,7 @@ export default function StudentDocumentsUploadPage() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : uploads.length === 0 ? (
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white">
+            <Card className="border-none shadow-xl rounded-card bg-white">
               <CardContent className="py-16 flex flex-col items-center text-center gap-3">
                 <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center">
                   <FileText className="h-8 w-8 text-primary/30" />
@@ -271,7 +271,7 @@ export default function StudentDocumentsUploadPage() {
                 const typeMeta = DOC_TYPES[upload.doc_type] || DOC_TYPES.outro;
                 const statusMeta = STATUS_META[upload.status] || STATUS_META.pendente;
                 return (
-                  <Card key={upload.id} className="border-none shadow-xl rounded-[2rem] bg-white overflow-hidden hover:shadow-2xl transition-all duration-200">
+                  <Card key={upload.id} className="border-none shadow-xl rounded-card bg-white overflow-hidden hover:shadow-2xl transition-all duration-200">
                     <CardContent className="p-5 flex items-start gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
                         <FileText className="h-6 w-6 text-primary/40" />

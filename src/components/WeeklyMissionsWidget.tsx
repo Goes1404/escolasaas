@@ -97,13 +97,13 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
     }
   };
 
-  if (loading) return <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+  if (loading) return <div className="h-48 rounded-card bg-muted/20 animate-pulse" />;
   if (missions.length === 0) return null;
 
   const completedCount = missions.filter(m => m.completed).length;
 
   return (
-    <div className="gradient-border bg-white rounded-[2.5rem] shadow-xl overflow-hidden">
+    <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden">
       {/* Header */}
       <div className="aurora-dark dot-grid p-5 text-white">
         <div className="flex items-center justify-between">

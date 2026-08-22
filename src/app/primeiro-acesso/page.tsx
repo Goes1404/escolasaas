@@ -120,7 +120,7 @@ function PrimeiroAcessoContent() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-card shadow-2xl overflow-hidden">
 
           {/* colored header strip */}
           <div className={`bg-gradient-to-r ${h.color} px-7 py-5 flex items-center gap-3`}>
@@ -357,7 +357,7 @@ function PrimeiroAcessoContent() {
             <div className="p-7 flex flex-col items-center text-center space-y-6 py-10">
               <div className="relative">
                 <div className="absolute inset-0 bg-emerald-400 rounded-full blur-[40px] opacity-30 scale-150" />
-                <div className="h-24 w-24 bg-emerald-500 rounded-[2rem] flex items-center justify-center relative shadow-2xl shadow-emerald-200">
+                <div className="h-24 w-24 bg-emerald-500 rounded-card flex items-center justify-center relative shadow-2xl shadow-emerald-200">
                   <CheckCircle2 className="h-12 w-12 text-white" />
                 </div>
               </div>

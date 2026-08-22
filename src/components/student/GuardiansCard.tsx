@@ -210,7 +210,7 @@ export function GuardiansCard({ studentId }: { studentId: string }) {
   };
 
   return (
-    <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+    <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
       <CardHeader className="p-6 pb-2 flex flex-row items-center justify-between gap-2">
         <CardTitle className="text-base font-black text-primary italic flex items-center gap-2">
           <HeartHandshake className="h-5 w-5 text-orange-500" />
@@ -452,7 +452,7 @@ export function GuardiansCard({ studentId }: { studentId: string }) {
       </CardContent>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>
-        <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl">
+        <AlertDialogContent className="rounded-card border-none shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-black italic">Remover responsável?</AlertDialogTitle>
             <AlertDialogDescription>

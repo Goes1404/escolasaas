@@ -73,7 +73,7 @@ export function StudentRoomTracker({ open, onClose }: { open: boolean; onClose: 
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-      <DialogContent className="rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col">
+      <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-hidden w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader className="p-6 pb-4 bg-primary/5 border-b border-primary/10 shrink-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white shadow shrink-0">

@@ -141,7 +141,7 @@ export function GuiaInstalacao() {
       <div className="mx-auto w-full max-w-lg space-y-6">
 
         <header className="text-center space-y-4">
-          <div className="mx-auto relative h-20 w-20 rounded-[1.5rem] bg-white shadow-xl border border-slate-100 overflow-hidden p-2">
+          <div className="mx-auto relative h-20 w-20 rounded-card bg-white shadow-xl border border-slate-100 overflow-hidden p-2">
             <Image src="/icons/icon-192.png" alt="Plataforma" fill className="object-contain" sizes="80px" />
           </div>
           <div className="space-y-2">
@@ -156,7 +156,7 @@ export function GuiaInstalacao() {
         </header>
 
         {instalado ? (
-          <section className="rounded-[2rem] bg-emerald-50 border border-emerald-100 p-7 text-center space-y-4">
+          <section className="rounded-card bg-emerald-50 border border-emerald-100 p-7 text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-emerald-600 mx-auto" />
             <div className="space-y-1">
               <p className="text-xl font-black italic text-emerald-900">Já está instalado!</p>
@@ -179,14 +179,14 @@ export function GuiaInstalacao() {
                 type="button"
                 onClick={instalarAgora}
                 disabled={instalando}
-                className="w-full h-16 rounded-[1.5rem] bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-60"
+                className="w-full h-16 rounded-card bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-60"
               >
                 <Download className="h-5 w-5" />
                 {instalando ? 'Instalando…' : 'Instalar agora'}
               </button>
             )}
 
-            <div className="rounded-[2rem] bg-white border border-slate-100 shadow-sm overflow-hidden">
+            <div className="rounded-card bg-white border border-slate-100 shadow-sm overflow-hidden">
               {/* Abas: a plataforma detectada vem selecionada, mas quem abre no
                   projetor precisa mostrar as duas para a turma inteira. */}
               <div className="grid grid-cols-2 border-b border-slate-100">
@@ -238,7 +238,7 @@ export function GuiaInstalacao() {
           </>
         )}
 
-        <div className="rounded-[2rem] bg-slate-900 text-white p-6 space-y-3">
+        <div className="rounded-card bg-slate-900 text-white p-6 space-y-3">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/50">O que você recebe</p>
           <ul className="space-y-2 text-sm font-medium text-white/85">
             <li className="flex items-start gap-3">

@@ -104,7 +104,7 @@ export function StudySuggestionWidget({ userId }: Props) {
   if (loading || !suggestion) return null;
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-[2rem] border border-primary/10 p-6 space-y-4">
+    <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-card border border-primary/10 p-6 space-y-4">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg">
           <BrainCircuit className="h-5 w-5" />

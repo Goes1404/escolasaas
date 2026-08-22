@@ -259,7 +259,7 @@ export function QuestionsList() {
 
     return (
         <div className="space-y-6">
-            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+            <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
                 <CardHeader className="p-8 border-b border-muted/5">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <CardTitle className="text-xl font-black text-primary italic">Repositório Maestro ({filteredQuestions.length})</CardTitle>
@@ -345,7 +345,7 @@ export function QuestionsList() {
                     setTimeout(() => { document.body.style.pointerEvents = ""; }, 500);
                 }
             }}>
-                <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl p-10 max-w-sm">
+                <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-2xl font-black italic text-primary">Excluir Questão?</AlertDialogTitle>
                         <AlertDialogDescription className="font-medium text-sm">Esta ação é irreversível e removerá o item permanentemente do banco.</AlertDialogDescription>
@@ -365,7 +365,7 @@ export function QuestionsList() {
                     setTimeout(() => { document.body.style.pointerEvents = ""; }, 500);
                 }
             }}>
-                <DialogContent className="max-w-3xl rounded-[2.5rem] p-6 md:p-10 bg-white border-none shadow-2xl">
+                <DialogContent className="max-w-3xl rounded-card p-6 md:p-10 bg-white border-none shadow-2xl">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black italic text-primary">Ajuste Pedagógico</DialogTitle>
                     </DialogHeader>
@@ -476,7 +476,7 @@ export function QuestionsList() {
 
 function ListSkeleton() {
     return (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white animate-pulse p-8">
+        <Card className="border-none shadow-xl rounded-card bg-white animate-pulse p-8">
             <div className="space-y-6">
                 {[1, 2, 3].map(i => (
                     <div key={i} className='flex justify-between items-center bg-muted/10 h-24 rounded-2xl px-6'>

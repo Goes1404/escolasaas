@@ -161,7 +161,7 @@ export default function ForumPage() {
                   <span>Nova Discussão</span>
               </button>
           </DialogTrigger>
-          <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-8 md:p-12 max-w-[95vw] md:max-w-lg bg-white mx-auto">
+          <DialogContent className="rounded-card border-none shadow-2xl p-8 md:p-12 max-w-[95vw] md:max-w-lg bg-white mx-auto">
               <DialogHeader>
                   <DialogTitle className="text-2xl font-black italic text-primary">Iniciar Tópico</DialogTitle>
                   <DialogDescription className="font-medium text-sm italic">Compartilhe sua dúvida ou insight com a rede.</DialogDescription>
@@ -233,7 +233,7 @@ export default function ForumPage() {
             filteredForums?.map((forum) => {
                 const styles = getCategoryStyles(forum.category);
                 return (
-                <Card key={forum.id} className="group relative overflow-hidden flex flex-col border border-muted/20 shadow-xl rounded-[2.5rem] bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <Card key={forum.id} className="group relative overflow-hidden flex flex-col border border-muted/20 shadow-xl rounded-card bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                     <CardHeader className="p-8 pb-4">
                         <div className="flex items-center justify-between">
                             <div className={`h-12 w-12 rounded-2xl ${styles.bg} ${styles.text} flex items-center justify-center ${styles.hoverBg} ${styles.hoverText} transition-all shadow-inner`}>{getCategoryIcon(forum.category)}</div>

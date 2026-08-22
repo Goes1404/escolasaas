@@ -53,7 +53,7 @@ export function UpcomingEventsWidget() {
   if (events.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-xl p-6 space-y-4">
+    <div className="bg-white rounded-card shadow-xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-primary" />

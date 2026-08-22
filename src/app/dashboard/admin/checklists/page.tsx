@@ -278,7 +278,7 @@ export default function AdminChecklistAuditPage() {
                 Mensagem em Massa ({filtered.length})
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] p-6 bg-white border-none shadow-2xl max-w-lg">
+            <DialogContent className="rounded-card p-6 bg-white border-none shadow-2xl max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-xl font-black italic text-primary">Intervenção Direta</DialogTitle>
                 <DialogDescription className="font-medium italic text-sm">Esta mensagem será enviada individualmente para o chat de {filtered.length} alunos filtrados.</DialogDescription>
@@ -308,7 +308,7 @@ export default function AdminChecklistAuditPage() {
                 Publicar Aviso Segmentado
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] p-6 bg-white border-none shadow-2xl max-w-lg">
+            <DialogContent className="rounded-card p-6 bg-white border-none shadow-2xl max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-xl font-black italic text-primary">Alerta Geral de Grupo</DialogTitle>
                 <DialogDescription className="font-medium italic text-sm">Isso criará um aviso no mural para toda a rede focada no grupo {statusFilter}.</DialogDescription>
@@ -333,7 +333,7 @@ export default function AdminChecklistAuditPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">

@@ -172,7 +172,7 @@ export default function TeacherHomePage() {
     <div className="space-y-4 md:space-y-6 animate-in fade-in duration-500 pb-6 px-0.5">
 
       {/* ── HERO ── */}
-      <div className="relative aurora-dark rounded-[2rem] p-5 md:p-8 shadow-xl overflow-hidden">
+      <div className="relative aurora-dark rounded-card p-5 md:p-8 shadow-xl overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[90px] pointer-events-none" />
         <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
@@ -254,7 +254,7 @@ export default function TeacherHomePage() {
         <div className="lg:col-span-2 space-y-4 md:space-y-5">
 
           {/* Announcements */}
-          <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-md border border-slate-100 p-4 md:p-7">
+          <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 p-4 md:p-7">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-sm text-slate-900 italic flex items-center gap-2">
                 <Megaphone className="h-4 w-4 text-amber-500" />
@@ -288,7 +288,7 @@ export default function TeacherHomePage() {
           </div>
 
           {/* Engagement chart */}
-          <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-md border border-slate-100 p-4 md:p-7">
+          <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 p-4 md:p-7">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="h-4 w-4 text-accent" />
               <h2 className="font-black text-sm text-slate-900 italic">Engajamento da Turma</h2>
@@ -307,7 +307,7 @@ export default function TeacherHomePage() {
         <div className="space-y-4">
 
           {/* Busca Ativa */}
-          <div className="aurora-dark dot-grid rounded-2xl md:rounded-[2rem] p-5 md:p-7 shadow-xl relative overflow-hidden">
+          <div className="aurora-dark dot-grid rounded-2xl md:rounded-card p-5 md:p-7 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-28 h-28 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
             <div className="relative z-10">
               <h2 className="font-black text-sm text-white italic flex items-center gap-2 mb-3">

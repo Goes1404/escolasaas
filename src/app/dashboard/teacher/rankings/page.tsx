@@ -117,7 +117,7 @@ export default function TeacherRankingsPage() {
       </Link>
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -178,7 +178,7 @@ export default function TeacherRankingsPage() {
           </p>
         </div>
       ) : activeRank.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+        <div className="py-20 text-center border border-dashed border-slate-200 rounded-card">
           <Trophy className="h-8 w-8 mx-auto mb-2 text-white/15" />
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
             Aguardando dados de performance

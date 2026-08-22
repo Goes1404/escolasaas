@@ -149,7 +149,7 @@ export default function BichinhoPage() {
   if (carregando) {
     return (
       <div className="p-6 md:p-10 max-w-3xl mx-auto">
-        <div className="h-80 rounded-[2.5rem] bg-muted/20 animate-pulse" />
+        <div className="h-80 rounded-card bg-muted/20 animate-pulse" />
       </div>
     );
   }
@@ -157,7 +157,7 @@ export default function BichinhoPage() {
   if (erro || !bicho) {
     return (
       <div className="p-6 md:p-10 max-w-3xl mx-auto">
-        <div className="rounded-[2.5rem] border border-rose-100 bg-rose-50 p-8 text-center space-y-4">
+        <div className="rounded-card border border-rose-100 bg-rose-50 p-8 text-center space-y-4">
           <p className="text-lg font-black italic text-rose-900">{erro ?? 'Erro ao carregar.'}</p>
           <p className="text-sm font-medium text-rose-700/70">
             Pode ser a conexão. Tente de novo em instantes.
@@ -188,7 +188,7 @@ export default function BichinhoPage() {
           </p>
         </header>
 
-        <div className="rounded-[2.5rem] bg-white shadow-2xl border border-slate-100 p-8 space-y-7">
+        <div className="rounded-card bg-white shadow-2xl border border-slate-100 p-8 space-y-7">
           <SeletorArquetipo valor={especie} onChange={setEspecie} />
 
           <div className="space-y-3">
@@ -237,7 +237,7 @@ export default function BichinhoPage() {
 
       {/* Nível, humor e progresso — o que a moldura da arena não comporta sem
           virar HUD de jogo. */}
-      <div className={`rounded-[2.5rem] shadow-2xl overflow-hidden text-white ${
+      <div className={`rounded-card shadow-2xl overflow-hidden text-white ${
         animado
           ? 'bg-gradient-to-br from-orange-500 via-rose-500 to-red-600'
           : bicho.humor === 'com_fome'
@@ -283,7 +283,7 @@ export default function BichinhoPage() {
       </div>
 
       {ofensiva === 'protegida' && (
-        <div className="rounded-[2rem] bg-emerald-50 border border-emerald-100 p-5 flex items-start gap-3">
+        <div className="rounded-card bg-emerald-50 border border-emerald-100 p-5 flex items-start gap-3">
           <Shield className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
           <p className="text-sm font-bold text-emerald-900 leading-relaxed">
             Você faltou, mas uma proteção segurou sua ofensiva de {bicho.ofensiva}{' '}
@@ -293,7 +293,7 @@ export default function BichinhoPage() {
       )}
 
       {ofensiva === 'ultimo_dia' && (
-        <div className="rounded-[2rem] bg-amber-50 border border-amber-100 p-5 flex items-start gap-3">
+        <div className="rounded-card bg-amber-50 border border-amber-100 p-5 flex items-start gap-3">
           <Flame className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-sm font-bold text-amber-900 leading-relaxed">
             Hoje é o último dia para manter sua ofensiva de {bicho.ofensiva}{' '}
@@ -305,7 +305,7 @@ export default function BichinhoPage() {
       {/* Ação principal: o que alimenta o bicho é estudar. */}
       <Link
         href="/dashboard/student/simulados"
-        className="flex items-center justify-between gap-4 rounded-[2rem] bg-primary text-white p-6 shadow-xl active:scale-[0.99] transition-transform"
+        className="flex items-center justify-between gap-4 rounded-card bg-primary text-white p-6 shadow-xl active:scale-[0.99] transition-transform"
       >
         <div>
           <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Alimentar</p>
@@ -318,7 +318,7 @@ export default function BichinhoPage() {
       </Link>
 
       {/* Loja */}
-      <section className="rounded-[2.5rem] bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-orange-500" />
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Loja</h2>
@@ -354,7 +354,7 @@ export default function BichinhoPage() {
           adotado uma capivara ficaria preso a ela sem nunca ver o boneco novo.
           Trocar não custa nada e não mexe em nível, ofensiva nem XP — a espécie
           nunca teve economia atrelada, e a migration original já dizia isso. */}
-      <section className="rounded-[2.5rem] bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
         <div className="flex items-center gap-2">
           <Wand2 className="h-4 w-4 text-violet-500" />
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Trocar de bichinho</h2>
@@ -430,7 +430,7 @@ export default function BichinhoPage() {
       </section>
 
       {/* Escada de níveis */}
-      <section className="rounded-[2.5rem] bg-white shadow-xl border border-slate-100 p-7 space-y-4">
+      <section className="rounded-card bg-white shadow-xl border border-slate-100 p-7 space-y-4">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-slate-400" />
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-600">Níveis</h2>
@@ -462,7 +462,7 @@ export default function BichinhoPage() {
         </div>
       </section>
 
-      <div className="rounded-[2rem] bg-slate-50 border border-slate-100 p-5 flex items-start gap-3">
+      <div className="rounded-card bg-slate-50 border border-slate-100 p-5 flex items-start gap-3">
         <Info className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
         <p className="text-xs font-medium text-slate-500 leading-relaxed">
           Os dias de estudo <strong>só aumentam</strong> — {apelido} nunca perde nível, mesmo

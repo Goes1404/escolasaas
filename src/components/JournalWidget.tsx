@@ -66,11 +66,11 @@ export function JournalWidget({ userId }: Props) {
   };
 
   if (loading) {
-    return <div className="h-40 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+    return <div className="h-40 rounded-card bg-muted/20 animate-pulse" />;
   }
 
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-xl border border-muted/20 overflow-hidden">
+    <div className="bg-white rounded-card shadow-xl border border-muted/20 overflow-hidden">
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

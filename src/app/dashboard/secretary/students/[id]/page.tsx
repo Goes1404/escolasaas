@@ -435,7 +435,7 @@ export default function StudentDetailPage() {
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
         {/* Left: Edit form */}
-        <Card className="xl:col-span-2 border-none shadow-2xl rounded-[2.5rem] bg-white">
+        <Card className="xl:col-span-2 border-none shadow-2xl rounded-card bg-white">
           <CardHeader className="p-6 pb-2">
             <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
               <UserCheck className="h-5 w-5 text-blue-500" />
@@ -604,7 +604,7 @@ export default function StudentDetailPage() {
           {profile?.id && <StudentNotesCard studentId={profile.id} />}
 
           {/* Attendance trend chart */}
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+          <Card className="border-none shadow-2xl rounded-card bg-white">
             <CardHeader className="p-6 pb-2">
               <CardTitle className="text-base font-black text-primary italic flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-emerald-500" />
@@ -627,7 +627,7 @@ export default function StudentDetailPage() {
 
           {/* Income */}
           {(Number(profile.family_income) > 0 || profile.is_financial_aid_eligible) && (
-            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+            <Card className="border-none shadow-2xl rounded-card bg-white">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-base font-black text-primary italic flex items-center gap-2">
                   <HandHeart className="h-5 w-5 text-orange-500" />
@@ -689,7 +689,7 @@ export default function StudentDetailPage() {
 
           {/* Boletins em PDF */}
           {profile && (
-            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+            <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-base font-black text-primary italic flex items-center gap-2">
                   <FileText className="h-5 w-5 text-indigo-500" />
@@ -803,7 +803,7 @@ export default function StudentDetailPage() {
           )}
 
           {/* Documents */}
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+          <Card className="border-none shadow-2xl rounded-card bg-white">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-black text-primary italic flex items-center gap-2">
@@ -820,7 +820,7 @@ export default function StudentDetailPage() {
             </CardHeader>
             <CardContent className="p-6 pt-0">
               {uploads.length === 0 ? (
-                <div className="py-8 text-center opacity-40 italic font-bold border-2 border-dashed rounded-[2rem] text-slate-500 text-sm">
+                <div className="py-8 text-center opacity-40 italic font-bold border-2 border-dashed rounded-card text-slate-500 text-sm">
                   Nenhum documento enviado ainda.
                 </div>
               ) : (

@@ -80,7 +80,7 @@ export function PushPermissionBanner() {
 
   return (
     <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-40 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-primary text-white rounded-[2rem] shadow-2xl p-5 border border-white/10">
+      <div className="bg-primary text-white rounded-card shadow-2xl p-5 border border-white/10">
         <div className="flex items-start gap-3">
           <div className="h-11 w-11 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center shrink-0">
             {modo === "ios_instalar" ? <Share className="h-5 w-5" />

@@ -132,7 +132,7 @@ export default function ManageLivePage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -179,7 +179,7 @@ export default function ManageLivePage() {
             Agendar Aula
           </Button>
         </DialogTrigger>
-        <DialogContent className="rounded-[2rem] p-0 bg-white border-slate-200 w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto shadow-2xl">
+        <DialogContent className="rounded-card p-0 bg-white border-slate-200 w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto shadow-2xl">
           <DialogHeader className="p-5 border-b border-slate-100">
             <DialogTitle className="text-lg font-black italic text-slate-800 uppercase tracking-tighter">
               Nova Sala Online
@@ -276,7 +276,7 @@ export default function ManageLivePage() {
             <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
           </div>
         ) : lives.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+          <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
             <Inbox className="h-8 w-8 mx-auto mb-2 text-white/15" />
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
               Nenhuma aula agendada

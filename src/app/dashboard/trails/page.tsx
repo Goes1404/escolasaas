@@ -346,8 +346,8 @@ export default function LearningTrailsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1 md:px-4">
       {/* Hero Banner */}
-      <section className="aurora-dark relative overflow-hidden rounded-[2.5rem] p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
-        <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-[2.5rem]" />
+      <section className="aurora-dark relative overflow-hidden rounded-card p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
+        <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-card" />
         <div className="absolute top-[-20%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-[80px] hidden md:block" />
         <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-primary/10 rounded-full blur-[60px] hidden md:block" />
         <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
@@ -513,7 +513,7 @@ export default function LearningTrailsPage() {
       {activeCategory === "Todos" && !searchTerm ? (
         subjectFolders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-            <div className="h-20 w-20 rounded-[2rem] bg-slate-100 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
               <BookOpen className="h-9 w-9 text-slate-300" />
             </div>
             <div className="space-y-1">
@@ -582,7 +582,7 @@ export default function LearningTrailsPage() {
         /* Trails Grid */
         filteredTrails.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-            <div className="h-20 w-20 rounded-[2rem] bg-slate-100 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
               <BookOpen className="h-9 w-9 text-slate-300" />
             </div>
             <div className="space-y-1">
@@ -602,7 +602,7 @@ export default function LearningTrailsPage() {
               const teacherInitial = (trail.teacher_name || "M").charAt(0).toUpperCase();
 
               return (
-                <Card key={trail.id} className="gradient-border group overflow-hidden border-none shadow-xl hover:shadow-2xl hover:glow-orange transition-[transform,box-shadow] duration-300 bg-white rounded-[2.5rem] flex flex-col h-full">
+                <Card key={trail.id} className="gradient-border group overflow-hidden border-none shadow-xl hover:shadow-2xl hover:glow-orange transition-[transform,box-shadow] duration-300 bg-white rounded-card flex flex-col h-full">
                   <div className="relative aspect-video overflow-hidden shrink-0">
                     <Image
                       src={getSafeTrailImage(trail.image_url, trail.title, trail.category)}

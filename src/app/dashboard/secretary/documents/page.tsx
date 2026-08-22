@@ -351,7 +351,7 @@ export default function SecretaryDocumentsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Painel de Seleção */}
-        <Card className="lg:col-span-1 border-none shadow-2xl rounded-[2.5rem] bg-white p-6 space-y-5">
+        <Card className="lg:col-span-1 border-none shadow-2xl rounded-card bg-white p-6 space-y-5">
           <h2 className="text-lg font-black text-primary italic leading-none flex items-center gap-2">
             <FileText className="h-5 w-5" /> Tipo & Estudante
           </h2>

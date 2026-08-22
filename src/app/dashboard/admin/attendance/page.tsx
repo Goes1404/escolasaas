@@ -93,7 +93,7 @@ export default function AdminAttendancePage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="rounded-[2.5rem] shadow-2xl border-none">
+        <Card className="rounded-card shadow-2xl border-none">
           <CardContent className="pt-6 flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-xl">
               <CalendarDays className="h-5 w-5 text-blue-600" />
@@ -104,7 +104,7 @@ export default function AdminAttendancePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="rounded-[2.5rem] shadow-2xl border-none">
+        <Card className="rounded-card shadow-2xl border-none">
           <CardContent className="pt-6 flex items-center gap-4">
             <div className="p-3 bg-green-100 rounded-xl">
               <Users className="h-5 w-5 text-green-600" />
@@ -115,7 +115,7 @@ export default function AdminAttendancePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="rounded-[2.5rem] shadow-2xl border-none">
+        <Card className="rounded-card shadow-2xl border-none">
           <CardContent className="pt-6 flex items-center gap-4">
             <div className="p-3 bg-orange-100 rounded-xl">
               <TrendingUp className="h-5 w-5 text-orange-600" />
@@ -126,7 +126,7 @@ export default function AdminAttendancePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className={`rounded-[2.5rem] shadow-2xl border-none ${globalStats.atRiskCount > 0 ? "bg-red-50" : ""}`}>
+        <Card className={`rounded-card shadow-2xl border-none ${globalStats.atRiskCount > 0 ? "bg-red-50" : ""}`}>
           <CardContent className="pt-6 flex items-center gap-4">
             <div className={`p-3 rounded-xl ${globalStats.atRiskCount > 0 ? "bg-red-100" : "bg-gray-100"}`}>
               <AlertTriangle className={`h-5 w-5 ${globalStats.atRiskCount > 0 ? "text-red-600" : "text-gray-400"}`} />
@@ -141,7 +141,7 @@ export default function AdminAttendancePage() {
         </Card>
       </div>
 
-      <Card className="rounded-[2.5rem] shadow-2xl border-none">
+      <Card className="rounded-card shadow-2xl border-none">
         <CardHeader>
           <CardTitle className="font-black italic flex items-center gap-2">
             <Users className="h-5 w-5 text-blue-500" />

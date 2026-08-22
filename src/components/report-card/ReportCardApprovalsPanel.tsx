@@ -241,7 +241,7 @@ export default function ReportCardApprovalsPanel() {
         </div>
       )}
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -340,7 +340,7 @@ export default function ReportCardApprovalsPanel() {
                               {busyId === entry.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl p-10 max-w-sm bg-white">
+                          <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm bg-white">
                             <AlertDialogHeader>
                               <AlertDialogTitle className="text-2xl font-black italic text-primary">Rejeitar Boletim?</AlertDialogTitle>
                               <AlertDialogDescription className="font-medium text-sm">

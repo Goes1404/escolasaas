@@ -109,7 +109,7 @@ export default function StudentAdmissionCentral() {
   // conteúdo 100% estático atrás de uma query de 1 linha.
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 px-1">
-      <section className="bg-primary p-8 md:p-12 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl">
+      <section className="bg-primary p-8 md:p-12 rounded-card text-white relative overflow-hidden shadow-2xl">
         <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-accent/20 rounded-full blur-3xl" />
         <div className="relative z-10 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -118,7 +118,7 @@ export default function StudentAdmissionCentral() {
               <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-none">Checklist de <span className="text-white">Matrícula</span></h1>
               <p className="text-sm md:text-lg text-white/90 font-medium italic">Gerencie seus dados e organize sua documentação oficial.</p>
             </div>
-            <div className="flex flex-col items-end gap-3 bg-white/10 p-6 rounded-[2rem] border border-white/10 backdrop-blur-md">
+            <div className="flex flex-col items-end gap-3 bg-white/10 p-6 rounded-card border border-white/10 backdrop-blur-md">
               <div className="flex justify-between w-40 text-[9px] font-black uppercase text-white tracking-widest">
                 <span>Prontidão Documental</span>
                 <span className="text-white">{progressPercent}%</span>
@@ -134,7 +134,7 @@ export default function StudentAdmissionCentral() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-8">
           {DOCUMENT_GROUPS.map((group, idx) => (
-            <Card key={idx} className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+            <Card key={idx} className="border-none shadow-xl rounded-card bg-white overflow-hidden">
               <CardHeader className="bg-slate-50/50 border-b border-muted/10 p-8">
                 <CardTitle className="text-lg font-black text-primary italic uppercase flex items-center gap-3">
                   <div className="h-8 w-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg text-xs font-black">
@@ -165,7 +165,7 @@ export default function StudentAdmissionCentral() {
         </div>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-2xl bg-primary text-white rounded-[2.5rem] overflow-hidden relative group">
+          <Card className="border-none shadow-2xl bg-primary text-white rounded-card overflow-hidden relative group">
             <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-accent/20 rounded-full blur-2xl" />
             <CardHeader className="p-8 relative z-10">
               <div className="h-14 w-14 rounded-3xl bg-white/10 flex items-center justify-center mb-6 shadow-xl"><Cloud className="h-8 w-8 text-white" /></div>
@@ -191,7 +191,7 @@ export default function StudentAdmissionCentral() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white rounded-[2rem] p-8 space-y-4">
+          <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
               <FileSearch className="h-3.5 w-3.5 text-accent" /> Qualidade da Imagem
             </h3>
@@ -200,7 +200,7 @@ export default function StudentAdmissionCentral() {
             </p>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white rounded-[2rem] p-8 space-y-4">
+          <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-accent" /> Validade dos Papéis
             </h3>
@@ -209,7 +209,7 @@ export default function StudentAdmissionCentral() {
             </p>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white rounded-[2rem] p-8 space-y-4">
+          <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
               <LayoutList className="h-3.5 w-3.5 text-accent" /> Organização Maestro
             </h3>
@@ -218,7 +218,7 @@ export default function StudentAdmissionCentral() {
             </p>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white rounded-[2rem] p-8 space-y-4">
+          <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
               <ShieldCheck className="h-3 w-3 text-accent" /> Dica de Segurança
             </h3>

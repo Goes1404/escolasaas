@@ -87,11 +87,11 @@ export function WeeklySummaryWidget({ userId }: Props) {
   };
 
   if (loading) {
-    return <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+    return <div className="h-48 rounded-card bg-muted/20 animate-pulse" />;
   }
 
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-xl border border-muted/20 overflow-hidden">
+    <div className="bg-white rounded-card shadow-xl border border-muted/20 overflow-hidden">
       <div className="aurora-dark dot-grid p-6 text-white">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">

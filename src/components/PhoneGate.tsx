@@ -91,7 +91,7 @@ export function PhoneGate() {
             <span className="text-white/50 font-black text-[10px] uppercase tracking-[0.3em]">Plataforma</span>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-card shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-7 py-5 flex items-center gap-3">
               <div className="h-10 w-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
                 <Phone className="h-5 w-5 text-white" />

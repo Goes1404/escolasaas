@@ -222,7 +222,7 @@ export default function TeacherExamsPage() {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-12 text-center">
+        <Card className="border-none shadow-xl rounded-card bg-white p-12 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-xl font-black text-primary italic">Nenhuma prova encontrada</p>
         </Card>
@@ -234,7 +234,7 @@ export default function TeacherExamsPage() {
             const canEdit = isOwner(exam);
 
             return (
-              <Card key={exam.id} className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden hover:shadow-2xl transition-all">
+              <Card key={exam.id} className="border-none shadow-xl rounded-card bg-white overflow-hidden hover:shadow-2xl transition-all">
                 <CardContent className="p-6 flex flex-col gap-4 h-full">
                   <div className="flex items-center justify-between gap-2">
                     <Badge className={`${typeColor} border-none font-black text-[10px] uppercase px-3 py-1`}>{exam.exam_type}</Badge>
@@ -314,7 +314,7 @@ export default function TeacherExamsPage() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-[2rem] max-w-md">
+        <DialogContent className="rounded-card max-w-md">
           <DialogHeader>
             <DialogTitle className="font-black italic text-primary text-xl">
               {editingExam ? 'Editar Prova' : 'Nova Prova'}

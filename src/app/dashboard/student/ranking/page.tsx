@@ -199,8 +199,8 @@ export default function RankingPage() {
     <div className="max-w-2xl mx-auto px-4 space-y-6 pb-24 animate-in fade-in duration-700">
 
       {/* ── HERO ── */}
-      <section className="aurora-dark relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl border border-white/5">
-        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2.5rem]" />
+      <section className="aurora-dark relative overflow-hidden rounded-card p-8 text-white shadow-2xl border border-white/5">
+        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/20 rounded-full blur-[80px]" />
         <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-primary/20 rounded-full blur-[60px]" />
 
@@ -244,7 +244,7 @@ export default function RankingPage() {
 
       {/* ── VENCEDORES DA LEVA ANTERIOR ── */}
       {winners.length > 0 && (
-        <section className="rounded-[2.5rem] border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 shadow-md">
+        <section className="rounded-card border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 shadow-md">
           <div className="flex items-center justify-center gap-2 mb-1">
             <Crown className="h-4 w-4 text-amber-600" />
             <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">
@@ -324,7 +324,7 @@ export default function RankingPage() {
         <>
           {/* ── PÓDIO ── */}
           {top3.length >= 2 && (
-            <div className="bg-gradient-to-b from-amber-50 to-white rounded-[2.5rem] border border-amber-100 p-6 pb-0 shadow-md">
+            <div className="bg-gradient-to-b from-amber-50 to-white rounded-card border border-amber-100 p-6 pb-0 shadow-md">
               <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 text-center mb-6">
                 Top 3 da Semana
               </p>

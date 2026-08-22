@@ -112,7 +112,7 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl p-0 overflow-hidden">
         <DialogHeader className="p-8 pb-4 bg-orange-50 border-b border-orange-100">
           <div className="flex items-center gap-3 mb-1">
             <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
@@ -165,7 +165,7 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
             </div>
           ) : (
             <div className="space-y-6 animate-in zoom-in-95 duration-500">
-              <div className="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-5 space-y-4">
+              <div className="bg-slate-50 border border-slate-100 rounded-card p-5 space-y-4">
                 <div className="flex items-center justify-between">
                    <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] uppercase px-3 py-1">Link Ativo</Badge>
                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expira em {expiryDays} dias</span>
@@ -415,7 +415,7 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
-      <DialogContent className="sm:max-w-lg rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-lg rounded-card border-none shadow-2xl p-0 overflow-hidden">
         <DialogHeader className="p-8 pb-4 bg-blue-50 border-b border-blue-100">
           <div className="flex items-center gap-3 mb-1">
             <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
@@ -794,7 +794,7 @@ export default function SecretaryEnrollmentDirectory() {
       />
 
       {/* Tabela de Alunos */}
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -1044,7 +1044,7 @@ export default function SecretaryEnrollmentDirectory() {
 
       {/* Modal de Edição de Matrícula */}
       <Dialog open={!!editingUser} onOpenChange={v => { if (!v) setEditingUser(null); }}>
-        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
+        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
           <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-lg shadow shrink-0">

@@ -95,7 +95,7 @@ export default function TeacherAttendancePage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -171,7 +171,7 @@ export default function TeacherAttendancePage() {
             <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
           </div>
         ) : sessions.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+          <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
             <Inbox className="h-8 w-8 mx-auto mb-2 text-white/15" />
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
               Nenhuma sessão criada

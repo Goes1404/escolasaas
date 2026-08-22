@@ -140,7 +140,7 @@ export default function CommunicationPage() {
       <div className="pb-28 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* ── Hero ── */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-5">
+        <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-5">
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.14) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(245,158,11,0.07) 0%, transparent 60%)",
           }} />
@@ -208,7 +208,7 @@ export default function CommunicationPage() {
 
         {/* ── Composer ── */}
         {showComposer && (
-          <div className="bg-[#0d0d0f] border border-white/8 rounded-[1.5rem] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="bg-[#0d0d0f] border border-white/8 rounded-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/6">
               <div className="flex items-center gap-2">
@@ -343,7 +343,7 @@ export default function CommunicationPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Sincronizando...</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-white/8 rounded-[1.5rem]">
+            <div className="py-16 text-center border border-dashed border-white/8 rounded-card">
               <Inbox className="h-8 w-8 mx-auto mb-2 text-white/20" />
               <p className="font-black italic text-xs text-white/30 uppercase tracking-widest">Nenhum aviso</p>
             </div>

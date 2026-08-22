@@ -380,7 +380,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Header / Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6 md:p-8">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6 md:p-8">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -447,7 +447,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
 
       {/* ── Filters (Only on Global view) ── */}
       {!userId && (
-        <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] p-4 grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
+        <div className="bg-white shadow-sm border border-slate-200 rounded-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
           <div className="space-y-1">
             <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Sala / Turma</label>
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
@@ -586,7 +586,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
       </div>
 
       {/* ── Aurora IA Insights ── */}
-      <div className="relative rounded-[1.5rem] overflow-hidden border border-[#4CCCED]/15 bg-gradient-to-br from-orange-500/5 to-amber-500/3 p-5 shadow-inner">
+      <div className="relative rounded-card overflow-hidden border border-[#4CCCED]/15 bg-gradient-to-br from-orange-500/5 to-amber-500/3 p-5 shadow-inner">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(76,204,237,0.12) 0%, transparent 60%)" }}
@@ -614,7 +614,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
         <div className={`${userId ? "lg:col-span-8" : "lg:col-span-7"} space-y-5`}>
           
           {/* Performance por Matéria */}
-          <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-orange-500/85" />
@@ -642,7 +642,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
           </div>
 
           {/* Engajamento de Respostas */}
-          <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-orange-500/85" />
@@ -673,7 +673,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
           
           {/* Individual Student Info (Only on individual diagnostic mode) */}
           {userId && currentStudent && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] p-5 space-y-4">
+            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5 space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                 <div className="h-10 w-10 rounded-xl bg-[#4CCCED]/20 text-orange-400 border border-[#4CCCED]/30 flex items-center justify-center font-black text-base italic shadow-md">
                   {currentStudent.name?.charAt(0).toUpperCase()}
@@ -730,7 +730,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
 
           {/* Individual Student Recent answers log (Only on individual diagnostic mode) */}
           {userId && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] p-5">
+            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5">
               <h3 className="font-black text-slate-900 text-xs italic uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <ClipboardCheck className="h-4 w-4 text-orange-400" />
                 Histórico de Respostas
@@ -766,7 +766,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
 
           {/* Destaques da Rede (Only on Global Mode) */}
           {!userId && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] p-5">
+            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5">
               <h3 className="font-black text-slate-900 text-xs italic uppercase tracking-wider mb-4 flex items-center gap-1.5">
                 <Award className="h-4 w-4 text-orange-400 animate-pulse-subtle" />
                 🏆 Destaques da Rede
@@ -806,7 +806,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
 
           {/* Busca Ativa / Risco (Only on Global Mode) */}
           {!userId && (
-            <div className="bg-[#0d0d0f] border border-white/5 rounded-[1.5rem] p-5 shadow-2xl relative overflow-hidden">
+            <div className="bg-[#0d0d0f] border border-white/5 rounded-card p-5 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-28 h-28 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
               <div className="relative z-10">
                 <h3 className="font-black text-white text-xs italic uppercase tracking-wider mb-4 flex items-center gap-1.5">

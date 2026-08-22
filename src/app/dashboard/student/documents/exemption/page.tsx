@@ -206,7 +206,7 @@ export default function ExemptionSimulationPage() {
         
         {/* Coluna 1: Instruções e Regras */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none shadow-2xl bg-primary text-white rounded-[2.5rem] overflow-hidden relative group transition-all duration-500 hover:shadow-primary/20">
+          <Card className="border-none shadow-2xl bg-primary text-white rounded-card overflow-hidden relative group transition-all duration-500 hover:shadow-primary/20">
             <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-accent/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
             <CardHeader className="p-8">
               <div className="h-12 w-12 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-6 shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
@@ -239,7 +239,7 @@ export default function ExemptionSimulationPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white rounded-[2rem] p-8 space-y-4">
+          <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
               <HelpCircle className="h-3.5 w-3.5 text-accent" /> Dica da Aurora
             </h3>
@@ -251,7 +251,7 @@ export default function ExemptionSimulationPage() {
 
         {/* Coluna 2: Formulário e Resultado */}
         <div className="lg:col-span-8 space-y-8">
-          <Card className="shadow-2xl border-none bg-white rounded-[2.5rem] overflow-hidden transition-all duration-500">
+          <Card className="shadow-2xl border-none bg-white rounded-card overflow-hidden transition-all duration-500">
             <CardHeader className="bg-muted/10 p-10 border-b border-muted/20">
               <div className="flex items-center justify-between">
                 <div>
@@ -334,7 +334,7 @@ export default function ExemptionSimulationPage() {
             <div className="animate-in zoom-in-95 slide-in-from-top-10 duration-700">
               <Card className={`border-none shadow-2xl rounded-[3rem] overflow-hidden ${result.eligible ? 'bg-green-50/50' : 'bg-red-50/50'}`}>
                 <div className={`p-10 flex flex-col md:flex-row items-center gap-8 ${result.eligible ? 'bg-green-600 text-white' : 'bg-red-600 text-white'} transition-all duration-1000`}>
-                  <div className="h-20 w-20 rounded-[2rem] bg-white/20 backdrop-blur-xl flex items-center justify-center shrink-0 shadow-2xl rotate-3">
+                  <div className="h-20 w-20 rounded-card bg-white/20 backdrop-blur-xl flex items-center justify-center shrink-0 shadow-2xl rotate-3">
                     {result.eligible ? <CheckCircle2 className="h-10 w-10" /> : <FileWarning className="h-10 w-10" />}
                   </div>
                   <div className="text-center md:text-left space-y-1">

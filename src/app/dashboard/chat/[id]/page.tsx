@@ -315,7 +315,7 @@ export default function DirectChatPage() {
                     {!isMe && <span className="text-[8px] font-black uppercase text-primary/30 tracking-widest">{msg.sender_id === contactId ? contact?.name : 'Aurora'}</span>}
                     <span className="text-[7px] font-bold text-muted-foreground italic opacity-50">{format(new Date(msg.created_at), "HH:mm")}</span>
                   </div>
-                  <div className={`px-5 py-3.5 rounded-[2rem] text-sm leading-relaxed font-medium shadow-sm max-w-[85%] md:max-w-[70%] transition-all border ${
+                  <div className={`px-5 py-3.5 rounded-card text-sm leading-relaxed font-medium shadow-sm max-w-[85%] md:max-w-[70%] transition-all border ${
                       isMe 
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent rounded-tr-none shadow-orange-500/10' 
                         : isError 
@@ -354,7 +354,7 @@ export default function DirectChatPage() {
             
             {isAiThinking && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-3 bg-white px-5 py-3.5 rounded-[2rem] rounded-tl-none border border-slate-100 shadow-sm animate-pulse">
+                <div className="flex items-center gap-3 bg-white px-5 py-3.5 rounded-card rounded-tl-none border border-slate-100 shadow-sm animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin text-accent" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-primary/30 italic">Aurora respondendo...</span>
                 </div>
@@ -397,7 +397,7 @@ export default function DirectChatPage() {
               </p>
             </div>
           ) : (
-            <form onSubmit={(e) => handleSend(e)} className="flex items-center gap-3 max-w-4xl mx-auto bg-slate-100 p-2 pl-6 rounded-[2.5rem] border border-slate-200/80 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
+            <form onSubmit={(e) => handleSend(e)} className="flex items-center gap-3 max-w-4xl mx-auto bg-slate-100 p-2 pl-6 rounded-card border border-slate-200/80 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
                <input 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

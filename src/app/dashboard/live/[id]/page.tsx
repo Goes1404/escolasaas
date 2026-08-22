@@ -85,7 +85,7 @@ export default function StudentLivePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="flex flex-col h-full space-y-6 animate-in fade-in duration-700 overflow-hidden pb-4">
-      <div className="flex items-center justify-between bg-white/80 backdrop-blur-md p-5 rounded-[1.5rem] shadow-sm border border-white/20 shrink-0">
+      <div className="flex items-center justify-between bg-white/80 backdrop-blur-md p-5 rounded-card shadow-sm border border-white/20 shrink-0">
         <div className="flex items-center gap-5 overflow-hidden">
           <Button 
             variant="ghost" 
@@ -117,7 +117,7 @@ export default function StudentLivePage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col gap-6">
-        <Card className="flex-1 bg-slate-950 rounded-[2.5rem] overflow-hidden shadow-2xl border-none relative flex items-center justify-center group ring-1 ring-white/10">
+        <Card className="flex-1 bg-slate-950 rounded-card overflow-hidden shadow-2xl border-none relative flex items-center justify-center group ring-1 ring-white/10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(30,41,59,1)_0%,rgba(2,6,23,1)_100%)] opacity-100" />
           
           <div className="w-full h-full relative z-10 flex flex-col items-center justify-center p-8 md:p-12 text-center gap-10">
@@ -152,7 +152,7 @@ export default function StudentLivePage({ params }: { params: Promise<{ id: stri
                 
                 {live?.meet_link ? (
                   <div className="flex flex-col gap-5 animate-in zoom-in-95 duration-700">
-                    <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90 font-black h-16 md:h-24 px-10 md:px-16 rounded-[2rem] shadow-[0_30px_60px_rgba(245,158,11,0.25)] transition-all hover:scale-105 active:scale-95 group relative overflow-hidden border-none ring-4 ring-accent/20">
+                    <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90 font-black h-16 md:h-24 px-10 md:px-16 rounded-card shadow-[0_30px_60px_rgba(245,158,11,0.25)] transition-all hover:scale-105 active:scale-95 group relative overflow-hidden border-none ring-4 ring-accent/20">
                       <a href={live.meet_link} target="_blank" rel="noopener noreferrer">
                         <span className="relative z-10 flex items-center gap-5 text-base md:text-2xl uppercase tracking-tighter">
                           ACESSAR SALA DO GOOGLE MEET
@@ -166,7 +166,7 @@ export default function StudentLivePage({ params }: { params: Promise<{ id: stri
                     </div>
                   </div>
                 ) : (
-                  <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-md shadow-inner animate-pulse">
+                  <div className="p-10 rounded-card bg-white/5 border border-white/10 backdrop-blur-md shadow-inner animate-pulse">
                     <p className="text-sm font-bold text-slate-500 italic">
                       Aguardando processamento do link pelo Mentor...
                     </p>
@@ -176,7 +176,7 @@ export default function StudentLivePage({ params }: { params: Promise<{ id: stri
           </div>
         </Card>
         
-        <Card className="bg-white rounded-[2.5rem] shadow-2xl p-10 border-none shrink-0 relative overflow-hidden group">
+        <Card className="bg-white rounded-card shadow-2xl p-10 border-none shrink-0 relative overflow-hidden group">
           <div className="absolute top-[-20%] right-[-5%] p-6 opacity-[0.03] transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-12">
             <Sparkles className="h-40 w-40 text-primary" />
           </div>

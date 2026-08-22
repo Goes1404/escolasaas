@@ -78,7 +78,7 @@ export function BichinhoWidget() {
   }
 
   if (carregando) {
-    return <div className="h-64 rounded-[2.5rem] bg-muted/20 animate-pulse" />;
+    return <div className="h-64 rounded-card bg-muted/20 animate-pulse" />;
   }
 
   // Sumir em silêncio era exatamente o defeito: qualquer falha na chamada
@@ -89,7 +89,7 @@ export function BichinhoWidget() {
     return (
       <Link
         href="/dashboard/student/bichinho"
-        className="block rounded-[2.5rem] bg-slate-100 border border-slate-200 p-6 text-center active:scale-[0.99] transition-transform"
+        className="block rounded-card bg-slate-100 border border-slate-200 p-6 text-center active:scale-[0.99] transition-transform"
       >
         <p className="text-3xl mb-1" aria-hidden>🐾</p>
         <p className="text-sm font-black italic text-slate-700">Seu bichinho</p>
@@ -103,7 +103,7 @@ export function BichinhoWidget() {
   // ── Adoção ───────────────────────────────────────────────────────────────
   if (!bicho.existe) {
     return (
-      <div className="gradient-border bg-white rounded-[2.5rem] shadow-xl overflow-hidden">
+      <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden">
         <div className="p-6 space-y-4 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-700 text-white">
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Novo</p>
@@ -183,7 +183,7 @@ export function BichinhoWidget() {
   });
 
   return (
-    <Link href="/dashboard/student/bichinho" className="block gradient-border bg-white rounded-[2.5rem] shadow-xl overflow-hidden active:scale-[0.99] transition-transform">
+    <Link href="/dashboard/student/bichinho" className="block gradient-border bg-white rounded-card shadow-xl overflow-hidden active:scale-[0.99] transition-transform">
       <div className={`p-6 space-y-4 relative text-white ${
         animado
           ? 'bg-gradient-to-br from-orange-500 via-rose-500 to-red-600'

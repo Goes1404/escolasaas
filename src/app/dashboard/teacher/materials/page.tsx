@@ -230,7 +230,7 @@ export default function TeacherMaterialsPage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
+      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -287,7 +287,7 @@ export default function TeacherMaterialsPage() {
 
       {/* ── Form ── */}
       {showForm && (
-        <div className="bg-white shadow-sm border border-slate-200 rounded-[1.5rem] overflow-hidden">
+        <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PlusCircle className="h-4 w-4 text-orange-400/85" />
@@ -500,7 +500,7 @@ export default function TeacherMaterialsPage() {
           <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+        <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
           <FolderOpen className="h-8 w-8 text-white/15 mx-auto mb-2" />
           <p className="font-black italic text-xs text-slate-500 uppercase tracking-widest">
             Nenhum material publicado

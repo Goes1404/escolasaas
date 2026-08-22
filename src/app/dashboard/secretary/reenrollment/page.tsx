@@ -256,7 +256,7 @@ export default function ReenrollmentPage() {
       </div>
 
       {showForm && (
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6 space-y-4">
             <h3 className="font-black italic text-lg">Nova campanha de rematrícula</h3>
             <div className="grid md:grid-cols-3 gap-3">
@@ -316,20 +316,20 @@ export default function ReenrollmentPage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="shadow-2xl rounded-[2.5rem]"><CardContent className="p-6">
+            <Card className="shadow-2xl rounded-card"><CardContent className="p-6">
               <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest"><FileSignature className="h-4 w-4" /> Total</div>
               <p className="text-2xl font-black mt-2">{funil.total}</p>
             </CardContent></Card>
-            <Card className="shadow-2xl rounded-[2.5rem]"><CardContent className="p-6">
+            <Card className="shadow-2xl rounded-card"><CardContent className="p-6">
               <div className="flex items-center gap-2 text-amber-600 text-xs font-black uppercase tracking-widest"><Clock className="h-4 w-4" /> Pendentes</div>
               <p className="text-2xl font-black mt-2 text-amber-600">{funil.pendentes}</p>
             </CardContent></Card>
-            <Card className="shadow-2xl rounded-[2.5rem]"><CardContent className="p-6">
+            <Card className="shadow-2xl rounded-card"><CardContent className="p-6">
               <div className="flex items-center gap-2 text-emerald-600 text-xs font-black uppercase tracking-widest"><CheckCircle2 className="h-4 w-4" /> Aceitos</div>
               <p className="text-2xl font-black mt-2 text-emerald-600">{funil.aceitos}</p>
               <p className="text-xs text-muted-foreground mt-1">{funil.total > 0 ? Math.round((funil.aceitos / funil.total) * 100) : 0}% de adesão</p>
             </CardContent></Card>
-            <Card className="shadow-2xl rounded-[2.5rem]"><CardContent className="p-6">
+            <Card className="shadow-2xl rounded-card"><CardContent className="p-6">
               <div className="flex items-center gap-2 text-red-600 text-xs font-black uppercase tracking-widest"><XCircle className="h-4 w-4" /> Recusados</div>
               <p className="text-2xl font-black mt-2 text-red-600">{funil.recusados}</p>
             </CardContent></Card>
@@ -351,7 +351,7 @@ export default function ReenrollmentPage() {
             </Select>
           </div>
 
-          <Card className="shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="shadow-2xl rounded-card overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -408,7 +408,7 @@ export default function ReenrollmentPage() {
       )}
 
       {!campaign && !showForm && (
-        <Card className="rounded-[2.5rem] shadow-2xl">
+        <Card className="rounded-card shadow-2xl">
           <CardContent className="p-10 text-center text-muted-foreground">
             Nenhuma campanha ainda. Crie a primeira com "Nova campanha" — você precisa antes de um plano de mensalidade do ano alvo (aba Planos em Mensalidades).
           </CardContent>

@@ -48,7 +48,7 @@ export default function UpdatesPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-10 animate-in fade-in duration-500">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-orange-500 to-amber-500 p-6 md:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-primary via-orange-500 to-amber-500 p-6 md:p-8 text-white shadow-xl">
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="relative z-10 flex items-center gap-3">
           <div className="h-11 w-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">

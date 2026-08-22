@@ -246,7 +246,7 @@ export default function ChatListPage() {
     return (
       <Card 
         key={contact.id} 
-        className={`gradient-border relative overflow-hidden flex flex-col shadow-xl rounded-[2.5rem] bg-white transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border border-transparent ${
+        className={`gradient-border relative overflow-hidden flex flex-col shadow-xl rounded-card bg-white transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border border-transparent ${
           hasUnread ? 'glow-orange-strong bg-gradient-to-br from-orange-500/5 via-white to-white' : ''
         }`}
       >
@@ -309,7 +309,7 @@ export default function ChatListPage() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1 md:px-0.5">
       
       {/* ── BANNER CABEÇALHO (21st.dev/Stitch style) ── */}
-      <section className="relative rounded-[2.5rem] overflow-hidden bg-slate-900 min-h-[160px] md:min-h-[220px] flex items-end p-6 md:p-8 shadow-2xl">
+      <section className="relative rounded-card overflow-hidden bg-slate-900 min-h-[160px] md:min-h-[220px] flex items-end p-6 md:p-8 shadow-2xl">
         {/* Glows de fundo */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-30%] right-[-10%] w-[400px] h-[400px] bg-primary/25 rounded-full blur-[100px]" />
@@ -399,7 +399,7 @@ export default function ChatListPage() {
 
       {/* ── AURORA IA (fixa, sempre disponível, não vem da tabela profiles) ── */}
       {!isStaffUser && (
-        <Card className="relative overflow-hidden border-none shadow-2xl rounded-[2.5rem] bg-gradient-to-br from-primary via-primary to-slate-900">
+        <Card className="relative overflow-hidden border-none shadow-2xl rounded-card bg-gradient-to-br from-primary via-primary to-slate-900">
           <div className="absolute top-0 right-0 w-40 h-40 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
           <CardContent className="p-6 md:p-8 flex flex-col sm:flex-row items-center gap-5 relative z-10">
             {/* O rosto do próprio bichinho do aluno, quando ele tem um — a
@@ -463,7 +463,7 @@ export default function ChatListPage() {
                   {directoryContacts.map(renderContactCard)}
                 </div>
               ) : (
-                <div className="py-12 text-center border border-dashed rounded-[2.5rem] bg-white opacity-40">
+                <div className="py-12 text-center border border-dashed rounded-card bg-white opacity-40">
                   <p className="text-sm font-medium italic">Nenhum outro contato disponível.</p>
                 </div>
               )}

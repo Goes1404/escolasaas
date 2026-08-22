@@ -197,7 +197,7 @@ export default function SimuladoCorrecaoPage() {
       </header>
 
       {/* Exam selector */}
-      <Card className="border-none shadow-xl rounded-[2rem]">
+      <Card className="border-none shadow-xl rounded-card">
         <CardContent className="p-6">
           <Select value={selectedExamId} onValueChange={setSelectedExamId}>
             <SelectTrigger className="h-12 rounded-xl font-bold border-none bg-slate-50 shadow-inner">
@@ -239,7 +239,7 @@ export default function SimuladoCorrecaoPage() {
 
           {/* ─── GABARITO ─────────────────────────────────────────── */}
           {tab === 'gabarito' && (
-            <Card className="border-none shadow-xl rounded-[2rem]">
+            <Card className="border-none shadow-xl rounded-card">
               <CardHeader className="px-6 pt-6 pb-2">
                 <div className="flex items-center justify-between">
                   <div>
@@ -283,7 +283,7 @@ export default function SimuladoCorrecaoPage() {
 
           {/* ─── LANÇAR RESPOSTAS ─────────────────────────────────── */}
           {tab === 'lancar' && (
-            <Card className="border-none shadow-xl rounded-[2rem]">
+            <Card className="border-none shadow-xl rounded-card">
               <CardContent className="p-6 space-y-5">
                 {/* Sub-tab bar */}
                 <div className="flex flex-wrap bg-slate-50 p-1 rounded-xl gap-1">
@@ -518,7 +518,7 @@ export default function SimuladoCorrecaoPage() {
 
           {/* ─── VISÃO GERAL ──────────────────────────────────────── */}
           {tab === 'geral' && (
-            <Card className="border-none shadow-xl rounded-[2rem]">
+            <Card className="border-none shadow-xl rounded-card">
               <CardHeader className="px-6 pt-6 pb-2">
                 <div className="flex items-center justify-between">
                   <p className="font-black text-primary italic">{attempts.length} alunos registrados</p>

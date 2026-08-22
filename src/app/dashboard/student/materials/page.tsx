@@ -119,7 +119,7 @@ function ProgressRing({ value, size = 96 }: { value: number; size?: number }) {
 /* Skeleton de card */
 function CardSkeleton() {
   return (
-    <div className="rounded-[2rem] bg-white border border-slate-100 overflow-hidden animate-pulse">
+    <div className="rounded-card bg-white border border-slate-100 overflow-hidden animate-pulse">
       <div className="h-1.5 bg-slate-100 w-full" />
       <div className="p-6 space-y-4">
         <div className="flex gap-3">
@@ -310,9 +310,9 @@ export default function StudentMaterialsPage() {
       {/* ── HERO ── */}
       <section
         ref={heroRef}
-        className="aurora-dark relative overflow-hidden rounded-[2.5rem] p-7 md:p-10 text-white shadow-2xl border border-white/5"
+        className="aurora-dark relative overflow-hidden rounded-card p-7 md:p-10 text-white shadow-2xl border border-white/5"
       >
-        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2.5rem]" />
+        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-primary/20 rounded-full blur-[80px] hidden md:block" />
         <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-accent/10 rounded-full blur-[60px] hidden md:block" />
 
@@ -492,7 +492,7 @@ export default function StudentMaterialsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-24 text-center flex flex-col items-center gap-4">
-          <div className="h-20 w-20 rounded-[2rem] bg-slate-100 flex items-center justify-center">
+          <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
             <FolderOpen className="h-9 w-9 text-slate-300" />
           </div>
           <div>
@@ -523,7 +523,7 @@ export default function StudentMaterialsPage() {
             return (
               <article
                 key={m.id}
-                className={`group relative bg-white rounded-[2rem] border overflow-hidden transition-all duration-300
+                className={`group relative bg-white rounded-card border overflow-hidden transition-all duration-300
                   ${isViewed
                     ? 'border-emerald-200 shadow-md hover:shadow-lg'
                     : 'border-slate-100 shadow-md hover:shadow-xl hover:-translate-y-1'
@@ -535,7 +535,7 @@ export default function StudentMaterialsPage() {
 
                 {/* Overlay sutil quando estudado */}
                 {isViewed && (
-                  <div className="absolute inset-0 bg-emerald-500/[0.03] pointer-events-none rounded-[2rem]" />
+                  <div className="absolute inset-0 bg-emerald-500/[0.03] pointer-events-none rounded-card" />
                 )}
 
                 <div className="p-5 md:p-6 space-y-4">

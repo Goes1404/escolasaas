@@ -209,7 +209,7 @@ export default function BooksManagementPage() {
               <Plus className="h-6 w-6 mr-2" /> Novo Livro
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto border-none shadow-2xl">
+          <DialogContent className="rounded-card md:rounded-card p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto border-none shadow-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-black italic text-primary">Configurar Livro</DialogTitle>
             </DialogHeader>
@@ -314,7 +314,7 @@ export default function BooksManagementPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((item) => (
-            <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-[2.5rem] flex flex-col hover:shadow-2xl transition-all duration-500">
+            <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-card flex flex-col hover:shadow-2xl transition-all duration-500">
               <div className="relative aspect-[3/4] bg-muted overflow-hidden">
                 <img src={item.image_url || `https://picsum.photos/seed/${item.id}/600/800`} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                 <div className="absolute top-4 left-4">

@@ -13,7 +13,10 @@ export default {
         sans: ['var(--font-sora)', 'system-ui', 'sans-serif'],
         body: ['var(--font-sora)', 'system-ui', 'sans-serif'],
         headline: ['var(--font-sora)', 'sans-serif'],
-        code: ['monospace'],
+        // Papéis fixos — ver comentário em src/app/layout.tsx
+        display: ['var(--font-display)', 'Arial Black', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        code: ['var(--font-mono)', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -74,6 +77,20 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        // Aliases semânticos: use estes em código novo em vez de escalas
+        // numéricas, para o raio do produto ficar num lugar só.
+        card: 'var(--radius-card)',
+        control: 'var(--radius-control)',
+        // A escala numérica do Tailwind é reapertada para convergir no mesmo
+        // raio. Isso puxa os ~1.800 usos de rounded-xl/2xl/3xl que já existem
+        // nas telas sem precisar editar arquivo por arquivo.
+        xl: 'var(--radius-control)',   // era 12px
+        '2xl': 'var(--radius-card)',   // era 16px
+        '3xl': 'var(--radius-card)',   // era 24px
+      },
+      boxShadow: {
+        hard: 'var(--shadow-hard)',
+        'hard-accent': 'var(--shadow-hard-accent)',
       },
       keyframes: {
         'accordion-down': {

@@ -42,46 +42,46 @@ import {
 
 const GamificationWidget = dynamic(
   () => import('@/components/GamificationWidget').then(m => ({ default: m.GamificationWidget })),
-  { ssr: false, loading: () => <div className="h-40 rounded-[2rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-40 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const UpcomingEventsWidget = dynamic(
   () => import('@/components/UpcomingEventsWidget').then(m => ({ default: m.UpcomingEventsWidget })),
-  { ssr: false, loading: () => <div className="h-32 rounded-[2rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-32 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const StudySuggestionWidget = dynamic(
   () => import('@/components/StudySuggestionWidget').then(m => ({ default: m.StudySuggestionWidget })),
-  { ssr: false, loading: () => <div className="h-24 rounded-[2rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-24 rounded-card bg-muted/20 animate-pulse" /> }
 );
 // O bichinho absorveu o cartao de ofensiva: os dois contam a mesma coisa
 // (quantos dias seguidos), e a home ja tinha oito cartoes — somar um nono
 // empurraria o resto para fora da primeira tela do celular.
 const BichinhoWidget = dynamic(
   () => import('@/components/BichinhoWidget').then(m => ({ default: m.BichinhoWidget })),
-  { ssr: false, loading: () => <div className="h-64 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-64 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const GoalsWidget = dynamic(
   () => import('@/components/GoalsWidget').then(m => ({ default: m.GoalsWidget })),
-  { ssr: false, loading: () => <div className="h-44 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-44 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const JournalWidget = dynamic(
   () => import('@/components/JournalWidget').then(m => ({ default: m.JournalWidget })),
-  { ssr: false, loading: () => <div className="h-40 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-40 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const WeeklySummaryWidget = dynamic(
   () => import('@/components/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })),
-  { ssr: false, loading: () => <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-48 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const DailyQuestionCard = dynamic(
   () => import('@/components/DailyQuestionCard').then(m => ({ default: m.DailyQuestionCard })),
-  { ssr: false, loading: () => <div className="h-28 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-28 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const WeeklyMissionsWidget = dynamic(
   () => import('@/components/WeeklyMissionsWidget').then(m => ({ default: m.WeeklyMissionsWidget })),
-  { ssr: false, loading: () => <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-48 rounded-card bg-muted/20 animate-pulse" /> }
 );
 const WeeklyRankingWidget = dynamic(
   () => import('@/components/WeeklyRankingWidget').then(m => ({ default: m.WeeklyRankingWidget })),
-  { ssr: false, loading: () => <div className="h-48 rounded-[2.5rem] bg-muted/20 animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-48 rounded-card bg-muted/20 animate-pulse" /> }
 );
 function DashboardChart({ data }: { data: { name: string; score: number }[] }) {
   return <AreaChartPremium data={data} xKey="name" yKey="score" color="#7c3aed" showAxis={false} domainMax={100} />;
@@ -607,8 +607,8 @@ export default function DashboardHome() {
       {/* ── CARD DE TELEFONE PENDENTE ── */}
       {profile && !profile.phone && (
         <motion.div variants={itemVariants}
-          className="gradient-border relative overflow-hidden rounded-[2rem] border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-8 shadow-2xl text-white">
-          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2rem]" />
+          className="gradient-border relative overflow-hidden rounded-card border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-8 shadow-2xl text-white">
+          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
@@ -634,8 +634,8 @@ export default function DashboardHome() {
       {/* ── CARD DE TURMA/EXAME PENDENTE ── */}
       {profile && userRole === 'student' && (!profile.sala || !profile.exam_target || !profile.turno) && (
         <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-[2rem] border border-blue-200 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 p-5 md:p-8 shadow-2xl text-white">
-          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2rem]" />
+          className="relative overflow-hidden rounded-card border border-blue-200 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 p-5 md:p-8 shadow-2xl text-white">
+          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
@@ -692,8 +692,8 @@ export default function DashboardHome() {
       {/* ── AVISO DE SIMULADO ── */}
       {simuladoEspecial && !simNoticeDismissed && (
         <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-[2rem] border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-6 shadow-2xl text-white">
-          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2rem]" />
+          className="relative overflow-hidden rounded-card border border-orange-200 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-5 md:p-6 shadow-2xl text-white">
+          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <button
             onClick={dismissSimNotice}
             aria-label="Dispensar aviso"
@@ -728,8 +728,8 @@ export default function DashboardHome() {
       {/* ── CHAMADA ATIVA ── */}
       {activeSession && (
         <motion.div variants={itemVariants}
-          className="gradient-border relative overflow-hidden rounded-[2.5rem] border border-violet-200 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 md:p-8 shadow-2xl glow-purple text-white flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2.5rem]" />
+          className="gradient-border relative overflow-hidden rounded-card border border-violet-200 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 md:p-8 shadow-2xl glow-purple text-white flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 relative z-10 w-full md:w-auto">
             <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 shadow-xl animate-float">
               <ClipboardCheck className="h-7 w-7 text-white" />
@@ -753,7 +753,7 @@ export default function DashboardHome() {
            HERO "ARENA" — fundo vivo de brasas + tipografia editorial
           ══════════════════════════════════════════════════ */}
       <motion.section variants={itemVariants}
-        className="relative rounded-[2.5rem] overflow-hidden hero-arena-bg noise shadow-2xl">
+        className="relative rounded-card overflow-hidden hero-arena-bg noise shadow-2xl">
 
         {/* camadas de atmosfera (de trás pra frente) */}
         <EmberCanvas className="absolute inset-0 h-full w-full pointer-events-none" />
@@ -914,7 +914,7 @@ export default function DashboardHome() {
         <motion.div variants={itemVariants}>
           {simuladoEspecial.hasAttempt ? (
             // Card de resultado concluído com TRI
-            <div className="w-full relative card-on-fire rounded-[2rem] overflow-hidden p-6 text-white group shadow-2xl">
+            <div className="w-full relative card-on-fire rounded-card overflow-hidden p-6 text-white group shadow-2xl">
               <div className="absolute inset-0 pointer-events-none z-0" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(255,90,0,0.2) 0%, transparent 60%)" }} />
               <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -943,7 +943,7 @@ export default function DashboardHome() {
           ) : (
             // Card para iniciar o simulado
             <Link href={`/dashboard/student/provas/${simuladoEspecial.id}`} className="block">
-              <div className="w-full text-left relative card-on-fire rounded-[2rem] overflow-hidden p-6 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation] shadow-2xl">
+              <div className="w-full text-left relative card-on-fire rounded-card overflow-hidden p-6 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation] shadow-2xl">
                 {/* Canvas de partículas de fogo */}
                 <FlameEmberCanvas className="absolute inset-0 h-full w-full pointer-events-none z-0 opacity-70" />
                 <div className="absolute inset-0 pointer-events-none z-10" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(255,90,0,0.15) 0%, transparent 60%)" }} />
@@ -984,7 +984,7 @@ export default function DashboardHome() {
       <motion.div variants={itemVariants}>
         <button
           onClick={() => { setExpandedQ(null); setOnlyErrors(false); setGabaritoOpen(true); }}
-          className="w-full text-left relative bg-[#0d0d0f] rounded-[2rem] overflow-hidden p-5 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation]"
+          className="w-full text-left relative bg-[#0d0d0f] rounded-card overflow-hidden p-5 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation]"
         >
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(76,204,237,0.3) 0%, transparent 60%)" }} />
           <div className="relative z-10 flex items-center gap-4">
@@ -1075,8 +1075,8 @@ export default function DashboardHome() {
            AURORA AI — full-width CTA banner
           ══════════════════════════════════════ */}
       <motion.div variants={itemVariants}
-        className="gradient-border relative overflow-hidden rounded-[2.5rem] border border-accent/20 bg-gradient-to-r from-blue-50 via-indigo-50/20 to-white p-5 md:p-8 shadow-2xl group">
-        <div className="absolute inset-0 dot-grid-dark opacity-40 pointer-events-none rounded-[2.5rem]" />
+        className="gradient-border relative overflow-hidden rounded-card border border-accent/20 bg-gradient-to-r from-blue-50 via-indigo-50/20 to-white p-5 md:p-8 shadow-2xl group">
+        <div className="absolute inset-0 dot-grid-dark opacity-40 pointer-events-none rounded-card" />
         <motion.div
           className="absolute right-[-40px] top-[-40px] w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none"
           animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -1120,7 +1120,7 @@ export default function DashboardHome() {
 
       {/* ── WIDGETS MÓVEL RÁPIDOS ── */}
       <motion.div variants={itemVariants} className="lg:hidden grid grid-cols-2 gap-4">
-        <div className="gradient-border bg-white rounded-[1.5rem] shadow-xl border border-muted/20 p-4 space-y-3 relative overflow-hidden">
+        <div className="gradient-border bg-white rounded-card shadow-xl border border-muted/20 p-4 space-y-3 relative overflow-hidden">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-xl bg-violet-100 flex items-center justify-center">
               <BrainCircuit className="h-3.5 w-3.5 text-violet-600" />
@@ -1132,7 +1132,7 @@ export default function DashboardHome() {
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">{examStats?.totalAssessed || 0} avaliações</p>
           </div>
         </div>
-        <div className="bg-white rounded-[1.5rem] shadow-xl border border-muted/20 p-4 space-y-3">
+        <div className="bg-white rounded-card shadow-xl border border-muted/20 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-xl bg-green-100 flex items-center justify-center">
               <FilePenLine className="h-3.5 w-3.5 text-green-600" />
@@ -1266,7 +1266,7 @@ export default function DashboardHome() {
         {/* RIGHT — 1/3 (desktop only widgets) */}
         <div className="space-y-5">
           {/* Taxa de Acertos */}
-          <div className="hidden lg:block gradient-border bg-white rounded-[2rem] shadow-xl border border-muted/20 p-5 md:p-6 space-y-4 relative overflow-hidden group hover:glow-orange transition-shadow duration-300">
+          <div className="hidden lg:block gradient-border bg-white rounded-card shadow-xl border border-muted/20 p-5 md:p-6 space-y-4 relative overflow-hidden group hover:glow-orange transition-shadow duration-300">
             <div className="flex items-center justify-between relative z-10">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center shadow-inner">
@@ -1392,7 +1392,7 @@ export default function DashboardHome() {
 
       {/* ── DIALOG CHECK-IN ── */}
       <Dialog open={attendanceDialogOpen} onOpenChange={(v) => { if (!v) { setAttendanceDialogOpen(false); setConfirmoInput(""); } }}>
-        <DialogContent className="sm:max-w-lg rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-lg rounded-card border-none shadow-2xl p-0 overflow-hidden">
           {attendanceStep === "code" ? (
             <>
               <DialogHeader className="p-8 pb-4 bg-violet-50 border-b-2 border-violet-100">
@@ -1470,7 +1470,7 @@ export default function DashboardHome() {
 
       {/* ── DIALOG GABARITO COMENTADO ── */}
       <Dialog open={gabaritoOpen} onOpenChange={setGabaritoOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[88vh] rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col">
+        <DialogContent className="sm:max-w-2xl max-h-[88vh] rounded-card border-none shadow-2xl p-0 overflow-hidden flex flex-col">
           <DialogHeader className="p-6 pb-4 bg-[#0d0d0f] relative shrink-0 text-left">
             <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 90% 0%, rgba(76,204,237,0.25) 0%, transparent 60%)" }} />
             <div className="relative z-10 flex items-center gap-3">

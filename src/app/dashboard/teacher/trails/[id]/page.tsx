@@ -622,7 +622,7 @@ export default function TrailManagementPage() {
 
   return (
     <div className='max-w-6xl mx-auto w-full space-y-8 animate-in fade-in duration-700 pb-24 px-1'>
-      <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-[2rem] shadow-xl border border-muted/10'>
+      <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-card shadow-xl border border-muted/10'>
         <div className='flex items-center gap-6'>
           <Button
             variant='ghost'
@@ -707,7 +707,7 @@ export default function TrailManagementPage() {
             modules.map((mod, idx) => (
               <Card
                 key={mod.id}
-                className='border-none shadow-2xl bg-white overflow-hidden rounded-[2rem] group transition-all hover:shadow-primary/5'
+                className='border-none shadow-2xl bg-white overflow-hidden rounded-card group transition-all hover:shadow-primary/5'
               >
                 <CardHeader className='bg-muted/10 p-6 flex flex-row items-center justify-between border-b border-muted/20'>
                   <div className='flex items-center gap-4'>
@@ -857,7 +857,7 @@ export default function TrailManagementPage() {
         </div>
 
         <div className='lg:col-span-4 space-y-6'>
-          <Card className='border-none shadow-2xl bg-primary text-white rounded-[2.5rem] p-8 overflow-hidden relative group'>
+          <Card className='border-none shadow-2xl bg-primary text-white rounded-card p-8 overflow-hidden relative group'>
             <div className='absolute top-[-10%] right-[-10%] w-32 h-32 bg-accent/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000' />
             <div className='relative z-10 space-y-6'>
               <div className='flex items-center gap-4'>
@@ -906,7 +906,7 @@ export default function TrailManagementPage() {
             </div>
           </Card>
 
-          <Card className='bg-white border-none shadow-xl rounded-[2rem] p-8 space-y-6'>
+          <Card className='bg-white border-none shadow-xl rounded-card p-8 space-y-6'>
             <div className="flex items-center gap-3">
               <Sparkles className='h-5 w-5 text-accent' />
               <h3 className='text-[10px] font-black text-primary uppercase tracking-widest'>

@@ -175,7 +175,7 @@ export default function CoordinatorDashboard() {
   return (
     <div className="space-y-6 pb-20 px-1">
       {/* HERO */}
-      <div className="relative aurora-dark rounded-[2rem] p-5 md:p-8 shadow-xl overflow-hidden">
+      <div className="relative aurora-dark rounded-card p-5 md:p-8 shadow-xl overflow-hidden">
         <div className="absolute top-0 right-0 w-60 h-60 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
@@ -213,7 +213,7 @@ export default function CoordinatorDashboard() {
       {/* CARD DE CÓDIGO DOCENTE */}
       <Card className="border-none shadow-2xl bg-white rounded-[3rem] overflow-hidden p-5 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 border-l-[12px] border-accent animate-in zoom-in-95 duration-700">
         <div className="flex items-center gap-6">
-          <div className="h-16 w-16 rounded-[2rem] bg-accent/10 flex items-center justify-center text-accent shadow-inner">
+          <div className="h-16 w-16 rounded-card bg-accent/10 flex items-center justify-center text-accent shadow-inner">
             <ShieldAlert className="h-8 w-8" />
           </div>
           <div className="space-y-1">
@@ -268,19 +268,19 @@ export default function CoordinatorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-8">
-        <Card className="lg:col-span-2 border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden border border-slate-100">
+        <Card className="lg:col-span-2 border-none shadow-xl rounded-card bg-white overflow-hidden border border-slate-100">
           <CardHeader className="p-5 md:p-8 pb-0">
             <CardTitle className="text-xl font-black text-slate-900 italic">Atividade Recente</CardTitle>
             <CardDescription className="text-sm">Últimas respostas de simulados na plataforma.</CardDescription>
           </CardHeader>
           <CardContent className="p-5 md:p-8 space-y-2.5">
             {loading ? (
-              Array(5).fill(0).map((_, i) => <div key={i} className="h-[76px] rounded-[2rem] bg-slate-50 animate-pulse" />)
+              Array(5).fill(0).map((_, i) => <div key={i} className="h-[76px] rounded-card bg-slate-50 animate-pulse" />)
             ) : logs.length === 0 ? (
-              <div className="py-16 text-center opacity-30 italic font-medium border-2 border-dashed rounded-[2rem]">Nenhuma atividade recente registrada.</div>
+              <div className="py-16 text-center opacity-30 italic font-medium border-2 border-dashed rounded-card">Nenhuma atividade recente registrada.</div>
             ) : (
               logs.map((log) => (
-                <div key={log.id} className="flex items-center justify-between p-4 md:p-6 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all group">
+                <div key={log.id} className="flex items-center justify-between p-4 md:p-6 rounded-card bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all group">
                   <div className="flex items-center gap-3 md:gap-5">
                     <div className="h-12 w-12 rounded-2xl bg-white shadow-inner flex items-center justify-center font-black text-primary text-sm italic group-hover:bg-primary group-hover:text-white transition-all">{log.user_name?.charAt(0)}</div>
                     <div>
@@ -317,7 +317,7 @@ export default function CoordinatorDashboard() {
             </div>
           </Card>
 
-          <Card className="border-none shadow-xl aurora-dark rounded-[2.5rem] overflow-hidden relative">
+          <Card className="border-none shadow-xl aurora-dark rounded-card overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/15 rounded-full blur-[60px] pointer-events-none" />
             <CardHeader className="pb-2 p-5 md:p-7 relative z-10">
               <CardTitle className="text-xs font-black uppercase tracking-[0.3em] flex items-center gap-3 text-primary">
@@ -327,13 +327,13 @@ export default function CoordinatorDashboard() {
             </CardHeader>
             <CardContent className="px-5 md:px-7 pb-5 md:pb-7 space-y-4 relative z-10">
               {riskAlerts.length === 0 ? (
-                <div className="py-12 text-center border-2 border-dashed border-white/10 rounded-[2rem] opacity-40">
+                <div className="py-12 text-center border-2 border-dashed border-white/10 rounded-card opacity-40">
                   <p className="text-[10px] font-bold italic tracking-widest uppercase">Rede em Conformidade Total</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {riskAlerts.map((alert) => (
-                    <div key={alert.id} className="p-5 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-start gap-5 group hover:bg-white/10 transition-all cursor-pointer">
+                    <div key={alert.id} className="p-5 rounded-card bg-white/5 border border-white/10 flex items-start gap-5 group hover:bg-white/10 transition-all cursor-pointer">
                       <div className={`p-3 rounded-2xl bg-white/10 ${alert.color} shadow-inner`}>
                         <alert.icon className="h-5 w-5" />
                       </div>

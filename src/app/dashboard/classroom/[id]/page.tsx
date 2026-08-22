@@ -476,7 +476,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
               <div 
                 className={`transition-all duration-300 ease-in-out ${
                   showSimultaneousWorkbook 
-                    ? 'fixed z-[70] shadow-[0_30px_80px_rgba(0,0,0,0.6)] rounded-[2rem] border-4 border-white overflow-hidden bg-black'
+                    ? 'fixed z-[70] shadow-[0_30px_80px_rgba(0,0,0,0.6)] rounded-card border-4 border-white overflow-hidden bg-black'
                     : 'gradient-border aspect-video bg-black relative shadow-2xl overflow-hidden shrink-0 ring-1 ring-white/10'
                 }`}
                 style={showSimultaneousWorkbook ? {

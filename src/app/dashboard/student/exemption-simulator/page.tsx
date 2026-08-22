@@ -66,7 +66,7 @@ export default function ExemptionSimulatorPage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 shadow-2xl shadow-emerald-200 p-6">
+      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 shadow-2xl shadow-emerald-200 p-6">
         <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
@@ -85,7 +85,7 @@ export default function ExemptionSimulatorPage() {
       </div>
 
       {/* ── Form ── */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+      <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
         <div className="p-4 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-2">
             <Calculator className="h-4 w-4 text-emerald-600" />
@@ -171,7 +171,7 @@ export default function ExemptionSimulatorPage() {
       {/* ── Result ── */}
       {result && (
         <div
-          className={`relative rounded-[1.5rem] overflow-hidden border p-5 animate-in slide-in-from-bottom-4 duration-500 ${
+          className={`relative rounded-card overflow-hidden border p-5 animate-in slide-in-from-bottom-4 duration-500 ${
             result.isEligible
               ? "bg-emerald-50 border-emerald-200"
               : "bg-red-50 border-red-200"

@@ -68,7 +68,7 @@ export function EssayHighlightedText({
   const marcados = fatias.filter(f => f.tipo === 'marca').length;
 
   return (
-    <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+    <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
       <div className="p-5 border-b border-slate-100 bg-amber-50">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center">
@@ -145,7 +145,7 @@ export function BancaMirror({ banca }: { banca: BancaInfo }) {
   if (corretores.length === 0) return null;
 
   return (
-    <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+    <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
       <button
         type="button"
         onClick={() => setAberto(v => !v)}
@@ -218,7 +218,7 @@ export function AnulacaoAviso({ motivo, explicacao }: { motivo: string; explicac
   };
 
   return (
-    <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-5 space-y-2">
+    <div className="rounded-card border border-red-200 bg-red-50 p-5 space-y-2">
       <div className="flex items-center gap-2">
         <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
         <h3 className="text-sm font-black italic text-red-700 uppercase tracking-wide">

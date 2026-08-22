@@ -571,7 +571,7 @@ export default function ReportCardPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-10 animate-in fade-in duration-500">
-      <div className="relative overflow-hidden rounded-[2rem] aurora-dark p-6 text-white shadow-xl md:p-8">
+      <div className="relative overflow-hidden rounded-card aurora-dark p-6 text-white shadow-xl md:p-8">
         <Image
           src="/images/updates/boletim_update.png"
           alt="Meu Boletim"

@@ -1,7 +1,7 @@
 import { AuthProvider } from '@/lib/AuthProvider';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Sora } from 'next/font/google';
+import { Sora, Boldonse, Space_Mono } from 'next/font/google';
 import { ClientWrapper } from '@/components/ClientWrapper';
 import { Suspense } from 'react';
 import { LoadingShell } from '@/components/LoadingShell';
@@ -20,6 +20,32 @@ const sora = Sora({
   display: 'swap',
   variable: '--font-sora',
   weight: ['400', '500', '600', '700', '800'],
+});
+
+// ── Papéis fixos de tipografia (fase 1 do sistema visual único) ────────────
+// A regra vale em TODA tela, da landing ao painel da secretaria:
+//   display → número grande e título de destaque (nunca texto corrido)
+//   sans    → texto de interface e leitura longa (Sora, acima)
+//   mono    → label, metadado, código de turma, competência
+// É essa constância que faz zonas de intensidade diferente ainda parecerem
+// o mesmo produto. Ambas carregam só o peso que usamos.
+const boldonse = Boldonse({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+  weight: ['400'],
+  // Boldonse é recente demais para estar na tabela de métricas do Next, que
+  // avisa "Failed to find font override values" e desiste do ajuste. Declarar
+  // o fallback à mão evita o aviso e mantém o texto legível antes do swap.
+  fallback: ['Arial Black', 'Impact', 'sans-serif'],
+  adjustFontFallback: false,
+});
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+  weight: ['400', '700'],
 });
 
 export const metadata = {
@@ -58,7 +84,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const tenant = await getTenantForHost(headersList.get('host'));
 
   return (
-    <html lang="pt-BR" className={`${sora.variable} font-sans`}>
+    <html lang="pt-BR" className={`${sora.variable} ${boldonse.variable} ${spaceMono.variable} font-sans`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

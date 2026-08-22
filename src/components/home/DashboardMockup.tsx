@@ -81,7 +81,7 @@ export function DashboardMockup(): ReactElement {
         className="relative h-full w-full"
       >
         {/* Janela principal */}
-        <div className="gradient-border relative h-full w-full rounded-[2rem] bg-gray-900/70 backdrop-blur-2xl shadow-[0_0_80px_-15px_rgba(76,204,237,0.45)] overflow-hidden noise">
+        <div className="gradient-border relative h-full w-full rounded-card bg-gray-900/70 backdrop-blur-2xl shadow-[0_0_80px_-15px_rgba(76,204,237,0.45)] overflow-hidden noise">
           {/* Barra da janela */}
           <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
             <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />

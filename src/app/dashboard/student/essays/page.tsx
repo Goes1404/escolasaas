@@ -472,7 +472,7 @@ export default function StudentEssayPage() {
   return (
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* ── Hero ── */}
-      <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
+      <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
         <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-3">
@@ -524,7 +524,7 @@ export default function StudentEssayPage() {
 
       {/* ── Banner Tema da Semana ── */}
       {weeklyTheme && (
-        <div className="relative overflow-hidden rounded-[1.5rem] border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm">
+        <div className="relative overflow-hidden rounded-card border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm">
           <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-200/30 rounded-full blur-2xl pointer-events-none" />
           <div className="relative z-10 flex items-start gap-3">
             <div className="h-9 w-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
@@ -551,7 +551,7 @@ export default function StudentEssayPage() {
       )}
 
       {/* ── Theme + Editor ── */}
-      <div className="glow-orange bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+      <div className="glow-orange bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
         <div className="p-5 border-b border-slate-100 bg-slate-50">
           {customTheme ? (
             <div className="space-y-2">
@@ -701,7 +701,7 @@ export default function StudentEssayPage() {
           </div>
 
           {/* Score Card */}
-          <div className="relative bg-[#0d0d0f] border border-[#4CCCED]/20 rounded-[1.5rem] overflow-hidden p-6 animate-in zoom-in-95 duration-500">
+          <div className="relative bg-[#0d0d0f] border border-[#4CCCED]/20 rounded-card overflow-hidden p-6 animate-in zoom-in-95 duration-500">
             <div className="absolute inset-0 pointer-events-none animate-pulse" style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(76,204,237,0.25) 0%, transparent 60%)", animationDuration: "3s" }} />
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full pointer-events-none opacity-40" style={{ background: "radial-gradient(circle, rgba(76,204,237,0.4) 0%, transparent 60%)", filter: "blur(40px)" }} />
             <div className="relative z-10 flex items-start justify-between gap-4">
@@ -773,7 +773,7 @@ export default function StudentEssayPage() {
           {/* Corrections — lista completa, inclusive os trechos que não foi
               possível localizar no texto (o modelo citou de forma aproximada). */}
           {result.detailed_corrections?.length > 0 && (
-            <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+            <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
               <div className="p-5 border-b border-slate-100 bg-red-50">
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center">
@@ -801,7 +801,7 @@ export default function StudentEssayPage() {
 
           {/* Suggestions */}
           {result.suggestions?.length > 0 && (
-            <div className="bg-[#0d0d0f] border border-[#4CCCED]/15 rounded-[1.5rem] overflow-hidden">
+            <div className="bg-[#0d0d0f] border border-[#4CCCED]/15 rounded-card overflow-hidden">
               <div className="p-5 border-b border-white/5">
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 flex items-center justify-center">
@@ -850,7 +850,7 @@ export default function StudentEssayPage() {
           <TrendingUp className="h-4 w-4 text-orange-500" />
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Evolução de Notas</p>
         </div>
-        <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden p-4">
+        <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden p-4">
           {chartData.length > 0 ? (
             <div className="h-[220px] w-full">
               <EssayChart data={chartData} />

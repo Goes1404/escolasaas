@@ -99,7 +99,7 @@ export default function StudentFinancePage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest">
               <Receipt className="h-4 w-4" /> Plano
@@ -112,7 +112,7 @@ export default function StudentFinancePage() {
             )}
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-emerald-600 text-xs font-black uppercase tracking-widest">
               <BadgePercent className="h-4 w-4" /> Bolsas e descontos
@@ -131,7 +131,7 @@ export default function StudentFinancePage() {
             )}
           </CardContent>
         </Card>
-        <Card className="shadow-2xl rounded-[2.5rem]">
+        <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest">
               <Wallet className="h-4 w-4" /> Em aberto
@@ -144,7 +144,7 @@ export default function StudentFinancePage() {
         </Card>
       </div>
 
-      <Card className="shadow-2xl rounded-[2.5rem] overflow-hidden">
+      <Card className="shadow-2xl rounded-card overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

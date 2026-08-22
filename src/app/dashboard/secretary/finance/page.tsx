@@ -250,7 +250,7 @@ export default function SecretaryFinancePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Lista de professores */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-[2.5rem] bg-white p-5 space-y-4 h-fit">
+        <Card className="lg:col-span-2 border-none shadow-2xl rounded-card bg-white p-5 space-y-4 h-fit">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
@@ -292,14 +292,14 @@ export default function SecretaryFinancePage() {
         {/* Detalhe do professor */}
         <div className="lg:col-span-3 space-y-6">
           {!selected ? (
-            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white p-12 text-center">
+            <Card className="border-none shadow-2xl rounded-card bg-white p-12 text-center">
               <Wallet className="h-10 w-10 text-slate-200 mx-auto mb-3" />
               <p className="text-sm font-bold text-slate-400 italic">Selecione um professor para definir o valor e gerar recibos.</p>
             </Card>
           ) : (
             <>
               {/* Valor a pagar */}
-              <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white p-6 space-y-4">
+              <Card className="border-none shadow-2xl rounded-card bg-white p-6 space-y-4">
                 <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-emerald-500" /> Valor a Pagar — {selected.name}
                 </h2>
@@ -332,7 +332,7 @@ export default function SecretaryFinancePage() {
               </Card>
 
               {/* Gerar recibo */}
-              <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white p-6 space-y-4">
+              <Card className="border-none shadow-2xl rounded-card bg-white p-6 space-y-4">
                 <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
                   <Receipt className="h-5 w-5 text-orange-500" /> Gerar Recibo
                 </h2>
@@ -353,7 +353,7 @@ export default function SecretaryFinancePage() {
               </Card>
 
               {/* Histórico de recibos */}
-              <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+              <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
                 <div className="p-6 pb-2">
                   <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
                     <Clock className="h-5 w-5 text-slate-400" /> Recibos ({selectedPayments.length})

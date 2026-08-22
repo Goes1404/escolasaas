@@ -32,7 +32,7 @@ export function FluidAccessSection({ onNavigate }: FluidAccessSectionProps): Rea
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="gradient-border relative rounded-[2.5rem] bg-white/[0.04] backdrop-blur-2xl p-8 md:p-12 shadow-2xl noise"
+          className="gradient-border relative rounded-card bg-white/[0.04] backdrop-blur-2xl p-8 md:p-12 shadow-2xl noise"
         >
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 text-primary font-black uppercase tracking-[0.3em] text-[10px] bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20">

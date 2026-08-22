@@ -270,7 +270,7 @@ export default function AdminExamsPage() {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-12 text-center">
+        <Card className="border-none shadow-xl rounded-card bg-white p-12 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-xl font-black text-primary italic">Nenhuma prova encontrada</p>
           <p className="text-muted-foreground font-medium mt-2">
@@ -283,7 +283,7 @@ export default function AdminExamsPage() {
             const typeColor = TYPE_COLOR[(EXAM_TYPES as readonly string[]).includes(exam.exam_type) ? exam.exam_type as ExamType : 'outro'];
             const isUploading = uploading[exam.id];
             return (
-              <Card key={exam.id} className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all">
+              <Card key={exam.id} className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all">
                 <CardContent className="p-6 flex flex-col gap-4 h-full">
                   {/* Type + Year */}
                   <div className="flex items-center justify-between gap-2">
@@ -422,7 +422,7 @@ export default function AdminExamsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-[2rem] max-w-md">
+        <DialogContent className="rounded-card max-w-md">
           <DialogHeader>
             <DialogTitle className="font-black italic text-primary text-xl">
               {editingExam ? 'Editar Prova' : 'Nova Prova'}

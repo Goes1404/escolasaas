@@ -105,7 +105,7 @@ function ChatAuditContent() {
                     <span className="text-[8px] font-black uppercase text-primary/40">{sender?.name}</span>
                     <span className="text-[7px] font-bold text-muted-foreground italic">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
                   </div>
-                  <div className={`px-6 py-4 rounded-[2rem] text-sm font-medium shadow-sm max-w-[85%] md:max-w-[70%] border ${
+                  <div className={`px-6 py-4 rounded-card text-sm font-medium shadow-sm max-w-[85%] md:max-w-[70%] border ${
                     isU1 ? 'bg-white text-primary border-primary/5 rounded-tl-none' : 'bg-muted/30 text-primary border-muted/20 rounded-tr-none'
                   }`}>
                     {msg.content}

@@ -207,7 +207,7 @@ export default function AdminStudentsPage() {
                 <span>Mesclar Grupos</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2rem] p-6 bg-white max-w-lg border-none shadow-2xl">
+            <DialogContent className="rounded-card p-6 bg-white max-w-lg border-none shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="text-xl font-black italic text-primary">Mesclar Cohorts</DialogTitle>
                 <DialogDescription className="italic text-xs">Isso moverá todos os alunos de uma turma para outra.</DialogDescription>
@@ -247,7 +247,7 @@ export default function AdminStudentsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white overflow-hidden p-6 md:p-8">
+          <Card className="border-none shadow-xl rounded-card bg-primary text-white overflow-hidden p-6 md:p-8">
             <div className="flex items-center justify-between">
               <Users className="h-8 w-8 opacity-40" />
               <Badge className="bg-accent text-accent-foreground font-black">TOTAL</Badge>
@@ -258,7 +258,7 @@ export default function AdminStudentsPage() {
             </div>
           </Card>
 
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-orange-500">
+          <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-orange-500">
             <div className="flex items-center justify-between font-black">
               <GraduationCap className="h-8 w-8 text-orange-500" />
               <Badge className="bg-orange-100 text-orange-700">ETEC</Badge>
@@ -269,7 +269,7 @@ export default function AdminStudentsPage() {
             </div>
           </Card>
 
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-blue-500">
+          <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-blue-500">
             <div className="flex items-center justify-between font-black">
               <ZapOff className="h-8 w-8 text-blue-500" />
               <Badge className="bg-blue-100 text-blue-700">ENEM</Badge>
@@ -378,7 +378,7 @@ export default function AdminStudentsPage() {
       </Card>
 
       <Dialog open={!!editingStudent} onOpenChange={() => setEditingStudent(null)}>
-        <DialogContent className="rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden max-w-md">
+        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-hidden max-w-md">
           <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-lg shadow">

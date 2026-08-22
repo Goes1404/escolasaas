@@ -189,7 +189,7 @@ export default function AdminChatAuditPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -253,7 +253,7 @@ export default function AdminChatAuditPage() {
                                 )}
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl p-10 max-w-sm bg-white">
+                            <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm bg-white">
                               <AlertDialogHeader>
                                 <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4">
                                   <AlertTriangle className="h-6 w-6" />

@@ -161,7 +161,7 @@ export default function AuroraSupportPage() {
             ))}
           </div>
           
-          <Card className="mt-auto p-6 aurora-dark text-primary-foreground border-none rounded-[2rem] shadow-2xl relative overflow-hidden group gradient-border">
+          <Card className="mt-auto p-6 aurora-dark text-primary-foreground border-none rounded-card shadow-2xl relative overflow-hidden group gradient-border">
             <div className="absolute top-[-10%] right-[-10%] w-24 h-24 bg-accent/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10 space-y-4">
               <h3 className="font-black text-xs flex items-center gap-2 italic">
@@ -184,7 +184,7 @@ export default function AuroraSupportPage() {
           </Card>
         </div>
 
-        <Card className="gradient-border flex-1 flex flex-col shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white relative min-h-0 ring-1 ring-black/5">
+        <Card className="gradient-border flex-1 flex flex-col shadow-2xl border-none overflow-hidden rounded-card bg-white relative min-h-0 ring-1 ring-black/5">
           <ScrollArea className="flex-1" ref={scrollRef}>
             <div className="flex flex-col gap-8 py-8 px-6 md:px-10">
               {messages.map((msg, i) => (
@@ -194,7 +194,7 @@ export default function AuroraSupportPage() {
                       {msg.role === 'assistant' ? <Bot className="h-5 w-5" /> : <User className="h-5 w-5" />}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`p-5 md:p-6 rounded-[1.5rem] text-sm leading-relaxed shadow-sm max-w-[85%] md:max-w-[75%] font-medium ${
+                  <div className={`p-5 md:p-6 rounded-card text-sm leading-relaxed shadow-sm max-w-[85%] md:max-w-[75%] font-medium ${
                     msg.role === 'assistant' 
                       ? msg.isError 
                         ? 'bg-red-50 text-red-700 border border-red-100 rounded-tl-none font-black italic flex items-start gap-3'
@@ -208,7 +208,7 @@ export default function AuroraSupportPage() {
               {loading && (
                 <div className="flex gap-4 md:gap-6 animate-pulse">
                   <div className="h-10 w-10 rounded-full bg-muted shrink-0" />
-                  <div className="bg-muted/10 p-6 rounded-[2rem] rounded-tl-none flex items-center gap-4">
+                  <div className="bg-muted/10 p-6 rounded-card rounded-tl-none flex items-center gap-4">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-50 italic">Aurora processando solicitação...</span>
                   </div>

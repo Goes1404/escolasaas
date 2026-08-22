@@ -144,10 +144,46 @@ Sempre verifique `/supabase/migrations/` antes de qualquer query — nunca assum
 ### RLS
 Todas as tabelas têm RLS ativo. Filtre sempre por `user_id` ou `role`. Nunca exponha dados de outros usuários.
 
-## 🎨 Padrões de Design & UX
+## 🎨 Sistema visual único — 3 níveis de intensidade
 
-- **Cards**: `shadow-2xl`, bordas `rounded-[2.5rem]`
-- **Títulos**: `font-black italic`
+A plataforma tem **um sistema com três doses**, não dois estilos. A landing
+(`/`) e o dashboard usam os MESMOS primitivos; o que muda entre uma tela de
+festa e uma de trabalho é a intensidade, nunca a linguagem. É isso que evita
+a sensação de colcha de retalhos.
+
+**Regra de decisão:** *quanto mais tempo o usuário passa na tela, menor a
+intensidade.*
+
+| Nível | Onde | O que pode usar |
+|-------|------|-----------------|
+| **Alto** (segundos, emoção) | bichinho, ranking, desafio diário, resultado de simulado, primeiro acesso, landing | cor chapada de fundo, bloco diagonal, sombra dura, animação contínua, display gigante |
+| **Médio** (minutos) | home do aluno, materiais, portal do responsável | fundo neutro, acento em detalhe, sombra dura **só** no botão primário, animação na entrada |
+| **Baixo** (horas) | simulado em andamento, redação, caderno, painel da secretaria/admin | cor só como sinal semântico (verde=pago, vermelho=vencido), sem sombra dura, sem animação |
+
+**O que costura tudo:** toda tela de nível baixo mantém o **cabeçalho em nível
+médio** — título em `u-page-title` (display) + `u-label` (mono) acima. Como
+manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
+
+### Primitivos (mexer aqui muda as 132 rotas de uma vez)
+
+- **Raio**: `--radius-card` (14px) e `--radius-control` (10px) em
+  `globals.css`. Em código novo use `rounded-card` / `rounded-control` — nunca
+  valor hardcoded. A escala `rounded-xl/2xl/3xl` do Tailwind foi reapontada
+  para esses tokens, então telas antigas seguem o sistema sem edição.
+- **Tipografia com papéis fixos** (declarada em `layout.tsx`):
+  `font-display`/`u-display`/`u-num` (Boldonse) para número grande e título de
+  destaque — **nunca** texto corrido; `font-sans` (Sora) para interface e
+  leitura longa; `font-mono`/`u-label` (Space Mono) para label e metadado.
+- **Sombra dura**: `shadow-hard` / `<Button variant="arcade">` — a assinatura
+  da landing em dose de app. Só no **CTA primário** da tela; em toda superfície
+  vira poluição nas telas densas.
+- **Utilitários** em `globals.css`: `.u-label`, `.u-display`, `.u-num`,
+  `.u-page-title`, `.u-surface`.
+
+### Outros padrões
+
+- **Títulos**: `font-black italic` (padrão legado, ainda presente em telas
+  antigas — em tela nova prefira `u-page-title`)
 - **Feedback**: use **sempre** o hook `useToast` (`src/hooks/use-toast.ts`) para erros e sucessos
 - **Responsividade**: mobile-first; sidebar com toggle móvel já implementado no layout
 

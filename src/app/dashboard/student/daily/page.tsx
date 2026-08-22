@@ -216,7 +216,7 @@ export default function DailyQuestionPage() {
   if (!daily) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <div className="aurora-dark rounded-[2.5rem] p-12 text-white">
+        <div className="aurora-dark rounded-card p-12 text-white">
           <Target className="h-16 w-16 mx-auto mb-4 opacity-40" />
           <h2 className="text-2xl font-black italic">Sem desafio hoje</h2>
           <p className="text-white/50 mt-2 text-sm">
@@ -233,8 +233,8 @@ export default function DailyQuestionPage() {
     <div className="max-w-2xl mx-auto px-4 space-y-6 pb-24 animate-in fade-in duration-700">
 
       {/* ── HERO ── */}
-      <section className="aurora-dark relative overflow-hidden rounded-[2.5rem] p-6 md:p-8 text-white shadow-2xl border border-white/5">
-        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-[2.5rem]" />
+      <section className="aurora-dark relative overflow-hidden rounded-card p-6 md:p-8 text-white shadow-2xl border border-white/5">
+        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/20 rounded-full blur-[80px]" />
 
         <div className="relative z-10 flex items-start justify-between gap-3">
@@ -291,7 +291,7 @@ export default function DailyQuestionPage() {
       </section>
 
       {/* ── CARD DA QUESTÃO ── */}
-      <div className="bg-white rounded-[2rem] shadow-md border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-card shadow-md border border-slate-100 overflow-hidden">
         {/* Barra superior de status */}
         <div className={`h-1 w-full transition-all duration-500 ${
           answerState === 'correct' ? 'bg-emerald-500' :
@@ -427,7 +427,7 @@ export default function DailyQuestionPage() {
 
       {/* ── CTA para Simulados ── */}
       {alreadyDone && (
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-[2rem] border border-primary/10 p-6 flex items-center justify-between gap-4">
+        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-card border border-primary/10 p-6 flex items-center justify-between gap-4">
           <div>
             <p className="font-black text-primary italic">Quer mais questões?</p>
             <p className="text-xs text-muted-foreground mt-1">

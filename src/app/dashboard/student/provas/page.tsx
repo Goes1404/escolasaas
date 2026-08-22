@@ -664,7 +664,7 @@ export default function ProvasCompletasPage() {
     return (
       <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Hero */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
+        <div className="relative rounded-card overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-2xl shadow-orange-200 p-6">
           <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
           <Scroll className="absolute right-4 top-4 h-20 w-20 text-white/10" />
           <div className="relative z-10">
@@ -730,7 +730,7 @@ export default function ProvasCompletasPage() {
 
         {/* Empty state */}
         {visibleGroups.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-[1.5rem]">
+          <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
             <BookOpen className="h-9 w-9 mx-auto mb-2 text-slate-300" />
             <p className="text-sm font-black italic text-slate-400 uppercase tracking-widest">
               {exams.length === 0
@@ -753,8 +753,8 @@ export default function ProvasCompletasPage() {
 
               const isSpecial = selectedExam.is_special_cursinho;
               const cardBgClass = isSpecial 
-                ? "relative card-on-fire text-white border-orange-500/30 shadow-2xl rounded-[1.5rem] overflow-hidden transition-all group flex flex-col justify-between"
-                : "relative bg-white border border-slate-100 hover:border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all group flex flex-col justify-between";
+                ? "relative card-on-fire text-white border-orange-500/30 shadow-2xl rounded-card overflow-hidden transition-all group flex flex-col justify-between"
+                : "relative bg-white border border-slate-100 hover:border-slate-200 shadow-sm rounded-card overflow-hidden transition-all group flex flex-col justify-between";
 
               return (
                 <div
@@ -950,7 +950,7 @@ export default function ProvasCompletasPage() {
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto"
+                className="w-full max-w-lg bg-white rounded-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto"
               >
                 <div className="p-5 space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -1150,7 +1150,7 @@ export default function ProvasCompletasPage() {
         )}
 
         {/* Question card */}
-        <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden">
+        <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
           <div className="p-5 space-y-5">
             {currentQuestion.supporting_text && (
               <SupportingTextBlock text={currentQuestion.supporting_text} />
@@ -1329,7 +1329,7 @@ export default function ProvasCompletasPage() {
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-sm bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300"
+                className="w-full max-w-sm bg-white rounded-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300"
               >
                 <div className="p-6 space-y-4">
                   <div className="flex items-center gap-3">
@@ -1403,7 +1403,7 @@ export default function ProvasCompletasPage() {
       <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* Score Hero */}
-        <div className={`relative rounded-[2rem] overflow-hidden p-6 shadow-2xl ${
+        <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl ${
           isGood
             ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 shadow-emerald-200"
             : "bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 shadow-orange-200"
