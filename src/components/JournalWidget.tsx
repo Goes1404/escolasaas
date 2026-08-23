@@ -13,8 +13,8 @@ const MOODS: { value: Mood; emoji: string; label: string; bg: string; ring: stri
   { value: 'great',      emoji: '🚀', label: 'Ótimo',      bg: 'bg-emerald-50',  ring: 'ring-emerald-300' },
   { value: 'good',       emoji: '🙂', label: 'Bom',        bg: 'bg-sky-50',      ring: 'ring-sky-300' },
   { value: 'neutral',    emoji: '😐', label: 'Neutro',     bg: 'bg-slate-50',    ring: 'ring-slate-300' },
-  { value: 'tired',      emoji: '😪', label: 'Cansado',    bg: 'bg-amber-50',    ring: 'ring-amber-300' },
-  { value: 'frustrated', emoji: '😤', label: 'Frustrado',  bg: 'bg-rose-50',     ring: 'ring-rose-300' },
+  { value: 'tired',      emoji: '😪', label: 'Cansado',    bg: 'bg-brand-yellow/25', ring: 'ring-foreground/40' },
+  { value: 'frustrated', emoji: '😤', label: 'Frustrado',  bg: 'bg-brand-pink/10',   ring: 'ring-brand-pink/50' },
 ];
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -74,8 +74,8 @@ export function JournalWidget({ userId }: Props) {
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center">
-              <BookHeart className="h-5 w-5 text-violet-600" />
+            <div className="h-10 w-10 rounded-control bg-brand-slate/15 flex items-center justify-center">
+              <BookHeart className="h-5 w-5 text-brand-slate" />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Diário de Estudos</p>
@@ -113,20 +113,20 @@ export function JournalWidget({ userId }: Props) {
               onChange={e => setWhatStudied(e.target.value.slice(0, 200))}
               placeholder="O que você estudou hoje? (opcional)"
               rows={2}
-              className="w-full text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 p-3 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
+              className="w-full text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 p-3 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
             />
 
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
                 disabled={!mood || saving}
-                className="flex-1 h-12 bg-violet-600 hover:bg-violet-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-[11px] uppercase tracking-widest rounded-2xl transition-all"
+                className="flex-1 h-12 bg-primary hover:bg-primary/90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground border-2 border-foreground font-black text-[11px] uppercase tracking-widest rounded-control transition-all"
               >
                 {saving ? 'Salvando...' : 'Registrar'}
               </button>
               <Link
                 href="/dashboard/student/journal"
-                className="h-12 px-4 flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-violet-700 hover:text-violet-800 active:scale-95 rounded-2xl border border-violet-200 transition-all"
+                className="h-12 px-4 flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-foreground/70 hover:text-foreground active:scale-95 rounded-control border border-foreground/25 transition-all"
               >
                 Histórico <ChevronRight className="h-3 w-3" />
               </Link>
@@ -146,7 +146,7 @@ export function JournalWidget({ userId }: Props) {
             )}
             <Link
               href="/dashboard/student/journal"
-              className="flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-violet-700 hover:text-violet-800 py-2"
+              className="flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-foreground/70 hover:text-foreground py-2"
             >
               Ver histórico <ChevronRight className="h-3 w-3" />
             </Link>

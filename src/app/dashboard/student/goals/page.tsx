@@ -287,12 +287,12 @@ export default function GoalsPage() {
           <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Ativas</p>
         </div>
         <div className="bg-white rounded-2xl p-3 md:p-4 border border-slate-100 shadow-md">
-          <Trophy className="h-4 w-4 text-amber-600 mb-1.5" />
+          <Trophy className="h-4 w-4 text-foreground mb-1.5" />
           <p className="text-xl md:text-2xl font-black text-primary">{completed.length}</p>
           <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Concluídas</p>
         </div>
         <div className="bg-white rounded-2xl p-3 md:p-4 border border-slate-100 shadow-md">
-          <TrendingUp className="h-4 w-4 text-violet-600 mb-1.5" />
+          <TrendingUp className="h-4 w-4 text-brand-slate mb-1.5" />
           <p className="text-xl md:text-2xl font-black text-primary">{goals.length}</p>
           <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Total</p>
         </div>
@@ -326,14 +326,14 @@ export default function GoalsPage() {
                         <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                           {TYPE_LABEL[g.goal_type]}
                         </span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-brand-slate bg-brand-slate/10 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Calendar className="h-2.5 w-2.5" /> {PERIOD_LABEL[g.period]}
                         </span>
                       </div>
                     </div>
                     <button
                       onClick={() => handleDelete(g.id)}
-                      className="h-10 w-10 min-w-[40px] rounded-xl bg-slate-50 hover:bg-rose-50 hover:text-rose-600 active:scale-90 transition-all flex items-center justify-center text-slate-400"
+                      className="h-10 w-10 min-w-[40px] rounded-xl bg-slate-50 hover:bg-brand-pink/10 hover:text-brand-pink active:scale-90 transition-all flex items-center justify-center text-slate-400"
                       aria-label="Excluir"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -369,7 +369,7 @@ export default function GoalsPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleComplete(g.id)}
-                      className="h-11 rounded-xl text-xs font-black border-amber-200 text-amber-700 hover:bg-amber-50 flex-1 active:scale-95"
+                      className="h-11 rounded-xl text-xs font-black border-foreground/25 text-foreground hover:bg-brand-yellow/25 flex-1 active:scale-95"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Concluir
                     </Button>
@@ -385,14 +385,14 @@ export default function GoalsPage() {
       {completed.length > 0 && (
         <section>
           <h2 className="text-sm font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
-            <Trophy className="h-3.5 w-3.5 text-amber-600" /> Conquistadas
+            <Trophy className="h-3.5 w-3.5 text-foreground" /> Conquistadas
           </h2>
           <div className="grid gap-2">
             {completed.slice(0, 10).map(g => (
-              <div key={g.id} className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 flex items-center justify-between gap-3">
+              <div key={g.id} className="bg-brand-yellow/20 rounded-card p-4 border border-foreground/15 flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-black text-primary italic text-sm truncate">{g.title}</p>
-                  <p className="text-[10px] font-bold text-amber-700 mt-0.5">
+                  <p className="text-[10px] font-bold text-foreground/70 mt-0.5">
                     {TYPE_LABEL[g.goal_type]} · {g.target_value} unidades
                   </p>
                 </div>
@@ -406,14 +406,14 @@ export default function GoalsPage() {
       {/* CERTIFICADO DE ENGAJAMENTO */}
       <section className="bg-card border-2 border-foreground rounded-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8">
         <div className="space-y-2 text-left">
-          <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-600 px-3 py-1 rounded-full border border-amber-500/30">
+          <span className="text-[9px] font-black uppercase tracking-widest bg-brand-yellow/40 text-foreground px-3 py-1 rounded-control border border-foreground/20">
             Recompensa de Prestígio 🏆
           </span>
           <h3 className="u-display text-xl md:text-2xl text-primary leading-tight">
             Certificado de Engajamento
           </h3>
           <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">
-            Desbloqueie e baixe seu certificado oficial de engajamento ao atingir <span className="font-black text-amber-600">7 dias consecutivos de estudos</span> ou <span className="font-black text-amber-600">Nível 3</span>.
+            Desbloqueie e baixe seu certificado oficial de engajamento ao atingir <span className="font-black text-foreground">7 dias consecutivos de estudos</span> ou <span className="font-black text-foreground">Nível 3</span>.
           </p>
           <div className="flex gap-4 text-xs font-bold text-slate-500 pt-1">
             <span className={streak >= 7 ? 'text-emerald-600' : ''}>
@@ -427,7 +427,7 @@ export default function GoalsPage() {
         <Button
           onClick={downloadCertificate}
           disabled={streak < 7 && level < 3}
-          className={`h-13 px-8 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg transition-all border-none ${
+          className={`h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg transition-all border-none ${
             streak >= 7 || level >= 3 
               ? 'bg-primary text-primary-foreground border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none' 
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'

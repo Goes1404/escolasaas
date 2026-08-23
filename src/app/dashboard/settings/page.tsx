@@ -512,7 +512,7 @@ export default function SettingsPage() {
                       <Button 
                         onClick={handleGenerateGuardianToken}
                         disabled={generatingToken}
-                        className="bg-primary text-white font-black h-13 px-8 rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-none"
+                        className="bg-primary text-white font-black h-14 px-8 rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-none"
                       >
                         {generatingToken ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                         GERAR LINK DE ACOMPANHAMENTO
@@ -541,14 +541,14 @@ export default function SettingsPage() {
                  recusa: no iOS o Web Push so existe com o site instalado na
                  tela de inicio, e a mensagem generica de "navegador sem
                  suporte" nao dizia o que fazer a respeito. */
-              <div className="flex items-start gap-4 p-5 rounded-2xl bg-amber-50 border border-amber-100">
-                <BellOff className="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-4 p-5 rounded-2xl bg-brand-yellow/25 border border-foreground/20">
+                <BellOff className="h-6 w-6 text-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-black text-amber-800">Falta instalar na tela de início</p>
-                  <p className="text-xs font-medium text-amber-700/80 mt-1 leading-relaxed">
+                  <p className="text-sm font-black text-foreground">Falta instalar na tela de início</p>
+                  <p className="text-xs font-medium text-foreground/70 mt-1 leading-relaxed">
                     No iPhone, as notificações só funcionam com o app aberto pelo ícone.
                   </p>
-                  <ol className="text-xs font-medium text-amber-700/90 mt-2 space-y-1 list-decimal list-inside">
+                  <ol className="text-xs font-medium text-foreground/80 mt-2 space-y-1 list-decimal list-inside">
                     <li>Toque em <b>Compartilhar</b>, na barra do Safari.</li>
                     <li>Escolha <b>Adicionar à Tela de Início</b>.</li>
                     <li>Abra pelo <b>ícone novo</b> e volte aqui para ativar.</li>

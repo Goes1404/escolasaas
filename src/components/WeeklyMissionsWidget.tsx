@@ -121,7 +121,7 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
         <div className="mt-4 space-y-1">
           <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-amber-400 transition-all duration-1000"
+              className="h-full rounded-full bg-accent transition-all duration-1000"
               style={{ width: `${Math.round((completedCount / missions.length) * 100)}%` }}
             />
           </div>
@@ -142,7 +142,7 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
                 isComplete && mission.xp_granted
                   ? 'bg-emerald-50/50 border-emerald-100'
                   : isComplete
-                  ? 'bg-amber-50 border-amber-200 shadow-sm'
+                  ? 'bg-brand-yellow/20 border-foreground/20 shadow-sm'
                   : 'bg-slate-50 border-slate-100'
               }`}
             >
@@ -150,7 +150,7 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
                 {/* Ícone + estado */}
                 <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 text-base ${
                   isComplete && mission.xp_granted ? 'bg-emerald-100' :
-                  isComplete ? 'bg-amber-100' : 'bg-slate-100'
+                  isComplete ? 'bg-brand-yellow/50' : 'bg-slate-100'
                 }`}>
                   {isComplete && mission.xp_granted
                     ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -162,11 +162,11 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
                   <div className="flex items-center gap-2">
                     <p className={`text-xs font-black leading-tight truncate ${
                       isComplete && mission.xp_granted ? 'text-emerald-700 line-through opacity-60' :
-                      isComplete ? 'text-amber-800' : 'text-slate-800'
+                      isComplete ? 'text-foreground' : 'text-slate-800'
                     }`}>
                       {mission.title}
                     </p>
-                    <span className="shrink-0 text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                    <span className="shrink-0 text-[9px] font-black text-foreground bg-brand-yellow/40 border border-foreground/20 px-1.5 py-0.5 rounded-full">
                       +{mission.xp_reward} XP
                     </span>
                   </div>
@@ -190,7 +190,7 @@ export function WeeklyMissionsWidget({ userId, examTarget }: Props) {
                   <button
                     onClick={() => handleClaim(mission)}
                     disabled={!!claiming}
-                    className="shrink-0 h-9 px-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white text-[10px] font-black uppercase tracking-wide shadow-md hover:shadow-lg transition-all flex items-center gap-1.5"
+                    className="shrink-0 h-9 px-3 rounded-control bg-primary text-primary-foreground border-2 border-foreground text-[10px] font-black uppercase tracking-wide transition-all active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5"
                   >
                     {claiming === mission.id
                       ? <Loader2 className="h-3.5 w-3.5 animate-spin" />

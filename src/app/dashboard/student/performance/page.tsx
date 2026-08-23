@@ -188,9 +188,9 @@ export default function StudentPerformancePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
         {[
           { label: "Questões",     value: stats.totalAnswered,                      icon: BrainCircuit, color: "text-blue-500",   bg: "bg-blue-50" },
-          { label: "Taxa de Acerto", value: `${stats.accuracy}%`,                   icon: Target,       color: "text-orange-500", bg: "bg-orange-50" },
-          { label: "Tempo em Simulados", value: fmtDurationLong(stats.timeSpent), icon: Clock,        color: "text-purple-500", bg: "bg-purple-50" },
-          { label: "Sequência",    value: `${stats.streak}d`,                       icon: Zap,          color: "text-amber-500",  bg: "bg-amber-50" },
+          { label: "Taxa de Acerto", value: `${stats.accuracy}%`,                   icon: Target,       color: "text-brand-pink", bg: "bg-brand-pink/10" },
+          { label: "Tempo em Simulados", value: fmtDurationLong(stats.timeSpent), icon: Clock,        color: "text-brand-slate", bg: "bg-brand-slate/10" },
+          { label: "Sequência",    value: `${stats.streak}d`,                       icon: Zap,          color: "text-foreground",  bg: "bg-brand-yellow/30" },
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-4 md:p-6 shadow-md border border-slate-100 hover:shadow-xl hover:-translate-y-0.5 transition-all">
             <div className={`h-9 w-9 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
@@ -238,15 +238,17 @@ export default function StudentPerformancePage() {
           </div>
 
           {/* Aurora tip */}
-          <div className="bg-primary rounded-2xl md:rounded-card p-4 md:p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
+          {/* Sobre o ciano claro a tinta é ESCURA — branco aqui ficava a um
+              passo do ilegível. E some o blob com blur, que criava um falso
+              gradiente atrás do texto. */}
+          <div className="bg-primary rounded-card border-2 border-foreground p-4 md:p-6 relative overflow-hidden">
             <div className="relative z-10 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                <Sparkles className="h-5 w-5 text-accent" />
+              <div className="h-10 w-10 rounded-control bg-foreground flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-background" />
               </div>
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-accent mb-1">Aurora IA</p>
-                <p className="text-xs font-semibold italic text-white/80 leading-relaxed">
+                <p className="u-label !text-foreground/60 mb-1">Aurora IA</p>
+                <p className="text-xs font-semibold text-foreground/85 leading-relaxed">
                   "Seu desempenho em Linguagens cresceu 15% esta semana. Foque em Natureza para equilibrar sua média TRI."
                 </p>
               </div>
@@ -263,7 +265,7 @@ export default function StudentPerformancePage() {
             <div key={idx} className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all">
               <div className="flex justify-between items-center mb-3">
                 <p className="font-black text-sm italic text-slate-900">{item.subject}</p>
-                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.score >= 70 ? 'bg-green-50 text-green-600' : item.score >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.score >= 70 ? 'bg-primary/10 text-[#0F7A95]' : item.score >= 50 ? 'bg-brand-yellow/40 text-foreground' : 'bg-brand-pink/10 text-brand-pink'}`}>
                   {item.score}%
                 </span>
               </div>
@@ -280,7 +282,7 @@ export default function StudentPerformancePage() {
       {/* ── HISTÓRICO DE SIMULADOS (com tempo gasto) ── */}
       <div className="space-y-3">
         <h3 className="text-base font-black text-slate-900 italic px-1 uppercase tracking-tighter flex items-center gap-2">
-          <Clock className="h-4 w-4 text-purple-500" />
+          <Clock className="h-4 w-4 text-brand-slate" />
           Histórico de Simulados
         </h3>
         <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
@@ -315,11 +317,11 @@ export default function StudentPerformancePage() {
                           {a.score}<span className="text-slate-300">/{a.total_questions}</span>
                         </td>
                         <td className="px-2 py-3 text-center">
-                          <span className={`text-xs font-black px-2 py-0.5 rounded-full ${pct >= 70 ? 'bg-green-50 text-green-600' : pct >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                          <span className={`text-xs font-black px-2 py-0.5 rounded-full ${pct >= 70 ? 'bg-primary/10 text-[#0F7A95]' : pct >= 50 ? 'bg-brand-yellow/40 text-foreground' : 'bg-brand-pink/10 text-brand-pink'}`}>
                             {pct}%
                           </span>
                         </td>
-                        <td className="px-4 md:px-6 py-3 text-right font-black text-purple-600 tabular-nums whitespace-nowrap">
+                        <td className="px-4 md:px-6 py-3 text-right u-num text-foreground tabular-nums whitespace-nowrap">
                           {fmtClock(a.duration_seconds)}
                         </td>
                       </tr>

@@ -37,7 +37,10 @@ export function StudySuggestionWidget({ userId }: Props) {
           const bySubject: Record<string, { name: string; correct: number; total: number }> = {};
           for (const a of attempts as any[]) {
             const sid = a.subject_id;
-            if (!bySubject[sid]) bySubject[sid] = { name: a.subjects?.name ?? sid, correct: 0, total: 0 };
+            // Tentativa sem matéria (simulado misto) entrava com chave null e
+            // o nome virava literalmente "null" no texto da sugestão.
+            if (!sid || !a.subjects?.name) continue;
+            if (!bySubject[sid]) bySubject[sid] = { name: a.subjects.name, correct: 0, total: 0 };
             bySubject[sid].correct += a.score;
             bySubject[sid].total += a.total_questions;
           }
@@ -49,7 +52,11 @@ export function StudySuggestionWidget({ userId }: Props) {
             if (pct < worstPct) { worstPct = pct; worstId = id; }
           }
 
-          if (worstId) {
+          // "Sua pior matéria" só é conselho quando ela está de fato mal.
+          // Sem o corte, o aluno com 100% em tudo lia "você acertou apenas
+          // 100% recentemente" — a pior matéria de um aluno ótimo continua
+          // ótima. Acima do corte, cai no fallback de trilha não iniciada.
+          if (worstId && worstPct < 70) {
             const s = bySubject[worstId];
             const pct = Math.round(worstPct);
 

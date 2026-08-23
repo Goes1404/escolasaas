@@ -30,7 +30,7 @@ export function GamificationWidget({ userId }: Props) {
   const allBadges = Object.keys(BADGE_META) as BadgeType[];
 
   return (
-    <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden glow-orange group">
+    <div className="bg-white rounded-card border-2 border-foreground/15 overflow-hidden group">
       <div className="aurora-dark dot-grid p-6 space-y-5 text-white">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
@@ -75,7 +75,7 @@ export function GamificationWidget({ userId }: Props) {
                 key={badge}
                 title={meta.description}
                 className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-[transform,box-shadow] duration-300
-                  ${earned ? 'bg-accent/5 border-accent/20 glow-orange' : 'bg-muted/20 border-transparent opacity-40 grayscale'}`}
+                  ${earned ? 'bg-brand-yellow/20 border-foreground/20' : 'bg-muted/20 border-transparent opacity-40 grayscale'}`}
               >
                 <span className="text-xl">{meta.icon}</span>
                 <span className="text-[8px] font-black text-center leading-tight text-primary">{meta.label}</span>

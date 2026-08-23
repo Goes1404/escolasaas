@@ -103,11 +103,13 @@ export function BichinhoWidget() {
   // ── Adoção ───────────────────────────────────────────────────────────────
   if (!bicho.existe) {
     return (
-      <div className="gradient-border bg-white rounded-card shadow-xl overflow-hidden">
-        <div className="p-6 space-y-4 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-700 text-white">
+      <div className="rounded-card border-2 border-foreground overflow-hidden">
+        {/* Adotar é momento de festa: bloco escuro do sistema, sem o
+            violeta/índigo que não existe na paleta. */}
+        <div className="p-6 space-y-4 aurora-dark text-white">
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Novo</p>
-            <p className="text-xl font-black italic leading-tight">Escolha seu bichinho</p>
+            <p className="u-display text-xl leading-tight">Escolha seu bichinho</p>
             <p className="text-[11px] font-bold text-white/70 mt-1">
               Ele sobe de nível a cada dia que você estuda — e nunca morre se você sumir.
             </p>
@@ -154,7 +156,7 @@ export function BichinhoWidget() {
               type="button"
               onClick={adotar}
               disabled={salvando}
-              className="w-full rounded-2xl bg-white text-indigo-700 font-black py-2.5 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full rounded-control bg-primary text-primary-foreground border-2 border-white/25 font-black py-2.5 text-sm uppercase tracking-wider disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {salvando && <Loader2 className="h-4 w-4 animate-spin" />}
               Adotar {arquetipo(especie).nome}
@@ -182,14 +184,28 @@ export function BichinhoWidget() {
     protections: bicho.protecoes,
   });
 
+  const claro = animado || bicho.humor === 'com_fome';
+  const tinta = {
+    fraca: claro ? 'text-foreground/60' : 'text-white/60',
+    media: claro ? 'text-foreground/75' : 'text-white/75',
+    chip: claro ? 'bg-foreground/10 border-foreground/15' : 'bg-white/10 border-white/10',
+    trilho: claro ? 'bg-foreground/15' : 'bg-white/15',
+    barra: claro ? 'bg-foreground/80' : 'bg-white/80',
+  };
+
   return (
-    <Link href="/dashboard/student/bichinho" className="block gradient-border bg-white rounded-card shadow-xl overflow-hidden active:scale-[0.99] transition-transform">
-      <div className={`p-6 space-y-4 relative text-white ${
+    <Link href="/dashboard/student/bichinho" className="block rounded-card border-2 border-foreground overflow-hidden active:scale-[0.99] transition-transform">
+      {/* Mesmo mapa de humor da página do bichinho: ciano quando está bem,
+          amarelo com fome, escuro quando o aluno sumiu. Os gradientes
+          laranja/rosa/vermelho não existem na paleta — e o cartão da home é
+          nível médio, não festa. A tinta acompanha o fundo (`claro`): texto
+          branco sobre amarelo já nasceu ilegível duas vezes neste projeto. */}
+      <div className={`p-6 space-y-4 relative ${
         animado
-          ? 'bg-gradient-to-br from-orange-500 via-rose-500 to-red-600'
+          ? 'bg-primary text-foreground'
           : bicho.humor === 'com_fome'
-            ? 'bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600'
-            : 'bg-gradient-to-br from-slate-700 to-slate-900'
+            ? 'bg-brand-yellow text-foreground'
+            : 'aurora-dark text-white'
       }`}>
         <div className="flex items-start gap-4">
           {/* Retrato parado, não o rig 3D: o cartão é um `Link`, e arrastar para
@@ -204,45 +220,45 @@ export function BichinhoWidget() {
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
+            <p className={`text-[10px] font-black uppercase tracking-widest ${tinta.fraca}`}>
               Nível {bicho.nivel} · {nomeDoNivel(bicho.nivel)} · CP {calcularCP(bicho)}
             </p>
-            <p className="text-xl font-black italic leading-tight truncate">{apelido}</p>
-            <p className="text-[11px] font-bold text-white/75 leading-tight mt-1">
+            <p className="u-display text-xl leading-tight truncate">{apelido}</p>
+            <p className={`text-[11px] font-bold leading-tight mt-1 ${tinta.media}`}>
               {humor.emoji} {humor.fala(apelido)}
             </p>
           </div>
           {/* O cartão precisa levar a algum lugar: sem isto o aluno adotava o
               bichinho e não tinha para onde ir depois. */}
-          <ChevronRight className="h-5 w-5 text-white/40 shrink-0 mt-1" aria-hidden />
+          <ChevronRight className={`h-5 w-5 shrink-0 mt-1 ${tinta.fraca}`} aria-hidden />
         </div>
 
         {/* Progresso de nível — dias acumulados, que nunca voltam atrás. */}
         <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between text-[10px] font-black uppercase tracking-widest text-white/60">
+          <div className={`flex items-baseline justify-between text-[10px] font-black uppercase tracking-widest ${tinta.fraca}`}>
             <span>{bicho.dias_estudo} {bicho.dias_estudo === 1 ? 'dia estudado' : 'dias estudados'}</span>
             <span>{faltam == null ? 'Nível máximo' : `Faltam ${faltam} para o nível ${bicho.nivel + 1}`}</span>
           </div>
-          <div className="h-2 rounded-full bg-white/15 overflow-hidden">
-            <div className="h-full rounded-full bg-white/80 transition-all" style={{ width: `${pct}%` }} />
+          <div className={`h-2 rounded-full overflow-hidden ${tinta.trilho}`}>
+            <div className={`h-full rounded-full transition-all ${tinta.barra}`} style={{ width: `${pct}%` }} />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-white/10 rounded-2xl p-2.5 border border-white/10">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/60 mb-0.5 flex items-center gap-1">
+          <div className={`rounded-control p-2.5 border ${tinta.chip}`}>
+            <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 flex items-center gap-1 ${tinta.fraca}`}>
               <Flame className="h-2.5 w-2.5" /> Ofensiva
             </p>
             <p className="text-2xl font-black tabular-nums">{bicho.ofensiva}</p>
           </div>
-          <div className="bg-white/10 rounded-2xl p-2.5 border border-white/10">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/60 mb-0.5 flex items-center gap-1">
+          <div className={`rounded-control p-2.5 border ${tinta.chip}`}>
+            <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 flex items-center gap-1 ${tinta.fraca}`}>
               <Shield className="h-2.5 w-2.5" /> Proteções
             </p>
             <p className="text-2xl font-black tabular-nums">{bicho.protecoes}</p>
           </div>
-          <div className="bg-white/10 rounded-2xl p-2.5 border border-white/10">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/60 mb-0.5 flex items-center gap-1">
+          <div className={`rounded-control p-2.5 border ${tinta.chip}`}>
+            <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 flex items-center gap-1 ${tinta.fraca}`}>
               <Trophy className="h-2.5 w-2.5" /> Saldo
             </p>
             <p className="text-2xl font-black tabular-nums">{bicho.saldo}</p>
@@ -250,9 +266,9 @@ export function BichinhoWidget() {
         </div>
 
         {ofensiva === 'protegida' && (
-          <div className="flex items-start gap-2 p-3 rounded-2xl bg-emerald-400/15 border border-emerald-300/25">
-            <Shield className="h-4 w-4 text-emerald-200 shrink-0 mt-0.5" />
-            <p className="text-[11px] font-bold leading-tight text-emerald-50">
+          <div className={`flex items-start gap-2 p-3 rounded-control border ${claro ? "bg-emerald-600/10 border-emerald-700/30" : "bg-emerald-400/15 border-emerald-300/25"}`}>
+            <Shield className={`h-4 w-4 shrink-0 mt-0.5 ${claro ? "text-emerald-800" : "text-emerald-200"}`} />
+            <p className={`text-[11px] font-bold leading-tight ${claro ? "text-emerald-900" : "text-emerald-50"}`}>
               Você faltou, mas uma proteção segurou sua ofensiva de {bicho.ofensiva}{' '}
               {bicho.ofensiva === 1 ? 'dia' : 'dias'}. Estude hoje para seguir de onde parou.
             </p>
@@ -260,9 +276,9 @@ export function BichinhoWidget() {
         )}
 
         {ofensiva === 'ultimo_dia' && (
-          <div className="flex items-start gap-2 p-3 rounded-2xl bg-yellow-400/20 border border-yellow-300/30">
-            <Flame className="h-4 w-4 text-yellow-200 shrink-0 mt-0.5" />
-            <p className="text-[11px] font-bold leading-tight text-yellow-50">
+          <div className={`flex items-start gap-2 p-3 rounded-control border ${claro ? "bg-foreground/10 border-foreground/20" : "bg-yellow-400/20 border-yellow-300/30"}`}>
+            <Flame className={`h-4 w-4 shrink-0 mt-0.5 ${claro ? "text-foreground" : "text-yellow-200"}`} />
+            <p className={`text-[11px] font-bold leading-tight ${claro ? "text-foreground" : "text-yellow-50"}`}>
               Hoje é o último dia para manter sua ofensiva de {bicho.ofensiva}{' '}
               {bicho.ofensiva === 1 ? 'dia' : 'dias'}.
             </p>

@@ -48,8 +48,8 @@ const EssayChart = dynamic(
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorScoreEssay" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fb923c" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#fb923c" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#4CCCED" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#4CCCED" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.4)" />
@@ -60,7 +60,7 @@ const EssayChart = dynamic(
                   active && payload?.length ? (
                     <div className="bg-white border border-slate-100 p-3 rounded-2xl shadow-lg flex flex-col gap-1 max-w-[200px]">
                       <p className="font-bold text-slate-500 text-[10px]">{label}</p>
-                      <p className="font-black text-orange-500 text-lg">{payload[0].value} pts</p>
+                      <p className="u-num text-foreground text-lg">{payload[0].value} pts</p>
                       {payload[0].payload.theme && (
                         <p className="text-[9px] font-bold text-slate-500 leading-tight italic line-clamp-3 mt-1">
                           "{payload[0].payload.theme}"
@@ -70,7 +70,7 @@ const EssayChart = dynamic(
                   ) : null
                 }
               />
-              <Area type="monotone" dataKey="score" stroke="#fb923c" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScoreEssay)" />
+              <Area type="monotone" dataKey="score" stroke="#4CCCED" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScoreEssay)" />
             </AreaChart>
           </ResponsiveContainer>
         );
@@ -85,8 +85,8 @@ const EssayChart = dynamic(
 
 const COMPETENCY_LABELS: Record<string, { label: string; icon: any; color: string; bg: string }> = {
   c1: { label: "C1: Norma Culta", icon: PenTool, color: "text-blue-600", bg: "bg-blue-100 border-blue-200" },
-  c2: { label: "C2: Estrutura", icon: FileSearch, color: "text-purple-600", bg: "bg-purple-100 border-purple-200" },
-  c3: { label: "C3: Argumentação", icon: Target, color: "text-orange-500", bg: "bg-orange-100 border-orange-200" },
+  c2: { label: "C2: Estrutura", icon: FileSearch, color: "text-brand-slate", bg: "bg-brand-slate/15 border-brand-slate/30" },
+  c3: { label: "C3: Argumentação", icon: Target, color: "text-brand-pink", bg: "bg-brand-pink/15 border-brand-pink/30" },
   c4: { label: "C4: Coesão", icon: LinkIcon, color: "text-cyan-600", bg: "bg-cyan-100 border-cyan-200" },
   c5: { label: "C5: Intervenção", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-100 border-emerald-200" },
 };
@@ -103,10 +103,11 @@ type FullEntry = {
 
 function scoreColor(score: number | null) {
   if (!score) return { badge: "bg-slate-100 text-slate-500", ring: "#94a3b8" };
-  if (score >= 800) return { badge: "bg-emerald-100 text-emerald-700", ring: "#10b981" };
-  if (score >= 600) return { badge: "bg-blue-100 text-blue-700", ring: "#3b82f6" };
-  if (score >= 400) return { badge: "bg-amber-100 text-amber-700", ring: "#f59e0b" };
-  return { badge: "bg-red-100 text-red-700", ring: "#ef4444" };
+  // Escala de veredito do produto (ciano/amarelo/rosa), como em toda tela de
+  // resultado. Emerald/azul/âmbar/vermelho eram quatro faixas de outra língua.
+  if (score >= 700) return { badge: "bg-primary/15 text-[#0F7A95]", ring: "#4CCCED" };
+  if (score >= 500) return { badge: "bg-brand-yellow/40 text-foreground", ring: "#EDE04C" };
+  return { badge: "bg-brand-pink/15 text-brand-pink", ring: "#ED3474" };
 }
 
 export default function StudentEssayPage() {
@@ -551,23 +552,23 @@ export default function StudentEssayPage() {
       )}
 
       {/* ── Theme + Editor ── */}
-      <div className="glow-orange bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden">
+      <div className="bg-white border-2 border-foreground/15 rounded-card overflow-hidden">
         <div className="p-5 border-b border-slate-100 bg-slate-50">
           {customTheme ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <PenTool className="h-3 w-3 text-orange-500" />
+                <PenTool className="h-3 w-3 text-primary" />
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sua proposta</label>
               </div>
               <input type="text" value={theme} onChange={(e) => setTheme(e.target.value)}
                 placeholder="Ex: A inteligência artificial na educação..."
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold italic text-primary placeholder:text-slate-400 outline-none focus:border-orange-400 transition-all"
+                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold italic text-primary placeholder:text-slate-400 outline-none focus:border-primary transition-all"
               />
             </div>
           ) : (
             <>
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="h-3 w-3 text-orange-500" />
+                <Sparkles className="h-3 w-3 text-primary" />
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#0F7A95]">Tema Sintonizado</p>
               </div>
               <h2 className="u-display text-base text-primary leading-snug">
@@ -584,7 +585,7 @@ export default function StudentEssayPage() {
             className={`flex items-center gap-1.5 cursor-pointer text-[10px] font-black uppercase tracking-widest px-3 h-8 rounded-xl border transition-all ${
               loadingOcr || loadingGrading
                 ? "opacity-50 pointer-events-none border-slate-200 text-slate-400"
-                : "border-orange-200 text-[#0F7A95] hover:bg-orange-50 active:scale-95"
+                : "border-foreground/25 text-[#0F7A95] hover:bg-primary/10 active:scale-95"
             }`}
           >
             {loadingOcr ? (
@@ -612,7 +613,7 @@ export default function StudentEssayPage() {
         {/* ── Checklist pré-envio ── */}
         <div className="px-5 pb-4 space-y-3 border-t border-slate-100 pt-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-            <CheckSquare2 className="h-3.5 w-3.5 text-orange-500" />
+            <CheckSquare2 className="h-3.5 w-3.5 text-primary" />
             Checklist antes de enviar
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -663,11 +664,11 @@ export default function StudentEssayPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
-              <p className="text-[11px] font-black text-amber-800 leading-snug">
+            <div className="rounded-control border-2 border-foreground/20 bg-brand-yellow/25 p-3">
+              <p className="text-[11px] font-black text-foreground leading-snug">
                 Escolha um tema antes de enviar.
               </p>
-              <p className="text-[10px] font-medium text-amber-700/80 mt-1 leading-snug">
+              <p className="text-[10px] font-medium text-foreground/70 mt-1 leading-snug">
                 Use o tema da semana, gere uma proposta ou escreva o seu em "Tema Manual".
               </p>
             </div>
@@ -799,7 +800,7 @@ export default function StudentEssayPage() {
                       <Badge className="bg-emerald-100 text-emerald-700 border-none font-black text-[9px] px-2">{corr.suggestion}</Badge>
                     </div>
                     <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed flex items-start gap-2">
-                      <Lightbulb className="h-3 w-3 text-orange-500 shrink-0 mt-0.5" />{corr.reason}
+                      <Lightbulb className="h-3 w-3 text-foreground/70 shrink-0 mt-0.5" />{corr.reason}
                     </p>
                   </div>
                 ))}
@@ -813,7 +814,7 @@ export default function StudentEssayPage() {
               <div className="p-5 border-b border-white/5">
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 flex items-center justify-center">
-                    <Zap className="h-3.5 w-3.5 text-orange-400" />
+                    <Zap className="h-3.5 w-3.5 text-accent" />
                   </div>
                   <h3 className="u-display text-sm text-accent">Plano de evolução</h3>
                 </div>
@@ -835,16 +836,16 @@ export default function StudentEssayPage() {
       {supportingTexts.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 px-1">
-            <BookOpen className="h-4 w-4 text-orange-500" />
+            <BookOpen className="h-4 w-4 text-primary" />
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Textos Motivadores</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {supportingTexts.map((st) => (
-              <div key={st.id} className="bg-white border border-slate-100 border-l-2 border-l-orange-500 shadow-sm rounded-2xl p-4">
+              <div key={st.id} className="bg-white border border-slate-100 border-l-4 border-l-primary rounded-card p-4">
                 <p className="text-xs font-medium italic text-slate-600 leading-relaxed">"{st.content}"</p>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fonte: {st.source}</span>
-                  <Badge className="bg-orange-100 text-[#0F7A95] border border-orange-200 font-black text-[7px] uppercase px-1.5 h-4">Motivador</Badge>
+                  <Badge className="bg-primary/10 text-[#0F7A95] border border-primary/25 font-black text-[7px] uppercase px-1.5 h-4">Motivador</Badge>
                 </div>
               </div>
             ))}
@@ -855,7 +856,7 @@ export default function StudentEssayPage() {
       {/* ── Evolution Chart ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <TrendingUp className="h-4 w-4 text-orange-500" />
+          <TrendingUp className="h-4 w-4 text-primary" />
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Evolução de Notas</p>
         </div>
         <div className="bg-white border border-slate-100 shadow-sm rounded-card overflow-hidden p-4">
@@ -880,10 +881,10 @@ export default function StudentEssayPage() {
       {/* ── History ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <History className="h-4 w-4 text-orange-500" />
+          <History className="h-4 w-4 text-primary" />
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Histórico de Redações</p>
           {fullHistory.length > 0 && (
-            <Badge className="bg-orange-100 text-orange-700 border-none font-black text-[9px] px-2 ml-auto">{fullHistory.length}</Badge>
+            <Badge className="bg-primary/15 text-[#0F7A95] border-none font-black text-[9px] px-2 ml-auto">{fullHistory.length}</Badge>
           )}
         </div>
 
@@ -940,7 +941,7 @@ export default function StudentEssayPage() {
                       <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">{entry.content}</p>
                     </div>
 
-                    <div className="shrink-0 text-slate-300 group-hover:text-orange-400 transition-colors mt-1">
+                    <div className="shrink-0 text-slate-300 group-hover:text-primary transition-colors mt-1">
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   </div>
@@ -987,9 +988,9 @@ export default function StudentEssayPage() {
                 <div className="p-4 md:p-6 space-y-5">
                   {/* Feedback geral */}
                   {selectedEntry.feedback && (
-                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4">
+                    <div className="bg-muted/40 border border-foreground/10 rounded-card p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <MessageSquareQuote className="h-4 w-4 text-orange-500" />
+                        <MessageSquareQuote className="h-4 w-4 text-primary" />
                         <p className="text-[10px] font-black uppercase tracking-widest text-[#0F7A95]">Avaliação Geral</p>
                       </div>
                       <p className="text-sm font-medium italic text-slate-700 leading-relaxed">"{selectedEntry.feedback}"</p>
@@ -1046,7 +1047,7 @@ export default function StudentEssayPage() {
                               <Badge className="bg-emerald-100 text-emerald-700 border-none font-black text-[9px] px-2">{corr.suggestion}</Badge>
                             </div>
                             <p className="text-[10px] font-medium text-slate-500 italic flex items-start gap-1.5">
-                              <Lightbulb className="h-3 w-3 text-orange-400 shrink-0 mt-0.5" />{corr.reason}
+                              <Lightbulb className="h-3 w-3 text-foreground/70 shrink-0 mt-0.5" />{corr.reason}
                             </p>
                           </div>
                         ))}

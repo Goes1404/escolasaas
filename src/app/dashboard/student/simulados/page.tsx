@@ -449,7 +449,7 @@ export default function SimuladoPage() {
           <div className={`absolute inset-0 z-[10001] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300 backdrop-blur-md
             ${isDark ? 'bg-[#070709]/95 text-white' : 'bg-white/95 text-slate-900 border border-slate-200 shadow-2xl'}`}>
             <div className="h-16 w-16 rounded-3xl bg-[#4CCCED]/10 border border-[#4CCCED]/25 flex items-center justify-center mb-6">
-              <Timer className="h-8 w-8 text-orange-500 animate-pulse" />
+              <Timer className="h-8 w-8 text-brand-pink animate-pulse" />
             </div>
             <h2 className={`u-display text-2xl mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>Simulado pausado</h2>
             <p className={`text-xs font-semibold mb-6 max-w-xs leading-relaxed ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
@@ -460,7 +460,7 @@ export default function SimuladoPage() {
                 triggerHaptic(20);
                 setIsPaused(false);
               }} 
-              className="btn-orange-neon rounded-2xl h-14 px-8 text-slate-800 font-black text-sm uppercase tracking-wider glow-orange border-none"
+              className="rounded-control h-14 px-8 bg-primary text-primary-foreground border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all font-black text-sm uppercase tracking-wider"
             >
               <Play className="h-4 w-4 mr-2" />
               Retomar Simulado
@@ -472,7 +472,7 @@ export default function SimuladoPage() {
         <header className={`h-20 ${headerTheme} px-4 sm:px-6 flex items-center justify-between shrink-0 z-50 transition-colors duration-300`}>
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-[#4CCCED]/15 border border-[#4CCCED]/25 flex items-center justify-center shrink-0">
-              <BrainCircuit className="h-5 w-5 text-orange-400" />
+              <BrainCircuit className="h-5 w-5 text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -515,7 +515,7 @@ export default function SimuladoPage() {
                       ? 'bg-white/5 border-white/10 text-white/70 hover:bg-white/8' 
                       : 'bg-slate-100 border-slate-250 text-slate-700 hover:bg-slate-200'}`}
               >
-                <Timer className={`h-4 w-4 ${urgentTime ? 'text-red-400' : 'text-orange-400'}`} />
+                <Timer className={`h-4 w-4 ${urgentTime ? 'text-red-400' : 'text-accent'}`} />
                 <span className="text-xs font-black tabular-nums tracking-widest">{formatTime(timeLeft)}</span>
                 <Pause className="h-3 w-3 opacity-40 ml-1.5" />
               </div>
@@ -529,8 +529,8 @@ export default function SimuladoPage() {
               }}
               className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-all active:scale-95
                 ${isDark 
-                  ? 'bg-white/5 border-white/10 text-amber-400 hover:bg-white/10' 
-                  : 'bg-slate-100 border-slate-200 text-indigo-600 hover:bg-slate-250'}`}
+                  ? 'bg-white/5 border-white/10 text-accent hover:bg-white/10' 
+                  : 'bg-slate-100 border-slate-200 text-brand-slate hover:bg-slate-200'}`}
               title={isDark ? "Alternar para Tema Claro" : "Alternar para Tema Escuro"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -584,7 +584,7 @@ export default function SimuladoPage() {
             )}
 
             <div className="space-y-4">
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-orange-500 bg-[#4CCCED]/10 border border-[#4CCCED]/20 px-2 py-0.5 rounded-full">Enunciado</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">Enunciado</span>
               <p className={`text-sm sm:text-base font-bold leading-[1.8] whitespace-pre-wrap break-words italic pr-2 transition-colors duration-300 ${bodyTextTheme}`}>
                 {currentQuestion.question_text.replace(/\[IMAGEM_PENDENTE\]/g, '').trim()}
               </p>
@@ -594,7 +594,7 @@ export default function SimuladoPage() {
           {/* RIGHT COLUMN: Alternatives Gabarito & Action */}
           <div className={`w-full md:w-[400px] shrink-0 p-5 sm:p-8 flex flex-col justify-between ${colRightTheme} md:overflow-y-auto md:h-full pb-28 md:pb-8 border-t md:border-t-0 transition-colors duration-300`}>
             <div className="space-y-5">
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-orange-400/80 mb-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-brand-pink/80 mb-2">
                 Selecione a alternativa correta:
               </p>
 
@@ -640,7 +640,7 @@ export default function SimuladoPage() {
               ${isDark ? 'bg-[#0a0a0d]/90 backdrop-blur-xl border-white/5' : 'bg-white/90 backdrop-blur-xl border-slate-200'}`}>
               <Button
                 onClick={handleNext}
-                className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest bg-[#4CCCED] text-slate-950 hover:bg-orange-600 shadow-xl shadow-orange-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2 touch-manipulation border-none"
+                className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest bg-primary text-primary-foreground border-2 border-foreground hover:bg-primary/90 active:scale-95 transition-transform flex items-center justify-center gap-2 touch-manipulation border-none"
               >
                 {selectedAnswer === null ? (
                   currentIndex < questions.length - 1 ? (
@@ -839,7 +839,7 @@ export default function SimuladoPage() {
                         </Badge>
                       )}
                       <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${
-                        isExpanded ? 'rotate-180 text-orange-500' : ''
+                        isExpanded ? 'rotate-180 text-primary' : ''
                       }`} />
                     </div>
                   </div>
@@ -893,11 +893,11 @@ export default function SimuladoPage() {
 
                           {/* Detailed comment block */}
                           {ans.explanation && (
-                            <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-3.5 flex gap-3">
-                              <BookOpen className="h-4.5 w-4.5 text-orange-500 shrink-0 mt-0.5" />
+                            <div className="bg-brand-yellow/15 border border-foreground/15 rounded-card p-3.5 flex gap-3">
+                              <BookOpen className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-[8px] font-black text-orange-500 uppercase tracking-widest mb-1 leading-none">Explicação Pedagógica</p>
-                                <p className="text-xs font-semibold text-amber-900/90 leading-relaxed italic">
+                                <p className="text-[8px] font-black text-foreground/70 uppercase tracking-widest mb-1 leading-none">Explicação pedagógica</p>
+                                <p className="text-xs font-semibold text-foreground/80 leading-relaxed">
                                   {ans.explanation}
                                 </p>
                               </div>
@@ -922,9 +922,12 @@ export default function SimuladoPage() {
   const canStart = mode === 'completo' || !!selectedSubjectId;
 
   const MODES = [
-    { id: 'materia'   as Mode, label: 'Por Matéria',      icon: Library,     desc: 'Escolha uma disciplina e pratique.',     color: 'text-blue-500',   bg: 'bg-blue-50' },
-    { id: 'especifico'as Mode, label: 'Treino Específico', icon: Target,      desc: 'Filtre por micro-tópico com precisão.',  color: 'text-violet-500', bg: 'bg-violet-50' },
-    { id: 'completo'  as Mode, label: 'Simulado Completo', icon: Shuffle,     desc: 'Questões de todas as matérias.',         color: 'text-amber-500',  bg: 'bg-amber-55/10' },
+    // As três cores do produto, uma por modo — azul/violeta/âmbar não existem
+    // na paleta. (O bg antigo do 3º era `bg-amber-55/10`, tom que nem existe
+    // na escala do Tailwind: a classe era descartada em silêncio.)
+    { id: 'materia'   as Mode, label: 'Por matéria',       icon: Library,     desc: 'Escolha uma disciplina e pratique.',     color: 'text-primary',     bg: 'bg-primary/10' },
+    { id: 'especifico'as Mode, label: 'Treino específico', icon: Target,      desc: 'Filtre por micro-tópico com precisão.',  color: 'text-brand-pink',  bg: 'bg-brand-pink/10' },
+    { id: 'completo'  as Mode, label: 'Simulado completo', icon: Shuffle,     desc: 'Questões de todas as matérias.',         color: 'text-brand-slate', bg: 'bg-brand-slate/10' },
   ];
 
   return (
@@ -935,7 +938,7 @@ export default function SimuladoPage() {
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
-            <ClipboardList className="h-5 w-5 text-orange-400" />
+            <ClipboardList className="h-5 w-5 text-primary" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Prática Inteligente</span>
           </div>
           <h1 className="u-page-title text-3xl md:text-4xl text-white leading-[1.15] mb-2">
@@ -953,7 +956,7 @@ export default function SimuladoPage() {
               { label: 'Tempo est.', value: `~${Math.round(simSize * 3.5)}m`, icon: Timer },
             ].map(s => (
               <div key={s.label} className="gradient-border flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-2.5 shrink-0 min-w-[110px]">
-                <s.icon className="h-4 w-4 text-orange-400 shrink-0" />
+                <s.icon className="h-4 w-4 text-accent shrink-0" />
                 <div>
                   <p className="text-white font-black text-sm leading-none">{s.value}</p>
                   <p className="text-white/50 text-[8px] font-black uppercase tracking-wider mt-0.5">{s.label}</p>
@@ -986,7 +989,7 @@ export default function SimuladoPage() {
               <div className={`h-10 w-10 rounded-2xl ${mode === m.id ? 'aurora-dark text-white' : m.bg + ' ' + m.color} flex items-center justify-center mb-3 shadow-inner`}>
                 <m.icon className="h-5 w-5" />
               </div>
-              <p className={`font-black text-xs uppercase tracking-wide leading-tight mb-1 ${mode === m.id ? 'text-orange-500' : 'text-slate-700'}`}>{m.label}</p>
+              <p className={`font-black text-xs uppercase tracking-wide leading-tight mb-1 ${mode === m.id ? 'text-primary' : 'text-slate-700'}`}>{m.label}</p>
               <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">{m.desc}</p>
             </motion.button>
           ))}
@@ -1036,7 +1039,7 @@ export default function SimuladoPage() {
               <div className="space-y-1.5">
                 <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Disciplina Principal</Label>
                 <Select value={selectedSubjectId} onValueChange={(v) => { triggerHaptic(10); setSelectedSubjectId(v); }}>
-                  <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-slate-200 font-bold text-sm focus:ring-orange-500/25">
+                  <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-slate-200 font-bold text-sm focus:ring-primary/25">
                     <SelectValue placeholder="Escolha a matéria..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-slate-200 bg-white">
@@ -1053,7 +1056,7 @@ export default function SimuladoPage() {
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
                   <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Micro-tópico de Foco</Label>
                   <Select value={selectedMicroTopicId} onValueChange={(v) => { triggerHaptic(10); setSelectedMicroTopicId(v); }}>
-                    <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-slate-200 font-bold text-sm focus:ring-orange-500/25">
+                    <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-slate-200 font-bold text-sm focus:ring-primary/25">
                       <SelectValue placeholder={microTopics.length === 0 ? 'Sem micro-tópicos cadastrados' : 'Todos os tópicos'} />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-slate-200 bg-white">
@@ -1101,7 +1104,7 @@ export default function SimuladoPage() {
 
               <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-card border border-[#4CCCED]/10">
                 <div className="h-9 w-9 rounded-xl bg-[#4CCCED]/15 flex items-center justify-center shrink-0">
-                  <Timer className="h-4.5 w-4.5 text-orange-500" />
+                  <Timer className="h-4 w-4 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-black text-slate-800">{simSize} questões · ~{Math.round(simSize * 3.5)} minutos estimados</p>
@@ -1138,7 +1141,7 @@ export default function SimuladoPage() {
           startSimulado();
         }}
         disabled={!canStart}
-        className="btn-orange-neon w-full h-14 rounded-2xl bg-[#4CCCED] text-slate-950 font-black text-base hover:scale-[1.01] active:scale-95 transition-transform [touch-action:manipulation] flex items-center justify-center gap-2 border-none shadow-xl glow-orange"
+        className="w-full h-14 rounded-control bg-primary text-primary-foreground border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all font-black text-base [touch-action:manipulation] flex items-center justify-center gap-2 disabled:opacity-40"
       >
         <BrainCircuit className="h-5 w-5" />
         Iniciar Simulado
@@ -1161,8 +1164,10 @@ export default function SimuladoPage() {
           </div>
           {resultadosOficiais.map((r, i) => {
             const pct = Math.round((r.score / r.total) * 100);
-            const color = pct >= 70 ? 'text-emerald-500' : pct >= 50 ? 'text-amber-500' : 'text-red-500';
-            const bg    = pct >= 70 ? 'bg-emerald-50 border-emerald-100' : pct >= 50 ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100';
+            // Mesma escala de veredito de todas as telas de resultado:
+            // ciano ≥70, amarelo ≥50, rosa abaixo.
+            const color = pct >= 70 ? 'text-primary' : pct >= 50 ? 'text-foreground' : 'text-brand-pink';
+            const bg    = pct >= 70 ? 'bg-primary/10 border-primary/20' : pct >= 50 ? 'bg-brand-yellow/25 border-foreground/15' : 'bg-brand-pink/10 border-brand-pink/25';
             const hasCard = r.answers?.length > 0 && r.answerKey;
             const isOpen = expandedOficial === i;
             return (

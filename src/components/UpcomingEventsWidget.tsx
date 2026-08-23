@@ -15,8 +15,8 @@ type AcademicEvent = {
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
   simulado:        'bg-blue-100 text-blue-700',
-  inscricao:       'bg-amber-100 text-amber-700',
-  aulao:           'bg-purple-100 text-purple-700',
+  inscricao:       'bg-brand-yellow/40 text-foreground',
+  aulao:           'bg-brand-slate/15 text-brand-slate',
   entrega_redacao: 'bg-pink-100 text-pink-700',
   feriado:         'bg-green-100 text-green-700',
   outro:           'bg-slate-100 text-slate-600',

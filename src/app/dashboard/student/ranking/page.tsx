@@ -253,7 +253,7 @@ export default function RankingPage() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
               <p className="u-label !text-white/50 !text-[9px] mt-0.5">
-                <span className="u-num">{myEntry.weekly_xp}</span> XP esta semana
+                <span className="u-num">{myEntry.weekly_xp}</span> XP na semana
               </p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">

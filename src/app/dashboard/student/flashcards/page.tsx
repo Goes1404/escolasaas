@@ -51,7 +51,7 @@ const EF_DELTA: Record<Rating, number> = {
 
 const RATING_LABELS: Record<Rating, { label: string; color: string; bg: string }> = {
   again: { label: 'Errei',    color: 'text-red-600',    bg: 'bg-red-50 border-red-200 hover:bg-red-100' },
-  hard:  { label: 'Difícil',  color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200 hover:bg-orange-100' },
+  hard:  { label: 'Difícil',  color: 'text-brand-pink', bg: 'bg-brand-pink/10 border-brand-pink/30 hover:bg-brand-pink/15' },
   good:  { label: 'Bom',      color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200 hover:bg-blue-100' },
   easy:  { label: 'Fácil',    color: 'text-emerald-600',bg: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100' },
 };
@@ -96,7 +96,7 @@ function FlipCard({
         onClick={!revealed ? onReveal : undefined}
       >
         {card.subject && (
-          <Badge className="bg-violet-100 text-violet-700 border-none font-black text-[9px] uppercase tracking-widest shrink-0">
+          <Badge className="bg-brand-slate/15 text-brand-slate border-none font-black text-[9px] uppercase tracking-widest shrink-0">
             {card.subject}
           </Badge>
         )}
@@ -329,7 +329,7 @@ export default function FlashcardsPage() {
   /* ── Render ── */
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh] gap-4 flex-col">
-      <Loader2 className="h-10 w-10 animate-spin text-violet-400" />
+      <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">
         Preparando seus cards...
       </p>
@@ -407,7 +407,7 @@ export default function FlashcardsPage() {
             <XCircle className="h-3 w-3 text-red-300" />{session.reviewed - session.correct} erros
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-white/60 ml-auto">
-            <Zap className="h-3 w-3 text-amber-300" />+{session.xp} XP
+            <Zap className="h-3 w-3 text-accent" />+{session.xp} XP
           </div>
         </div>
       </section>
@@ -421,7 +421,7 @@ export default function FlashcardsPage() {
               onClick={() => { setFilterSubject(sub); setIndex(0); setRevealed(false); }}
               className={`shrink-0 h-7 px-3 rounded-xl font-black text-[10px] uppercase tracking-wider border transition-all ${
                 filterSubject === sub
-                  ? 'bg-violet-600 text-white border-violet-600 shadow-md'
+                  ? 'bg-primary text-primary-foreground border-foreground shadow-md'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
               }`}
             >

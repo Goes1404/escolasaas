@@ -119,7 +119,7 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
                   {entry.avatar_url ? (
                     <img src={entry.avatar_url} alt={entry.full_name} className="h-8 w-8 rounded-full object-cover shrink-0" />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-black text-[10px] shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-brand-slate flex items-center justify-center text-white font-black text-[10px] shrink-0">
                       {initials}
                     </div>
                   )}
@@ -149,7 +149,7 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
               {myEntry.avatar_url ? (
                 <img src={myEntry.avatar_url} alt={myEntry.full_name} className="h-8 w-8 rounded-full object-cover shrink-0" />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-black text-[10px] shrink-0">
+                <div className="h-8 w-8 rounded-full bg-brand-slate flex items-center justify-center text-white font-black text-[10px] shrink-0">
                   {myEntry.full_name?.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?'}
                 </div>
               )}
