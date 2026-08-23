@@ -4,12 +4,16 @@
  * Landing v2 — arcade, mobile-first, na paleta real da plataforma
  * (ciano #4CCCED · amarelo #EDE04C · rosa #ED3474 sobre #09090f).
  *
- * Efeitos: skew por velocidade de scroll, ScrambleText nos labels, formas da
- * paleta em parallax, cursor custom (desktop), botões arcade com sombra dura,
- * marquee duplo cruzado, cards com clip-path no scroll (mobile) e trilho
- * pinado (desktop), bloco rosa de stats com squash-and-stretch, linha de
- * fluxo que acende os passos, CTA em bloco ciano com zoom por scrub e selo
- * circular girando. As "demos em vídeo" continuam sendo timelines GSAP.
+ * A direção é arcade, mas com uma correção feita a partir de leitura real: a
+ * página tinha efeito demais e a fonte de display em texto que precisa ser
+ * ABSORVIDO, não só visto. Saíram o skew por velocidade de scroll, o
+ * ScrambleText dos labels, os selos girando, o cursor custom e dois terços
+ * das formas flutuantes; os títulos de card e de passo trocaram a display
+ * pela Sora.
+ *
+ * O que ficou: trilho pinado no desktop, marquee, entrada em stagger, bloco
+ * de stats, linha de fluxo e o CTA em bloco ciano. As "demos em vídeo"
+ * continuam sendo timelines GSAP.
  */
 
 import { useRef, useState } from "react";
@@ -18,78 +22,138 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { TextPlugin } from "gsap/TextPlugin";
-import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { useGSAP } from "@gsap/react";
 import Lenis from "lenis";
 import { LogoDali } from "@/components/LogoDali";
 
-gsap.registerPlugin(ScrollTrigger, SplitText, TextPlugin, ScrambleTextPlugin, useGSAP);
+gsap.registerPlugin(ScrollTrigger, SplitText, TextPlugin, useGSAP);
 
 /* ── Conteúdo ──────────────────────────────────────────────────────────────── */
 
-const BAND_A = ["Simulados ENEM", "Provas ETEC", "Redação com IA", "Flashcards", "Desafio diário", "Aulas ao vivo"];
-const BAND_B = ["Ranking semanal", "Mascote 3D", "Mensalidades", "Portal do responsável", "Rematrícula digital", "XP no servidor"];
+const BAND_A = ["Simulados no padrão ENEM", "Nota por TRI", "Redação em 5 competências", "Foto da redação manuscrita", "Flashcards com repetição espaçada", "Desafio diário"];
+const BAND_B = ["Mentor de IA 24h", "Ofensiva e ranking", "Caderno em grafo", "Chamada por código", "Boletim e mensalidades", "Portal do responsável"];
 
+/** Os doze módulos em operação. A ordem segue o caminho de quem usa: primeiro
+ *  o aluno, depois quem sustenta a operação. */
 const MODULES = [
   {
     num: "01",
     tone: "cyan",
-    title: "Simulados de verdade",
-    body: "Provas ENEM e ETEC no padrão real: 3,5 minutos por questão, navegação por grade, nota TRI e revisão comentada.",
-    meta: "Aluno",
+    title: "Simulado com nota que significa algo",
+    body: "Prova no padrão do exame, com nota por Teoria de Resposta ao Item: item difícil pesa mais, chute pesa contra.",
+    meta: "Aluno · Professor",
   },
   {
     num: "02",
     tone: "pink",
-    title: "Redação em minutos",
-    body: "Correção nas cinco competências com devolutiva na hora — e o professor refina por cima, sem começar do zero.",
+    title: "Duas semanas de correção viram minutos",
+    body: "Cinco competências na régua oficial e o trecho de cada desconto destacado no texto. O professor ajusta e devolve.",
     meta: "Aluno · Professor",
   },
   {
     num: "03",
     tone: "yellow",
-    title: "Estudo que vira jogo",
-    body: "XP por acerto, ofensiva de dias, ranking com premiação e um mascote que evolui com o estudo — e nunca morre.",
+    title: "Um professor particular às três da manhã",
+    body: "Mentor de IA em toda tela, ciente da unidade que o aluno estuda. Em assunto de secretaria, ele manda procurar a secretaria.",
     meta: "Aluno",
   },
   {
     num: "04",
     tone: "cyan",
-    title: "Financeiro sem planilha",
-    body: "Planos de mensalidade, bolsas, cobrança em um clique, painel de inadimplência e recibo na hora.",
-    meta: "Secretaria",
+    title: "Progressão que não dá para burlar",
+    body: "Quem concede ponto é o servidor, com teto diário e bloqueio de repetição. É o que torna o ranking premiável de verdade.",
+    meta: "Aluno",
   },
   {
     num: "05",
     tone: "pink",
-    title: "Portal do responsável",
-    body: "Boletim, frequência, financeiro e comunicados com confirmação de leitura — num link seguro, sem senha.",
-    meta: "Família",
+    title: "O caderno entende que assunto puxa assunto",
+    body: "Notas em blocos que se referenciam entre si — e o sistema desenha o mapa dessas ligações.",
+    meta: "Aluno",
   },
   {
     num: "06",
     tone: "yellow",
-    title: "Rematrícula digital",
-    body: "Contrato com aceite eletrônico auditável e vaga do próximo ano garantida em dois cliques.",
+    title: "Trilha, aula ao vivo e fórum",
+    body: "Trilha liberada por avanço, aula ao vivo com chat moderado e gravação, fórum por matéria e conversa direta.",
+    meta: "Aluno · Professor",
+  },
+  {
+    num: "07",
+    tone: "cyan",
+    title: "Chamada por código, com antifraude",
+    body: "Código exibido na sala, válido por poucos minutos. A secretaria vê a falta no mesmo dia, não no fim do bimestre.",
+    meta: "Professor · Secretaria",
+  },
+  {
+    num: "08",
+    tone: "pink",
+    title: "Prova em PDF vira prova digital",
+    body: "A IA lê o PDF da prova e devolve enunciado, alternativas e gabarito estruturados para o professor revisar.",
+    meta: "Professor",
+  },
+  {
+    num: "09",
+    tone: "yellow",
+    title: "Boletim que só publica quando pode",
+    body: "Notas entram por planilha com validação e só aparecem ao aluno depois que a coordenação aprova.",
+    meta: "Professor · Secretaria",
+  },
+  {
+    num: "10",
+    tone: "cyan",
+    title: "A operação inteira em um painel",
+    body: "Matrícula, conferência de documento, declaração no padrão da escola e pagamento de professor — com trilha do que foi feito.",
+    meta: "Secretaria",
+  },
+  {
+    num: "11",
+    tone: "pink",
+    title: "Mensalidade e rematrícula sem planilha",
+    body: "Planos, bolsas, inadimplência e recibo na hora. A rematrícula fecha com aceite eletrônico auditável.",
     meta: "Secretaria · Família",
+  },
+  {
+    num: "12",
+    tone: "yellow",
+    title: "A família acompanha sem virar mais um login",
+    body: "Um link seguro mostra ofensiva, evolução e último acesso. Sem cadastro, sem senha, revogável a qualquer momento.",
+    meta: "Família",
   },
 ];
 
+/** A tese do produto: o dado nasce uma vez e serve os cinco perfis. */
 const FLOW_STEPS = [
-  { num: "01", title: "O aluno estuda", body: "Simulados, flashcards, redação e desafio diário — tudo no celular, até em rede ruim." },
-  { num: "02", title: "O estudo vira progresso", body: "Cada acerto rende XP no servidor. A ofensiva cresce, o mascote evolui, o ranking esquenta." },
-  { num: "03", title: "A família acompanha", body: "O responsável abre um link e vê frequência, boletim e mensalidades — sem instalar nada." },
-  { num: "04", title: "A escola gerencia", body: "Matrícula, documentos, chamada, cobrança e rematrícula no mesmo painel da secretaria." },
+  { num: "01", title: "O aluno estuda", body: "Simulado, redação, flashcard e desafio diário no celular que ele tem, na rede que ele tem. Cada resposta alimenta o diagnóstico dele." },
+  { num: "02", title: "O professor vê antes da prova", body: "Acerto por micro-tópico, evolução no tempo e a lista de quem parou de acessar. Intervenção deixa de depender de percepção." },
+  { num: "03", title: "A secretaria não digita de novo", body: "O que a matrícula registrou abre a chamada; o que o professor corrigiu vira boletim; o que o boletim fecha alimenta o financeiro." },
+  { num: "04", title: "A família e a gestão enxergam", body: "O responsável abre um link e vê o essencial. A gestão vê adoção, evasão e uso por tela — número, não impressão." },
 ];
 
+/** Números da aplicação, conferidos no próprio repositório e no banco.
+ *  Antes daqui saíam "730+ estudantes" e "1600+ contas ativas", herdados do
+ *  projeto Supabase anterior — a base que serve esta produção tem cinco contas.
+ *  Métrica de cliente numa página pública precisa ser verdadeira; superfície de
+ *  produto é verificável e não envelhece a cada matrícula. */
 const STATS = [
-  { value: 730, suffix: "+", label: "estudantes na rede" },
-  { value: 1600, suffix: "+", label: "contas ativas" },
+  { value: 109, suffix: "", label: "telas de sistema" },
+  { value: 12, suffix: "", label: "módulos em operação" },
   { value: 5, suffix: "", label: "perfis de acesso" },
-  { value: 24, suffix: "/7", label: "no celular do aluno" },
+  { value: 1, suffix: "", label: "base de dados" },
 ];
 
-const SCRAMBLE_CHARS = "▮▯#%&@01XZ";
+/** O que sustenta os dois lados e a landing não contava: alcance para o aluno
+ *  de aparelho modesto, e rigor para uma base com menor de idade. Cada item
+ *  aqui existe como código neste repositório — nada é promessa de roadmap. */
+const BASE = [
+  { title: "Instala como aplicativo", body: "Vai para a tela inicial no Android e no iPhone, com ícone próprio e abertura direta no painel." },
+  { title: "Aguenta rede ruim", body: "As telas carregam por partes e nunca ficam presas esperando imagem chegar." },
+  { title: "Tradução em Libras", body: "Tradutor de Língua Brasileira de Sinais embutido em todas as páginas." },
+  { title: "Senha por SMS", body: "Código no celular já cadastrado, sem depender de e-mail que boa parte dos alunos não usa." },
+  { title: "Isolamento no banco", body: "Quem decide o que cada um vê é o banco de dados, não a tela — por baixo de qualquer caminho de acesso." },
+  { title: "Sua marca na frente", body: "Endereço, logotipo, cores e nome da instituição aplicados no sistema inteiro." },
+];
+
 
 /** Chave própria: a escolha aqui não mexe no tema do dashboard. */
 const THEME_KEY = "landing-theme";
@@ -107,22 +171,6 @@ function MoonIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round">
       <path d="M20.5 14.3A8.8 8.8 0 0 1 9.7 3.5a8.8 8.8 0 1 0 10.8 10.8Z" />
-    </svg>
-  );
-}
-
-/* Selo circular girando (SVG com textPath) */
-function Seal({ className, text }: { className?: string; text: string }) {
-  const id = useRef(`seal-${Math.random().toString(36).slice(2, 8)}`).current;
-  return (
-    <svg viewBox="0 0 120 120" className={`l-seal ${className ?? ""}`} aria-hidden="true">
-      <defs>
-        <path id={id} d="M 60,60 m -44,0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0" />
-      </defs>
-      <text fontSize="9" letterSpacing="2" fill="currentColor" fontFamily="'Space Mono', monospace" fontWeight="700">
-        <textPath href={`#${id}`}>{text}</textPath>
-      </text>
-      <circle cx="60" cy="60" r="6" fill="currentColor" />
     </svg>
   );
 }
@@ -192,30 +240,6 @@ export default function LandingExperience() {
         gsap.ticker.lagSmoothing(0);
       }
 
-      /* ── Skew por velocidade de scroll (assinatura, funciona no touch) ───
-         Aplicado POR SEÇÃO (.l-skew) e nunca num wrapper da seção pinada:
-         transform em ancestral quebra o position:fixed do pin. */
-      if (!reduced) {
-        const proxy = { skew: 0 };
-        const skewSetter = gsap.quickSetter(".l-skew", "skewY", "deg");
-        const clamp = gsap.utils.clamp(-3, 3);
-        ScrollTrigger.create({
-          onUpdate: (self) => {
-            const skew = clamp(self.getVelocity() / -280);
-            if (Math.abs(skew) > Math.abs(proxy.skew)) {
-              proxy.skew = skew;
-              gsap.to(proxy, {
-                skew: 0,
-                duration: 0.7,
-                ease: "power3",
-                overwrite: true,
-                onUpdate: () => skewSetter(proxy.skew),
-              });
-            }
-          },
-        });
-      }
-
       /* ── Preloader: contador + cortina dupla rosa/ciano ────────────────── */
       const counter = { v: 0 };
       const intro = gsap.timeline({ onComplete: () => setLoaderDone(true) });
@@ -275,31 +299,7 @@ export default function LandingExperience() {
             "-=0.5"
           );
 
-        /* Onda contínua sutil nos caracteres da headline */
-        if (!reduced) {
-          gsap.to(split.chars, {
-            y: -4,
-            duration: 1.6,
-            ease: "sine.inOut",
-            yoyo: true,
-            repeat: -1,
-            stagger: { each: 0.045, yoyo: true, repeat: -1 },
-            delay: 3,
-          });
-        }
       });
-
-      /* ── ScrambleText nos labels ao entrar ─────────────────────────────── */
-      if (!reduced) {
-        gsap.utils.toArray<HTMLElement>("[data-scramble]").forEach((el) => {
-          const original = el.textContent ?? "";
-          gsap.to(el, {
-            scrambleText: { text: original, chars: SCRAMBLE_CHARS, speed: 0.6 },
-            duration: 1.1,
-            scrollTrigger: { trigger: el, start: "top 90%" },
-          });
-        });
-      }
 
       /* ── Formas flutuantes: loop + parallax por scroll ─────────────────── */
       if (!reduced) {
@@ -310,8 +310,6 @@ export default function LandingExperience() {
             rotation: () => gsap.utils.random(-30, 30),
             duration: gsap.utils.random(2.2, 3.6),
             ease: "sine.inOut",
-            yoyo: true,
-            repeat: -1,
             delay: i * 0.2,
           });
           gsap.to(el, {
@@ -419,20 +417,6 @@ export default function LandingExperience() {
             invalidateOnRefresh: true,
           },
         });
-        gsap.fromTo(
-          "#l-mod-ghost",
-          { xPercent: 6 },
-          {
-            xPercent: -32,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "#l-modules",
-              start: "top top",
-              end: () => `+=${track.scrollWidth - window.innerWidth + 240}`,
-              scrub: 1,
-            },
-          }
-        );
         /* tilt no hover (só desktop) */
         gsap.utils.toArray<HTMLElement>(".l-card").forEach((card) => {
           const rx = gsap.quickTo(card, "rotationX", { duration: 0.5, ease: "power3" });
@@ -558,27 +542,6 @@ export default function LandingExperience() {
         );
       }
 
-      /* ── Cursor custom (desktop) ───────────────────────────────────────── */
-      mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
-        const dot = document.getElementById("l-cursor-dot");
-        const ring = document.getElementById("l-cursor-ring");
-        if (!dot || !ring) return;
-        const dx = gsap.quickTo(dot, "x", { duration: 0.08, ease: "power2" });
-        const dy = gsap.quickTo(dot, "y", { duration: 0.08, ease: "power2" });
-        const rxq = gsap.quickTo(ring, "x", { duration: 0.35, ease: "power2" });
-        const ryq = gsap.quickTo(ring, "y", { duration: 0.35, ease: "power2" });
-        const move = (e: MouseEvent) => {
-          dx(e.clientX);
-          dy(e.clientY);
-          rxq(e.clientX);
-          ryq(e.clientY);
-          const hot = (e.target as HTMLElement).closest("a, button");
-          ring.classList.toggle("is-hot", !!hot);
-        };
-        window.addEventListener("mousemove", move);
-        return () => window.removeEventListener("mousemove", move);
-      });
-
       return () => {
         gsap.ticker.remove(lenisRaf);
         lenis?.destroy();
@@ -618,8 +581,6 @@ export default function LandingExperience() {
       />
 
       {/* Cursor custom */}
-      <div id="l-cursor-dot" className="l-cursor-dot" aria-hidden="true" />
-      <div id="l-cursor-ring" className="l-cursor-ring" aria-hidden="true" />
 
       {/* Cortina da troca de tema */}
       <div
@@ -678,17 +639,16 @@ export default function LandingExperience() {
         </header>
 
         {/* ── Hero ── */}
-        <section className="l-skew l-dots relative z-10 px-5 md:px-12 pt-8 md:pt-16 pb-20 md:pb-28 max-w-[1500px] mx-auto">
+        <section className="l-dots relative z-10 px-5 md:px-12 pt-8 md:pt-16 pb-20 md:pb-28 max-w-[1500px] mx-auto">
           {/* formas da paleta */}
           <span className="l-shape l-shape-ring w-14 h-14 top-[8%] right-[6%]" />
           <span className="l-shape l-shape-dot w-4 h-4 top-[30%] left-[3%]" />
           <span className="l-shape l-shape-cross w-8 h-8 bottom-[6%] left-[44%] hidden md:block" />
-          <span className="l-shape l-shape-dot w-2.5 h-2.5 bottom-[30%] right-[12%] !bg-[var(--yellow)]" />
 
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-16 items-center">
             <div className="relative">
-              <p className="l-label mb-5 l-hero-fade" data-scramble>
-                Plataforma ENEM · ETEC — nível: escola inteira
+              <p className="l-label mb-5 l-hero-fade">
+                Ensino e gestão escolar · ENEM · ETEC
               </p>
               <h1 className="l-hero-title l-display text-[clamp(2.1rem,8.5vw,5rem)]">
                 Estudar virou <span className="text-[var(--yellow-text)]">jogo</span>. Gerir virou{" "}
@@ -707,9 +667,10 @@ export default function LandingExperience() {
                 </span>
               </div>
 
-              <p className="text-sm md:text-base text-[var(--muted)] mt-7 max-w-lg leading-relaxed l-hero-fade">
-                Do simulado à mensalidade: alunos, professores, secretaria e famílias
-                na mesma plataforma — feita para o celular de quem estuda.
+              <p className="text-sm md:text-base text-[var(--muted)] mt-7 max-w-xl leading-relaxed l-hero-fade">
+                Cinco perfis, uma base de dados. O que o aluno estuda alimenta o painel
+                do professor; o que o professor corrige vira boletim; o que a secretaria
+                matricula abre a chamada. Nada é digitado duas vezes.
               </p>
 
               <div className="flex flex-wrap items-center gap-5 mt-9 l-hero-fade">
@@ -727,16 +688,10 @@ export default function LandingExperience() {
                   Como funciona
                 </a>
               </div>
-
-              <Seal
-                text="INSERT COIN • COMEÇAR AGORA • INSERT COIN • "
-                className="hidden md:block absolute -top-6 right-0 w-28 h-28 text-[var(--pink-text)]"
-              />
             </div>
 
             {/* Janela demo 3D */}
             <div ref={sceneRef} className="l-scene relative">
-              <span className="l-shape l-shape-ring w-10 h-10 -top-5 -left-4 !border-[var(--yellow)]" />
               <div ref={windowRef} className="l-window">
                 <div className="l-window-bar flex items-center justify-between px-4 py-2.5">
                   <div className="flex gap-1.5">
@@ -744,7 +699,7 @@ export default function LandingExperience() {
                     <span className="h-3 w-3 border-2 border-[var(--paper)] bg-[var(--yellow)]" />
                     <span className="h-3 w-3 border-2 border-[var(--paper)] bg-[var(--cyan)]" />
                   </div>
-                  <span className="l-label !text-[0.52rem]">app.compromisso — fase 3: painel</span>
+                  <span className="l-label !text-[0.52rem]">painel do aluno — fase 3</span>
                 </div>
 
                 <div className="p-4 md:p-6 grid gap-4">
@@ -811,7 +766,7 @@ export default function LandingExperience() {
         </section>
 
         {/* ── Marquee duplo cruzado ── */}
-        <div className="l-skew relative z-10 py-6 overflow-hidden" aria-hidden="true">
+        <div className="relative z-10 py-6 overflow-hidden" aria-hidden="true">
           <div className="l-band l-band-cyan">
             {[0, 1].map((t) => (
               <div key={t} className="l-band-track">
@@ -838,51 +793,42 @@ export default function LandingExperience() {
 
         {/* ── Módulos ── */}
         <section id="l-modules" className="l-dots relative z-10 overflow-hidden">
-          <div
-            id="l-mod-ghost"
-            aria-hidden="true"
-            className="l-display l-stroke-paper absolute top-6 left-0 text-[26vw] md:text-[20vw] leading-none whitespace-nowrap pointer-events-none select-none opacity-40"
-          >
-            Módulos Módulos
-          </div>
-
-          <div className="px-5 md:px-12 pt-24 md:pt-36 pb-8 md:pb-10 relative z-10">
-            <p className="l-label mb-4" data-scramble>
+          <div className="px-5 md:px-12 pt-24 min-[900px]:pt-10 pb-8 min-[900px]:pb-5 relative z-10">
+            <p className="l-label mb-4">
               Selecione sua fase
             </p>
-            <h2 className="l-display text-[clamp(1.5rem,6vw,3rem)]" data-reveal>
-              Seis módulos, <span className="text-[var(--pink-text)]">uma escola</span>
+            <h2 className="l-title text-[clamp(1.6rem,5vw,2.4rem)]" data-reveal>
+              Doze módulos, <span className="text-[var(--pink-text)]">uma escola</span>
             </h2>
           </div>
 
           <div
             id="l-mod-track"
-            className="relative z-10 flex flex-col gap-6 px-5 md:px-12 pb-20 md:pb-24
-                       min-[900px]:flex-row min-[900px]:items-center min-[900px]:w-max min-[900px]:pr-[18vw]"
+            className="relative z-10 flex flex-col gap-6 px-5 md:px-12 pb-20 min-[900px]:pb-10
+                       min-[900px]:grid min-[900px]:grid-rows-2 min-[900px]:grid-flow-col
+                       min-[900px]:gap-5 min-[900px]:w-max min-[900px]:pr-[18vw]"
           >
             {MODULES.map((m) => (
               <article
                 key={m.num}
                 data-tone={m.tone}
-                className="l-card p-6 md:p-9 min-[900px]:w-[400px] min-[900px]:shrink-0"
+                className="l-card p-6 min-[900px]:px-6 min-[900px]:py-5 min-[900px]:w-[370px] min-[900px]:shrink-0"
               >
-                <div className="flex items-start justify-between mb-8 md:mb-10">
-                  <span className="l-card-num text-5xl md:text-7xl">{m.num}</span>
+                <div className="flex items-start justify-between mb-6 min-[900px]:mb-4">
+                  <span className="l-card-num text-5xl min-[900px]:text-[2.6rem]">{m.num}</span>
                   <span className="l-label !text-[0.52rem] border-2 border-[var(--line)] px-2 py-1">
                     {m.meta}
                   </span>
                 </div>
-                <h3 className="l-display text-lg md:text-2xl mb-4">{m.title}</h3>
-                <p className="text-sm md:text-base text-[var(--muted)] leading-relaxed">{m.body}</p>
+                <h3 className="l-title text-lg min-[900px]:text-[1.05rem] mb-2.5">{m.title}</h3>
+                <p className="text-sm text-[var(--muted)] leading-relaxed min-[900px]:leading-normal">{m.body}</p>
               </article>
             ))}
           </div>
         </section>
 
         {/* ── Stats em bloco ROSA ── */}
-        <section className="l-skew l-block-pink relative z-10 py-16 md:py-24 my-8">
-          <span className="l-shape l-shape-cross w-10 h-10 top-8 right-[8%] opacity-70" />
-          <span className="l-shape l-shape-dot w-5 h-5 bottom-10 left-[5%] !bg-[var(--yellow)]" />
+        <section className="l-block-pink relative z-10 py-16 md:py-24 my-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 max-w-[1400px] mx-auto px-5 md:px-12">
             {STATS.map((s) => (
               <div key={s.label}>
@@ -892,7 +838,7 @@ export default function LandingExperience() {
                   </span>
                   <span className="text-[var(--on-pink)]">{s.suffix}</span>
                 </p>
-                <p className="l-label mt-3 !text-[var(--on-pink)]/80" data-scramble>
+                <p className="l-label mt-3 !text-[var(--on-pink)]/80">
                   {s.label}
                 </p>
               </div>
@@ -901,15 +847,14 @@ export default function LandingExperience() {
         </section>
 
         {/* ── Fluxo ── */}
-        <section id="l-flow" className="l-skew l-dots relative z-10 px-5 md:px-12 py-20 md:py-32">
-          <span className="l-shape l-shape-ring w-16 h-16 top-[15%] right-[4%] !border-[var(--cyan)]" />
+        <section id="l-flow" className="l-dots relative z-10 px-5 md:px-12 py-20 md:py-32">
           <div className="max-w-[1100px] mx-auto">
             <div className="mb-14 md:mb-20">
-              <p className="l-label mb-4" data-scramble>
+              <p className="l-label mb-4">
                 Modo história
               </p>
-              <h2 className="l-display text-[clamp(1.5rem,6vw,3rem)]" data-reveal>
-                Do primeiro login à <span className="text-[var(--yellow-text)]">aprovação</span>
+              <h2 className="l-title text-[clamp(1.7rem,6vw,2.8rem)]" data-reveal>
+                O dado nasce <span className="text-[var(--yellow-text)]">uma vez só</span>
               </h2>
             </div>
 
@@ -931,7 +876,7 @@ export default function LandingExperience() {
                         {step.num}
                       </span>
                       <div>
-                        <h3 className="l-display text-base md:text-xl mb-3">{step.title}</h3>
+                        <h3 className="l-title text-lg md:text-xl mb-3">{step.title}</h3>
                         <p className="text-sm md:text-lg text-[var(--muted)] max-w-2xl leading-relaxed">
                           {step.body}
                         </p>
@@ -944,14 +889,32 @@ export default function LandingExperience() {
           </div>
         </section>
 
+        {/* ── BASE: alcance, segurança e marca própria ── */}
+        <section className="relative z-10 px-5 md:px-12 py-20 md:py-28">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="mb-12 md:mb-16">
+              <p className="l-label mb-4">
+                Modo difícil
+              </p>
+              <h2 className="l-title text-[clamp(1.7rem,6vw,2.8rem)]" data-reveal>
+                Feita para o aluno que a escola <span className="text-[var(--cyan-text)]">realmente tem</span>
+              </h2>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {BASE.map((b) => (
+                <div key={b.title} className="border-2 border-[var(--line)] p-6">
+                  <h3 className="l-title text-base mb-3">{b.title}</h3>
+                  <p className="text-sm text-[var(--muted)] leading-relaxed">{b.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── CTA em bloco CIANO ── */}
-        <section id="l-cta-block" className="l-skew l-block-cyan relative z-10 py-20 md:py-32 text-center overflow-hidden">
-          <Seal
-            text="SEM VÍRUS • SEM LOOTBOX • SÓ ESTUDO • "
-            className="absolute top-6 left-5 md:left-12 w-24 h-24 md:w-32 md:h-32 text-[var(--on-cyan)] opacity-80"
-          />
-          <span className="l-shape l-shape-dot w-6 h-6 bottom-[18%] right-[10%] !bg-[var(--pink)]" />
-          <p className="l-label mb-6 !text-[var(--on-cyan)]/70" data-scramble>
+        <section id="l-cta-block" className="l-block-cyan relative z-10 py-20 md:py-32 text-center overflow-hidden">
+          <p className="l-label mb-6 !text-[var(--on-cyan)]/70">
             Pressione start
           </p>
           <h2
