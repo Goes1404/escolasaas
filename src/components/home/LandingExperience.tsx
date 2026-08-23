@@ -130,18 +130,6 @@ const FLOW_STEPS = [
   { num: "04", title: "A família e a gestão enxergam", body: "O responsável abre um link e vê o essencial. A gestão vê adoção, evasão e uso por tela — número, não impressão." },
 ];
 
-/** Números da aplicação, conferidos no próprio repositório e no banco.
- *  Antes daqui saíam "730+ estudantes" e "1600+ contas ativas", herdados do
- *  projeto Supabase anterior — a base que serve esta produção tem cinco contas.
- *  Métrica de cliente numa página pública precisa ser verdadeira; superfície de
- *  produto é verificável e não envelhece a cada matrícula. */
-const STATS = [
-  { value: 109, suffix: "", label: "telas de sistema" },
-  { value: 12, suffix: "", label: "módulos em operação" },
-  { value: 5, suffix: "", label: "perfis de acesso" },
-  { value: 1, suffix: "", label: "base de dados" },
-];
-
 /** O que sustenta os dois lados e a landing não contava: alcance para o aluno
  *  de aparelho modesto, e rigor para uma base com menor de idade. Cada item
  *  aqui existe como código neste repositório — nada é promessa de roadmap. */
@@ -153,7 +141,6 @@ const BASE = [
   { title: "Isolamento no banco", body: "Quem decide o que cada um vê é o banco de dados, não a tela — por baixo de qualquer caminho de acesso." },
   { title: "Sua marca na frente", body: "Endereço, logotipo, cores e nome da instituição aplicados no sistema inteiro." },
 ];
-
 
 /** Chave própria: a escolha aqui não mexe no tema do dashboard. */
 const THEME_KEY = "landing-theme";
@@ -469,28 +456,6 @@ export default function LandingExperience() {
           ease: "power3.out",
           scrollTrigger: { trigger: el, start: "top 88%" },
         });
-      });
-
-      /* ── Stats: count-up com squash-and-stretch ────────────────────────── */
-      gsap.utils.toArray<HTMLElement>(".l-stat-value").forEach((el) => {
-        const target = Number(el.dataset.value ?? "0");
-        const state = { v: 0 };
-        const tl = gsap.timeline({
-          scrollTrigger: { trigger: el, start: "top 88%" },
-        });
-        tl.to(state, {
-          v: target,
-          duration: 1.4,
-          ease: "power2.out",
-          onUpdate: () => {
-            el.textContent = Math.round(state.v).toLocaleString("pt-BR");
-          },
-        }).fromTo(
-          el.parentElement,
-          { scaleX: 1.15, scaleY: 0.85 },
-          { scaleX: 1, scaleY: 1, duration: 0.5, ease: "elastic.out(1, 0.4)" },
-          "-=0.25"
-        );
       });
 
       /* ── Fluxo: linha desenha e cada passo acende ao passar ────────────── */
@@ -823,25 +788,6 @@ export default function LandingExperience() {
                 <h3 className="l-title text-lg min-[900px]:text-[1.05rem] mb-2.5">{m.title}</h3>
                 <p className="text-sm text-[var(--muted)] leading-relaxed min-[900px]:leading-normal">{m.body}</p>
               </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Stats em bloco ROSA ── */}
-        <section className="l-block-pink relative z-10 py-16 md:py-24 my-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 max-w-[1400px] mx-auto px-5 md:px-12">
-            {STATS.map((s) => (
-              <div key={s.label}>
-                <p className="l-display text-[clamp(2.2rem,9vw,4.5rem)] text-[var(--yellow)] origin-bottom">
-                  <span className="l-stat-value" data-value={s.value}>
-                    0
-                  </span>
-                  <span className="text-[var(--on-pink)]">{s.suffix}</span>
-                </p>
-                <p className="l-label mt-3 !text-[var(--on-pink)]/80">
-                  {s.label}
-                </p>
-              </div>
             ))}
           </div>
         </section>
