@@ -65,16 +65,16 @@ function ScoreCard({ label, score, max, icon: Icon }: { label: string; score: nu
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{label}</p>
             {percentage !== null && <span className="text-xs font-black text-primary">{percentage}%</span>}
           </div>
           {score !== null && score !== undefined ? (
             <p className="mt-1 text-xl font-black text-slate-950 tabular-nums">
               {score}
-              {max !== null && max !== undefined && <span className="text-sm font-bold text-slate-400">/{max}</span>}
+              {max !== null && max !== undefined && <span className="text-sm font-bold text-slate-500">/{max}</span>}
             </p>
           ) : (
-            <p className="mt-2 text-sm font-bold text-slate-300">{LABELS.naoRealizado}</p>
+            <p className="mt-2 text-sm font-bold text-slate-500">{LABELS.naoRealizado}</p>
           )}
         </div>
       </div>
@@ -109,8 +109,8 @@ function SimuladoCard({ score1, score2, score3, max }: { score1: number | null; 
     <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:col-span-2">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Simulados ENEM</p>
-          <p className="text-xs font-semibold text-slate-500">Evolucao dentro do semestre</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Simulados ENEM</p>
+          <p className="text-xs font-semibold text-slate-500">Evolução dentro do semestre</p>
         </div>
         <Trophy className="h-5 w-5 text-primary" />
       </div>
@@ -119,14 +119,14 @@ function SimuladoCard({ score1, score2, score3, max }: { score1: number | null; 
           const percentage = pct(sim.score, max);
           return (
             <div key={sim.label} className="rounded-xl bg-slate-50 p-3 text-center">
-              <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">{sim.label}</span>
+              <span className="block text-[9px] font-black uppercase tracking-wider text-slate-500">{sim.label}</span>
               {sim.score !== null ? (
                 <span className="mt-1 block text-base font-black text-slate-950 tabular-nums">
                   {sim.score}
-                  <span className="text-[10px] text-slate-400">/{max}</span>
+                  <span className="text-[10px] text-slate-500">/{max}</span>
                 </span>
               ) : (
-                <span className="mt-1 block text-[10px] font-bold text-slate-300">Pendente</span>
+                <span className="mt-1 block text-[10px] font-bold text-slate-500">Pendente</span>
               )}
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${percentage ?? 0}%` }} />
@@ -147,10 +147,10 @@ function StatCard({ label, value, detail, icon: Icon }: { label: string; value: 
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{label}</p>
           <p className="text-xl font-black text-slate-950 tabular-nums">
             {value}
-            {detail && <span className="ml-2 text-xs font-bold text-slate-400">{detail}</span>}
+            {detail && <span className="ml-2 text-xs font-bold text-slate-500">{detail}</span>}
           </p>
         </div>
       </div>
@@ -183,7 +183,7 @@ function SimplifiedEnemReport({ entries }: { entries: EnemReportCard[] }) {
         <div className="rounded-[1.75rem] border border-slate-100 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Resumo simples</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Resumo simples</p>
               <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{status.title}</h2>
               <p className="mt-1 text-sm font-semibold text-slate-500">{status.text}</p>
             </div>
@@ -193,28 +193,28 @@ function SimplifiedEnemReport({ entries }: { entries: EnemReportCard[] }) {
             </div>
           </div>
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <SimpleMiniCard label="Prova" value={acertosLabel} detail={scoreDelta !== null ? `${scoreDelta >= 0 ? "+" : ""}${scoreDelta} acertos desde o inicio` : "Sem comparativo"} />
-            <SimpleMiniCard label="Simulados" value={latestSimAvg !== null ? `${latestSimAvg}${latest?.simulado_max ? `/${latest.simulado_max}` : ""}` : "--"} detail="Media dos simulados" />
-            <SimpleMiniCard label={LABELS.redacao} value={latest?.redacao_score !== null && latest?.redacao_score !== undefined ? `${latest.redacao_score}` : "--"} detail={latest?.redacao_max !== null && latest?.redacao_max !== undefined ? `de ${latest.redacao_max}` : "Sem redacao"} />
+            <SimpleMiniCard label="Prova" value={acertosLabel} detail={scoreDelta !== null ? `${scoreDelta >= 0 ? "+" : ""}${scoreDelta} acertos desde o início` : "Sem comparativo"} />
+            <SimpleMiniCard label="Simulados" value={latestSimAvg !== null ? `${latestSimAvg}${latest?.simulado_max ? `/${latest.simulado_max}` : ""}` : "--"} detail="Média dos simulados" />
+            <SimpleMiniCard label={LABELS.redacao} value={latest?.redacao_score !== null && latest?.redacao_score !== undefined ? `${latest.redacao_score}` : "--"} detail={latest?.redacao_max !== null && latest?.redacao_max !== undefined ? `de ${latest.redacao_max}` : "Sem redação"} />
           </div>
         </div>
 
         <div className="rounded-[1.75rem] border border-slate-100 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Frequencia</h3>
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Frequência</h3>
           </div>
           <p className="text-4xl font-black text-slate-950 tabular-nums">{faltas}</p>
           <p className="mt-1 text-sm font-semibold text-slate-500">faltas registradas no boletim atual.</p>
           <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm font-bold text-slate-600">
-            {faltas <= 2 ? "Frequencia boa. Continue assim." : "Vale acompanhar as faltas para nao prejudicar a rotina."}
+            {faltas <= 2 ? "Frequência boa. Continue assim." : "Vale acompanhar as faltas para não prejudicar a rotina."}
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <SimpleSubjectList title="Maiores afinidades" description="Materias em que o aluno esta mais forte." subjects={strengths} tone="good" />
-        <SimpleSubjectList title="Pontos de atencao" description="Materias que merecem mais estudo." subjects={attention} tone="attention" />
+        <SimpleSubjectList title="Maiores afinidades" description="Matérias em que o aluno está mais forte." subjects={strengths} tone="good" />
+        <SimpleSubjectList title="Pontos de atenção" description="Matérias que merecem mais estudo." subjects={attention} tone="attention" />
       </div>
     </div>
   );
@@ -223,7 +223,7 @@ function SimplifiedEnemReport({ entries }: { entries: EnemReportCard[] }) {
 function SimpleMiniCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="rounded-2xl bg-slate-50 p-4">
-      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-black text-slate-950 tabular-nums">{value}</p>
       <p className="text-xs font-semibold text-slate-500">{detail}</p>
     </div>
@@ -281,10 +281,10 @@ function SimpleEtecReport({ entries }: { entries: EtecReportCard[] }) {
 
   return (
     <div className="rounded-[1.75rem] border border-slate-100 bg-white p-5 shadow-sm">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Resumo simples</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Resumo simples</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <SimpleMiniCard label="Situacao" value={status.title} detail={status.text} />
-        <SimpleMiniCard label={LABELS.classificatoria} value={`${classPct ?? "--"}%`} detail={delta !== null ? `${delta >= 0 ? "+" : ""}${delta} pontos desde o inicio` : "Sem comparativo"} />
+        <SimpleMiniCard label="Situação" value={status.title} detail={status.text} />
+        <SimpleMiniCard label={LABELS.classificatoria} value={`${classPct ?? "--"}%`} detail={delta !== null ? `${delta >= 0 ? "+" : ""}${delta} pontos desde o início` : "Sem comparativo"} />
         <SimpleMiniCard label="Simulado" value={`${simPct ?? "--"}%`} detail="Resultado mais recente" />
       </div>
     </div>
@@ -296,7 +296,7 @@ function SubjectGrid({ enem }: { enem: EnemReportCard }) {
     <div className="rounded-[1.75rem] border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Desempenho por materia</h3>
+          <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Desempenho por matéria</h3>
           <p className="text-xs font-semibold text-slate-500">Notas do semestre selecionado.</p>
         </div>
         <Sparkles className="h-5 w-5 text-primary" />
@@ -319,7 +319,7 @@ function SubjectGrid({ enem }: { enem: EnemReportCard }) {
                 {score !== null && score !== undefined ? (
                   <span className="text-sm font-black text-slate-950 tabular-nums">{score}</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-slate-300">Pendente</span>
+                  <span className="text-[10px] font-bold text-slate-500">Pendente</span>
                 )}
               </div>
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white">
@@ -374,11 +374,11 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
           <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Simulados na plataforma</h3>
         </div>
         <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">
-          2o semestre
+          2º semestre
         </span>
       </div>
-      <p className="mt-2 text-xs font-semibold text-slate-500">
-        As primeiras tentativas de cada simulado compoem seu historico do 2o semestre. Tentativas extras contam apenas como treino.
+      <p className="mt-2 text-xs font-semibold text-slate-600">
+        As primeiras tentativas de cada simulado compõem seu histórico do 2º semestre. Tentativas extras contam apenas como treino.
       </p>
 
       <div className="mt-4 space-y-3">
@@ -415,14 +415,14 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
                     key={n}
                     className={`rounded-xl border p-3 ${att ? "border-orange-200 bg-white" : "border-dashed border-slate-200 bg-transparent"}`}
                   >
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{n}a tentativa</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-600">{n}ª tentativa</p>
                     {att ? (
                       <div className="mt-1">
                         <p className="u-num text-lg tabular-nums text-slate-950 leading-none">
                           {att.tri != null ? att.tri : `${pct}%`}
                         </p>
-                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">
-                          {att.tri != null ? "nota TRI" : "aproveitamento"} - {att.score}/{att.total}
+                        <p className="text-[9px] font-bold text-slate-600 mt-0.5">
+                          {att.tri != null ? "nota TRI" : "aproveitamento"} · {att.score}/{att.total}
                         </p>
                         {formatDuration(att.durationSeconds) && (
                           <p className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold text-slate-500">
@@ -432,7 +432,7 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
                         )}
                       </div>
                     ) : (
-                      <p className="mt-1 text-xs font-bold italic text-slate-300">nao realizada</p>
+                      <p className="mt-1 text-xs font-bold italic text-slate-500">não realizada</p>
                     )}
                   </div>
                 );
@@ -555,7 +555,7 @@ export default function ReportCardPage() {
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <GraduationCap className="mx-auto mb-3 h-10 w-10 text-slate-300" />
         <p className="text-sm font-semibold text-slate-500">
-          Seu boletim ainda nao foi lancado. Assim que a secretaria publicar, ele aparece aqui automaticamente.
+          Seu boletim ainda não foi lançado. Assim que a secretaria publicar, ele aparece aqui automaticamente.
         </p>
       </div>
     );
@@ -590,7 +590,7 @@ export default function ReportCardPage() {
             </span>
             <h1 className="u-page-title mt-3 text-3xl md:text-4xl leading-[1.15]">Meu boletim</h1>
             <p className="mt-2 max-w-xl text-sm font-semibold text-white/60">
-              Escolha uma leitura simples ou uma visao completa do desempenho.
+              Escolha uma leitura simples ou uma visão completa do desempenho.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium text-white/65">
               {colegio && (
@@ -638,19 +638,19 @@ export default function ReportCardPage() {
             <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Boletins oficiais em PDF</h3>
           </div>
           <p className="mt-2 text-xs font-semibold text-slate-500">
-            Baixe a versao oficial em PDF assinada e disponibilizada pela secretaria.
+            Baixe a versão oficial em PDF assinada e disponibilizada pela secretaria.
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             {hasPdf1 && (
               <a href={profile.report_card_pdf_url_1sem} target="_blank" rel="noopener noreferrer" className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50 text-sm font-bold text-slate-700 transition-all hover:bg-slate-100">
                 <FileText className="h-4 w-4 text-red-500" />
-                Baixar boletim - 1o semestre
+                Baixar boletim · 1º semestre
               </a>
             )}
             {hasPdf2 && (
               <a href={profile.report_card_pdf_url_2sem} target="_blank" rel="noopener noreferrer" className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50 text-sm font-bold text-slate-700 transition-all hover:bg-slate-100">
                 <FileText className="h-4 w-4 text-red-500" />
-                Baixar boletim - 2o semestre
+                Baixar boletim · 2º semestre
               </a>
             )}
           </div>
@@ -674,16 +674,16 @@ export default function ReportCardPage() {
               const enem = entry as EnemReportCard;
               return (
                 <section key={enem.id} className="space-y-4">
-                  <p className="px-1 text-xs font-black uppercase tracking-widest text-slate-400">
-                    {enem.semester}o semestre
+                  <p className="px-1 text-xs font-black uppercase tracking-widest text-slate-500">
+                    {enem.semester}º semestre
                   </p>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <ScoreCard label={LABELS.classificatoria} score={enem.classificatoria_score} max={enem.classificatoria_max} icon={TrendingUp} />
                     <ScoreCard label={LABELS.redacao} score={enem.redacao_score} max={enem.redacao_max} icon={GraduationCap} />
                     <SimuladoCard score1={enem.simulado_1_score} score2={enem.simulado_2_score} score3={enem.simulado_3_score} max={enem.simulado_max} />
-                    <StatCard label="Faltas" value={enem.absences_1sem ?? 0} detail={enem.absences_2sem !== null ? `${enem.absences_2sem} no 2o sem` : undefined} icon={Calendar} />
-                    <StatCard label={LABELS.saidas} value={enem.early_departures_1sem ?? 0} detail={enem.early_departures_2sem !== null ? `${enem.early_departures_2sem} no 2o sem` : undefined} icon={ArrowLeftRight} />
+                    <StatCard label="Faltas" value={enem.absences_1sem ?? 0} detail={enem.absences_2sem !== null ? `${enem.absences_2sem} no 2º sem` : undefined} icon={Calendar} />
+                    <StatCard label={LABELS.saidas} value={enem.early_departures_1sem ?? 0} detail={enem.early_departures_2sem !== null ? `${enem.early_departures_2sem} no 2º sem` : undefined} icon={ArrowLeftRight} />
                   </div>
 
                   <SubjectGrid enem={enem} />
@@ -694,14 +694,14 @@ export default function ReportCardPage() {
             const etec = entry as EtecReportCard;
             return (
               <section key={etec.id} className="space-y-4">
-                <p className="px-1 text-xs font-black uppercase tracking-widest text-slate-400">
-                  {etec.semester}o semestre
+                <p className="px-1 text-xs font-black uppercase tracking-widest text-slate-500">
+                  {etec.semester}º semestre
                 </p>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <ScoreCard label={LABELS.classificatoria} score={etec.classificatoria_score} max={etec.classificatoria_max} icon={TrendingUp} />
                   <ScoreCard label="Simulado" score={etec.simulado_score} max={etec.simulado_max} icon={TrendingUp} />
                   {etec.track === "enem" && <ScoreCard label={LABELS.redacao} score={etec.redacao_score} max={etec.redacao_max} icon={GraduationCap} />}
-                  <StatCard label="Faltas" value={etec.absences_1sem ?? 0} detail={etec.absences_2sem !== null ? `${etec.absences_2sem} no 2o sem` : undefined} icon={Calendar} />
+                  <StatCard label="Faltas" value={etec.absences_1sem ?? 0} detail={etec.absences_2sem !== null ? `${etec.absences_2sem} no 2º sem` : undefined} icon={Calendar} />
                 </div>
               </section>
             );

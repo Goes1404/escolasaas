@@ -350,7 +350,9 @@ export default function LearningTrailsPage() {
         <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-card" />
         <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
           <Badge className="bg-primary/10 text-primary border border-primary/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider shadow-xl">PLATAFORMA EAD</Badge>
-          <h1 className="u-page-title text-3xl sm:text-4xl md:text-6xl leading-[1.1] break-words px-2">
+          {/* A Boldonse é larga e em caixa alta encosta palavra em palavra e
+              linha em linha; o respiro extra devolve a leitura. */}
+          <h1 className="u-page-title text-3xl sm:text-4xl md:text-6xl leading-[1.5] md:leading-[1.5] [word-spacing:0.15em] break-words px-2">
             Sua rota de <br /><span className="text-accent">alta performance</span>
           </h1>
           <p className="text-sm md:text-xl text-gray-400 font-medium italic leading-relaxed max-w-xl mx-auto">
@@ -359,9 +361,12 @@ export default function LearningTrailsPage() {
         </div>
       </section>
 
-      {/* Barra de Filtros Unificada */}
-      <div className="relative md:sticky md:top-2 z-20 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3 bg-white/80 backdrop-blur-xl rounded-2xl p-3 shadow-xl border border-slate-100">
+      {/* Barra de Filtros Unificada — busca e matérias num bloco só, fixo no
+          topo do <main>. Fundo opaco e margem negativa até a borda do <main>
+          (p-4/p-8 do layout + px-1/px-4 da página): sem isso os cards
+          aparecem por trás e entre a barra e o topo ao rolar. */}
+      <div className="sticky top-0 z-30 -mx-5 px-5 md:-mx-12 md:px-12 py-3 bg-background space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3 bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
           {/* Busca */}
           <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-accent" />
@@ -443,7 +448,9 @@ export default function LearningTrailsPage() {
         </div>
 
         {/* Categorias */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {/* `scrollbar-hide` não existe no projeto; a utilidade é `hide-scrollbar`.
+            O px-1 evita que a sombra do primeiro chip seja cortada na borda. */}
+        <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden px-1 py-1 hide-scrollbar">
           {TRAIL_CATEGORIES.map(cat => (
             <button
               key={cat}
@@ -521,7 +528,7 @@ export default function LearningTrailsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {subjectFolders.map((folder) => {
+            {subjectFolders.map((folder, fi) => {
               const config = getSubjectConfig(folder.name);
               const FolderIcon = config.icon;
               
@@ -529,7 +536,8 @@ export default function LearningTrailsPage() {
                 <div
                   key={folder.name}
                   onClick={() => setActiveCategory(folder.name)}
-                  className="group relative cursor-pointer text-left"
+                  style={{ '--i': Math.min(fi, 10) } as React.CSSProperties}
+                  className="anim-rise group relative cursor-pointer text-left"
                 >
                   {/* Folder Top Tab */}
                   <div className="flex -mb-[1px] ml-4 transition-transform group-hover:translate-y-[-2px] duration-300">
@@ -540,7 +548,7 @@ export default function LearningTrailsPage() {
                   </div>
                   
                   {/* Folder Main Body */}
-                  <div className={`rounded-2xl rounded-tl-none border bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-48 relative overflow-hidden ${config.border}`}>
+                  <div className={`lift rounded-2xl rounded-tl-none border bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-48 relative overflow-hidden ${config.border}`}>
                     <FolderIcon className={`absolute -right-8 -bottom-8 h-32 w-32 ${config.color} opacity-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12 pointer-events-none`} />
                     
                     <div className="relative z-10 space-y-2">
@@ -593,14 +601,23 @@ export default function LearningTrailsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-            {filteredTrails.map((trail) => {
+            {filteredTrails.map((trail, ti) => {
               const userProgress = allProgress?.find(p => p.trail_id === trail.id);
               const percentage = userProgress?.percentage || 0;
               const isPinned = !!userProgress;
               const teacherInitial = (trail.teacher_name || "M").charAt(0).toUpperCase();
 
+              // Nível médio: entrada única em CSS puro (anim-rise) no invólucro e
+              // hover (lift) no card — no mesmo elemento, o fill da animação
+              // prenderia o transform e o hover não andaria. Nada perto da
+              // barra sticky, que fica fora desta grade.
               return (
-                <Card key={trail.id} className="gradient-border group overflow-hidden border-none shadow-xl hover:shadow-2xl hover:glow-orange transition-[transform,box-shadow] duration-300 bg-white rounded-card flex flex-col h-full">
+                <div
+                  key={trail.id}
+                  className="anim-rise"
+                  style={{ '--i': Math.min(ti, 10) } as React.CSSProperties}
+                >
+                <Card className="lift gradient-border group overflow-hidden border-none shadow-xl hover:shadow-2xl hover:glow-orange transition-[transform,box-shadow] duration-300 bg-white rounded-card flex flex-col h-full">
                   <div className="relative aspect-video overflow-hidden shrink-0">
                     <Image
                       src={getSafeTrailImage(trail.image_url, trail.title, trail.category)}
@@ -651,7 +668,10 @@ export default function LearningTrailsPage() {
                   <CardContent className="p-8 flex-1 flex flex-col">
                     <div className="space-y-3 flex-1">
                       <h3 className="text-2xl font-black text-primary italic leading-tight group-hover:text-accent transition-colors">
-                        {trail.title}
+                        {/* O título é o alvo que o aluno tenta clicar primeiro. */}
+                        <Link href={`/dashboard/classroom/${trail.id}`} className="hover:underline underline-offset-4 decoration-2">
+                          {trail.title}
+                        </Link>
                       </h3>
                       <p className="text-sm text-muted-foreground font-medium italic line-clamp-3 opacity-80 leading-relaxed">
                         {trail.description || "Inicie agora esta jornada técnica projetada para fortalecer sua base acadêmica e acelerar sua aprovação."}
@@ -699,6 +719,7 @@ export default function LearningTrailsPage() {
                     </div>
                   </div>
                 </Card>
+                </div>
               );
             })}
           </div>

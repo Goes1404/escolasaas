@@ -115,7 +115,7 @@ export default function StudentAdmissionCentral() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <Badge className="bg-accent text-accent-foreground border-none font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2">Padrão SiSU/ProUni</Badge>
-              <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">Checklist de <span className="text-white">Matrícula</span></h1>
+              <h1 className="u-page-title text-3xl md:text-5xl leading-[1.4] md:leading-[1.4]">Checklist de <span className="text-white">Matrícula</span></h1>
               <p className="text-sm md:text-lg text-white/90 font-medium italic">Gerencie seus dados e organize sua documentação oficial.</p>
             </div>
             <div className="flex flex-col items-end gap-3 bg-white/10 p-6 rounded-card border border-white/10 backdrop-blur-md">
@@ -155,7 +155,7 @@ export default function StudentAdmissionCentral() {
                     onClick={() => toggleItem(item.id)}
                   >
                     <Checkbox checked={checkedItems.includes(item.id)} disabled={loadingDocs} onCheckedChange={() => toggleItem(item.id)} className="h-6 w-6 rounded-lg border-2" />
-                    <span className={`text-sm font-bold italic transition-colors ${checkedItems.includes(item.id) ? 'text-green-700' : 'text-primary'}`}>{item.label}</span>
+                    <span className={`text-sm font-bold italic transition-colors ${checkedItems.includes(item.id) ? 'text-green-700' : 'text-foreground'}`}>{item.label}</span>
                     {checkedItems.includes(item.id) && <CheckCircle2 className="h-4 w-4 text-green-500 ml-auto" />}
                   </div>
                 ))}
@@ -192,37 +192,37 @@ export default function StudentAdmissionCentral() {
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <FileSearch className="h-3.5 w-3.5 text-accent" /> Qualidade da Imagem
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
-              "Evite fotos com sombras ou reflexos de luz. Se o text não estiver legível, sua inscrição poderá ser indeferida pela universidade."
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
+              "Evite fotos com sombras ou reflexos de luz. Se o texto não estiver legível, sua inscrição poderá ser indeferida pela universidade."
             </p>
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-accent" /> Validade dos Papéis
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Comprovantes de residência devem ter no máximo 90 dias. Certidões não podem ter rasuras ou remendos."
             </p>
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <LayoutList className="h-3.5 w-3.5 text-accent" /> Organização Maestro
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Renomeie seus arquivos como 'RG_FRENTE.pdf' ou 'HISTORICO_MEDIO.pdf'. Isso agiliza a conferência do tutor e evita erros de envio."
             </p>
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <ShieldCheck className="h-3 w-3 text-accent" /> Dica de Segurança
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Nunca envie documentos originais por chats informais. Mantenha seu rastro digital seguro em pastas oficiais."
             </p>
           </Card>

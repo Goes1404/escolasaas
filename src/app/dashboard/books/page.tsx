@@ -171,8 +171,11 @@ export default function BooksPage() {
       </div>
 
       {/* ── STICKY FILTER BAR ── */}
-      <div className="relative md:sticky md:top-2 z-20 space-y-3 mb-6">
-        <div className="flex flex-col sm:flex-row gap-2 bg-white/80 backdrop-blur-xl rounded-2xl p-3 shadow-xl border border-slate-100">
+      {/* Busca e chips grudam juntos, colados no topo do <main> e com fundo
+          opaco: translúcida e a 8px do topo, a barra deixava as capas
+          aparecerem por cima e pelas bordas enquanto rolava. */}
+      <div className="relative md:sticky md:top-0 z-30 space-y-3 mb-6 -mx-1 px-1 md:py-2 bg-background">
+        <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-3 shadow-sm border border-slate-200">
           {/* search */}
           <div className="relative flex-1 group">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-accent" />
@@ -276,11 +279,21 @@ export default function BooksPage() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filtered.map(item => <BookCard key={item.id} item={item} />)}
+          {/* Entrada em CSS puro (anim-rise) num invólucro: no próprio card, o
+              fill da animação prenderia o transform e anularia o hover. */}
+          {filtered.map((item, i) => (
+            <div key={item.id} className="anim-rise" style={{ '--i': Math.min(i, 10) } as React.CSSProperties}>
+              <BookCard item={item} />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(item => <BookRow key={item.id} item={item} />)}
+          {filtered.map((item, i) => (
+            <div key={item.id} className="anim-rise" style={{ '--i': Math.min(i, 10) } as React.CSSProperties}>
+              <BookRow item={item} />
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -298,7 +311,7 @@ function BookCard({ item }: { item: any }) {
   return (
     <Link
       href={`/dashboard/library/book/${item.id}`}
-      className="group flex flex-col rounded-card bg-white border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      className="group flex flex-col h-full rounded-card bg-white border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
     >
       <div className={`aspect-[3/4] relative overflow-hidden shrink-0 bg-gradient-to-br ${grad}`}>
         {hasImage ? (

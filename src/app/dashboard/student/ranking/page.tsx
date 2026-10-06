@@ -79,14 +79,21 @@ function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
   } as const;
 
   const c = configs[place];
+  // Ordem de entrada = ordem visual (2º, 1º, 3º): os degraus sobem do chão
+  // em sequência e o aluno só "pula" no degrau depois que ele chegou. Só CSS
+  // (anim-grow/anim-pop), sem JS por quadro.
+  const seq = place === 2 ? 0 : place === 1 ? 1 : 2;
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4 ${
-        place === 1 ? 'order-2 duration-700' : place === 2 ? 'order-1 duration-500' : 'order-3 duration-[900ms]'
+      className={`flex flex-col items-center gap-2 ${
+        place === 1 ? 'order-2' : place === 2 ? 'order-1' : 'order-3'
       }`}
     >
-      <div className="flex flex-col items-center gap-1.5">
+      <div
+        className="flex flex-col items-center gap-1.5 anim-pop"
+        style={{ '--i': seq + 3 } as React.CSSProperties}
+      >
         <div className={`relative rounded-full ${place === 1 ? 'ring-4 ring-accent' : ''}`}>
           <Avatar name={entry.full_name} url={entry.avatar_url} size={c.avatarSize} />
           <div className={`absolute -bottom-1 -right-1 ${c.bg} ${c.text} rounded-full p-1 border-2 border-foreground`}>
@@ -105,7 +112,8 @@ function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
 
       {/* Degrau: bloco chapado com sombra dura e a posição em display */}
       <div
-        className={`w-[86px] sm:w-24 ${c.height} ${c.bg} ${c.text} rounded-t-card border-2 border-foreground border-b-0 shadow-hard flex items-end justify-center pb-3`}
+        className={`w-[86px] sm:w-24 ${c.height} ${c.bg} ${c.text} rounded-t-card border-2 border-foreground border-b-0 shadow-hard flex items-end justify-center pb-3 anim-grow`}
+        style={{ '--i': seq } as React.CSSProperties}
       >
         <span className="u-num text-3xl">{c.label}</span>
       </div>
@@ -228,7 +236,10 @@ export default function RankingPage() {
             <span className="u-label !text-white/70 inline-flex items-center gap-1.5">
               <Trophy className="h-2.5 w-2.5" /> Ranking semanal
             </span>
-            <h1 className="u-page-title text-[clamp(1.6rem,7vw,2.5rem)]">
+            {/* Boldonse desenha acima e abaixo da caixa da linha: com o 1.1 do
+                u-page-title as duas linhas se tocavam e o acento do "Í"
+                sumia dentro do "DE" de cima. */}
+            <h1 className="u-page-title !leading-[1.45] text-[clamp(1.6rem,7vw,2.5rem)]">
               Tabela de<br />líderes
             </h1>
             <p className="text-white/50 text-xs font-medium">
@@ -237,11 +248,11 @@ export default function RankingPage() {
           </div>
 
           {myPos && (
-            <div className="shrink-0 text-center bg-accent text-accent-foreground rounded-card px-4 py-3 border-2 border-foreground">
+            <div className="shrink-0 text-center bg-accent text-accent-foreground rounded-card px-4 py-3 border-2 border-foreground anim-pop">
               {/* tracking menor que o do u-label: em caixa estreita o padrão
                   (0.28em) quebrava "VOCÊ" e "LUGAR" em duas linhas. */}
               <p className="u-label !text-accent-foreground/70 !text-[8px] !tracking-[0.12em]">Você</p>
-              <p className="u-num text-3xl leading-none">{myPos}º</p>
+              <p className="u-num text-3xl leading-[1.2] my-1">{myPos}º</p>
               <p className="u-label !text-accent-foreground/70 !text-[8px] !tracking-[0.12em] mt-0.5">lugar</p>
             </div>
           )}
@@ -251,8 +262,8 @@ export default function RankingPage() {
           <div className="relative z-10 mt-5 flex items-center gap-3 bg-white/10 rounded-card px-4 py-3 border-2 border-white/25">
             <Avatar name={myEntry.full_name} url={myEntry.avatar_url} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
-              <p className="u-label !text-white/50 !text-[9px] mt-0.5">
+              <p className="text-xs font-bold leading-normal truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
+              <p className="u-label !text-white/50 !text-[9px] mt-1">
                 <span className="u-num">{myEntry.weekly_xp}</span> XP na semana
               </p>
             </div>
@@ -279,7 +290,7 @@ export default function RankingPage() {
           )}
 
           <div className="space-y-2">
-            {winners.map((w) => {
+            {winners.map((w, wIdx) => {
               const isMe = w.student_id === user?.id;
               // Medalha por COR da paleta, não por emoji (1º amarelo, 2º ciano,
               // 3º rosa) — mesma leitura do pódio, e sem depender de emoji.
@@ -291,7 +302,8 @@ export default function RankingPage() {
               return (
                 <div
                   key={w.student_id}
-                  className={`flex items-center gap-3 rounded-control border-2 px-4 py-2.5 ${
+                  style={{ '--i': Math.min(wIdx, 10) } as React.CSSProperties}
+                  className={`anim-rise flex items-center gap-3 rounded-control border-2 px-4 py-2.5 ${
                     isMe ? 'border-foreground shadow-hard' : 'border-border bg-card'
                   }`}
                 >
@@ -372,9 +384,12 @@ export default function RankingPage() {
                 return (
                   <div
                     key={entry.student_id}
+                    // Teto de 10 no escalonamento: com 47 linhas, a última
+                    // esperaria 2,5s para aparecer.
+                    style={{ '--i': Math.min(idx, 10) } as React.CSSProperties}
                     // A SUA linha destaca por FORMA (borda grossa + sombra dura),
                     // não por um fundo de 5% de opacidade que some no celular.
-                    className={`flex items-center gap-3 px-4 py-3 rounded-control border-2 transition-all ${
+                    className={`anim-rise flex items-center gap-3 px-4 py-3 rounded-control border-2 transition-all ${
                       isMe
                         ? 'bg-primary/10 border-foreground shadow-hard'
                         : 'bg-card border-border hover:border-foreground/40'

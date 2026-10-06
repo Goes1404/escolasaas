@@ -269,14 +269,20 @@ export default function DailyQuestionPage() {
             </p>
           </div>
 
-          {/* Ofensiva e contagem: os dois números da tela, em display */}
+          {/* Ofensiva e contagem: os dois números da tela, em display. Entram
+              com pop (CSS puro): tela de segundos, nível alto. Nada de
+              anim-* em botão — o fill da animação anularia o afundar do
+              arcade no :active. */}
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <div className="flex items-center gap-1.5 border-2 border-foreground bg-background px-2.5 py-1.5 rounded-control">
+            <div
+              className="anim-pop flex items-center gap-1.5 border-2 border-foreground bg-background px-2.5 py-1.5 rounded-control"
+              style={{ '--i': 1 } as React.CSSProperties}
+            >
               <Flame className="h-3.5 w-3.5 md:h-4 md:w-4 text-brand-pink" />
               <span className="u-num text-base md:text-lg leading-none">{streakCount}</span>
               <span className="u-label !text-[8px] !text-foreground/50">dias</span>
             </div>
-            <div className="text-right">
+            <div className="anim-pop text-right" style={{ '--i': 2 } as React.CSSProperties}>
               <p className="u-label !text-[8px] !text-foreground/50 whitespace-nowrap">Nova em</p>
               <p className="u-num text-xs md:text-sm whitespace-nowrap tabular-nums">{countdown}</p>
             </div>
@@ -284,7 +290,10 @@ export default function DailyQuestionPage() {
         </div>
 
         {/* XP em jogo */}
-        <div className="relative z-10 mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 border-2 border-foreground bg-background rounded-control px-4 py-3">
+        <div
+          className="anim-pop relative z-10 mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 border-2 border-foreground bg-background rounded-control px-4 py-3"
+          style={{ '--i': 3 } as React.CSSProperties}
+        >
           <Star className="h-4 w-4 shrink-0 text-brand-yellow fill-brand-yellow stroke-foreground" />
           <span className="u-num text-base">+{XP_VALUES.daily_question_correct} XP</span>
           <span className="text-xs font-medium text-foreground/60">pelo acerto</span>
@@ -332,7 +341,8 @@ export default function DailyQuestionPage() {
                   key={opt.key}
                   disabled={alreadyDone || submitting}
                   onClick={() => setSelected(opt.key)}
-                  className={`w-full flex items-start gap-4 p-4 rounded-card border-2 text-left transition-all duration-200 group ${cardStyle} ${
+                  style={{ '--i': Math.min(idx + 2, 10) } as React.CSSProperties}
+                  className={`anim-rise w-full flex items-start gap-4 p-4 rounded-card border-2 text-left transition-all duration-200 group ${cardStyle} ${
                     !alreadyDone ? 'cursor-pointer' : 'cursor-default'
                   }`}
                 >
@@ -380,7 +390,7 @@ export default function DailyQuestionPage() {
 
           {/* Resultado */}
           {alreadyDone && (
-            <div className={`rounded-card p-5 space-y-3 border-2 ${
+            <div className={`anim-pop rounded-card p-5 space-y-3 border-2 ${
               answerState === 'correct'
                 ? 'bg-emerald-50 border-emerald-600 shadow-hard'
                 : 'bg-red-50 border-red-500'
@@ -435,7 +445,10 @@ export default function DailyQuestionPage() {
 
       {/* ── CTA para Simulados ── */}
       {alreadyDone && (
-        <div className="bg-card rounded-card border-2 border-foreground p-6 flex items-center justify-between gap-4">
+        <div
+          className="anim-rise bg-card rounded-card border-2 border-foreground p-6 flex items-center justify-between gap-4"
+          style={{ '--i': 3 } as React.CSSProperties}
+        >
           <div>
             <p className="u-display text-base">Quer mais questões?</p>
             <p className="text-xs text-muted-foreground mt-1">

@@ -212,7 +212,7 @@ export default function ExemptionSimulationPage() {
               <div className="h-12 w-12 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-6 shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
                 <Scale className="h-6 w-6" />
               </div>
-              <CardTitle className="u-display text-2xl">A regra de 1,5 SM</CardTitle>
+              <CardTitle className="u-display text-2xl [word-spacing:0.15em] leading-snug">A regra de 1,5 SM</CardTitle>
               <CardDescription className="text-white/60 font-medium italic">O critério oficial do Governo Federal.</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
@@ -240,10 +240,10 @@ export default function ExemptionSimulationPage() {
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <HelpCircle className="h-3.5 w-3.5 text-accent" /> Dica da Aurora
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Muitos alunos perdem a isenção porque esquecem de incluir moradores sem renda no cálculo. Deixe o campo de renda vazio para esses integrantes!"
             </p>
           </Card>
@@ -274,7 +274,7 @@ export default function ExemptionSimulationPage() {
                   {members.map((member, index) => (
                     <div key={member.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl bg-muted/20 border border-transparent hover:border-accent/20 transition-all animate-in slide-in-from-left-2">
                       <div className="flex-1 space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-primary/40 ml-2">Integrante / Parentesco</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Integrante / Parentesco</Label>
                         <Input 
                           placeholder={index === 0 ? "Você" : "Ex: Mãe, Pai, Irmão..."} 
                           value={member.label} 
@@ -283,7 +283,7 @@ export default function ExemptionSimulationPage() {
                         />
                       </div>
                       <div className="w-full sm:w-48 space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-primary/40 ml-2">Renda Bruta (R$)</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Renda Bruta (R$)</Label>
                         <Input 
                           type="text" 
                           placeholder="0,00" 
@@ -337,12 +337,12 @@ export default function ExemptionSimulationPage() {
                   <div className="h-20 w-20 rounded-card bg-white/20 backdrop-blur-xl flex items-center justify-center shrink-0 shadow-2xl rotate-3">
                     {result.eligible ? <CheckCircle2 className="h-10 w-10" /> : <FileWarning className="h-10 w-10" />}
                   </div>
-                  <div className="text-center md:text-left space-y-1">
-                    <h3 className="u-display text-2xl md:text-4xl leading-tight">
-                      {result.eligible ? "Elegível para Isenção" : "Fora do Critério de Isenção"}
+                  <div className="text-center md:text-left space-y-2">
+                    <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-snug">
+                      {result.eligible ? "Elegível para isenção" : "Fora do critério de isenção"}
                     </h3>
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-80">
-                      Diagnóstico: {result.familySize} pessoas / R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
+                      Diagnóstico: {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} / R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
                     </p>
                   </div>
                 </div>

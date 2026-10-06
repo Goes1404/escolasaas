@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   ZoomIn, ZoomOut, Maximize2, ArrowLeft,
-  Search, Network, Link2, Unlink, BookOpen, X,
+  Search, Network, Link2, BookOpen, X, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthProvider";
@@ -47,7 +47,10 @@ function computeLayout(
     };
   });
 
-  const REPULSION   = 5000;
+  const REPULSION   = 20000;
+  // Distância mínima entre nós: o rótulo tem ~120px. Sem ela, notas sem
+  // conexão acabavam empilhadas no centro, um rótulo por cima do outro.
+  const MIN_DIST    = 140;
   const SPRING_K    = 0.05;
   const REST_LEN    = 130;
   const DAMPING     = 0.78;
@@ -82,11 +85,12 @@ function computeLayout(
       b.vx -= fx; b.vy -= fy;
     });
 
-    // Gravity
+    // Gravity — esfria junto com a repulsão; constante, ela vencia no fim
+    // da simulação e puxava tudo para o mesmo ponto.
     nodeIds.forEach(id => {
       const p = pos[id];
-      p.vx += (cx - p.x) * GRAVITY;
-      p.vy += (cy - p.y) * GRAVITY;
+      p.vx += (cx - p.x) * GRAVITY * cool;
+      p.vy += (cy - p.y) * GRAVITY * cool;
     });
 
     // Integrate
@@ -96,6 +100,22 @@ function computeLayout(
       p.x = Math.max(60, Math.min(W - 60, p.x + p.vx));
       p.y = Math.max(60, Math.min(H - 60, p.y + p.vy));
     });
+
+    // Colisão: separa direto quem ficou perto demais.
+    for (let i = 0; i < nodeIds.length; i++) {
+      for (let j = i + 1; j < nodeIds.length; j++) {
+        const a = pos[nodeIds[i]], b = pos[nodeIds[j]];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.1;
+        if (dist >= MIN_DIST) continue;
+        const push = (MIN_DIST - dist) / 2;
+        const ux = dist > 0.1 ? dx / dist : Math.cos(i), uy = dist > 0.1 ? dy / dist : Math.sin(i);
+        a.x = Math.max(60, Math.min(W - 60, a.x + ux * push));
+        a.y = Math.max(60, Math.min(H - 60, a.y + uy * push));
+        b.x = Math.max(60, Math.min(W - 60, b.x - ux * push));
+        b.y = Math.max(60, Math.min(H - 60, b.y - uy * push));
+      }
+    }
   }
 
   const out: Record<string, { x: number; y: number }> = {};
@@ -263,92 +283,85 @@ export default function NotesGraphPage() {
 
   const usedSubjects = subjects.filter(s => notes.some(n => n.subject_id === s.id));
 
+  // Altura da tela = viewport menos o cabeçalho do app (4rem) e o padding do
+  // <main> do dashboard (que muda por breakpoint). O canvas pega o que sobrar.
+  const screenH = "h-[calc(100dvh-10rem)] md:h-[calc(100dvh-11rem)] lg:h-[calc(100dvh-8rem)] min-h-[480px]";
+
   if (loading) return (
-    <div className="flex flex-col items-center justify-center h-[calc(100dvh-4rem)] bg-slate-950 gap-5">
-      <div className="relative">
-        <div className="h-16 w-16 rounded-card bg-primary/20 flex items-center justify-center">
-          <Network className="h-8 w-8 text-primary" />
-        </div>
-        <div className="absolute -inset-2 rounded-card border-2 border-primary/20 animate-ping" />
-      </div>
-      <p className="u-label text-primary/60 animate-pulse">
-        Construindo grafo...
-      </p>
+    <div className={`flex flex-col items-center justify-center gap-3 ${screenH}`}>
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <p className="u-label">Construindo grafo…</p>
     </div>
   );
 
+  // Cores do SVG via variável do tema (em `style`, porque atributo de
+  // apresentação não resolve var()). É o que deixa o rótulo legível no claro.
+  const FG    = "hsl(var(--foreground))";
+  const MUTED = "hsl(var(--muted-foreground))";
+  const CARD  = "hsl(var(--card))";
+
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)] -mx-4 md:-mx-8 overflow-hidden bg-slate-950">
+    <div className={`flex flex-col gap-4 ${screenH}`}>
 
-      {/* ── Top bar ── */}
-      <header className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-2.5 bg-slate-900/90 border-b border-slate-800/60 backdrop-blur-sm shrink-0 z-20">
-        <Button asChild variant="ghost" size="sm"
-          className="text-slate-400 hover:text-white hover:bg-slate-800/70 rounded-xl gap-1.5 font-bold h-9 px-2 md:px-3 shrink-0">
-          <Link href="/dashboard/student/notes">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Caderno</span>
-          </Link>
-        </Button>
-
-        <div className="h-4 w-px bg-slate-700 hidden sm:block" />
-
-        <div className="flex items-center gap-2 shrink-0">
-          <Network className="h-4 w-4 text-primary" />
-          <h1 className="u-display text-xs md:text-sm text-white hidden sm:block">
-            Grafo do Conhecimento
-          </h1>
+      {/* ── Cabeçalho (nível médio) + barra de controles ── */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between shrink-0">
+        <div className="min-w-0">
+          <p className="u-label flex items-center gap-2"><Network className="h-3.5 w-3.5" /> Caderno · grafo</p>
+          <h1 className="u-page-title text-2xl md:text-3xl mt-1">Grafo do conhecimento</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            {notes.length} nota{notes.length !== 1 ? "s" : ""} · {edges.length} conex{edges.length !== 1 ? "ões" : "ão"}
+            {isolated > 0 && ` · ${isolated} isolada${isolated !== 1 ? "s" : ""}`}
+          </p>
         </div>
 
-        {/* Stats pills */}
-        <div className="hidden md:flex items-center gap-2 ml-3">
-          {[
-            { dot: "bg-primary", label: `${notes.length} notas` },
-            { dot: "bg-accent",  label: `${edges.length} conexões` },
-            ...(isolated > 0 ? [{ dot: "bg-slate-600", label: `${isolated} isoladas` }] : []),
-          ].map((s, i) => (
-            <span key={i} className="flex items-center gap-1.5 bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-full">
-              <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">{s.label}</span>
-            </span>
-          ))}
-        </div>
+        <div className="flex items-center gap-2 min-w-0">
+          <Button asChild variant="outline" className="shrink-0 hover:bg-muted hover:text-foreground">
+            <Link href="/dashboard/student/notes">
+              <ArrowLeft /> <span className="hidden sm:inline">Caderno</span>
+            </Link>
+          </Button>
 
-        {/* Search — full-width on mobile */}
-        <div className="ml-auto relative flex-1 md:flex-none md:w-44 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Buscar nota..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 h-9 bg-slate-800 border border-slate-700 rounded-xl text-[13px] text-white placeholder-slate-600 outline-none focus:border-primary transition-colors font-medium"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
-              <X className="h-3.5 w-3.5" />
+          <div className="relative flex-1 lg:flex-none lg:w-56 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar nota…"
+              aria-label="Buscar nota no grafo"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-9 pr-8 rounded-control border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {searchQuery && (
+              <button type="button" onClick={() => setSearchQuery("")} aria-label="Limpar busca"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center rounded-control border border-input bg-card shrink-0">
+            <button type="button" onClick={zoomOut} title="Afastar" aria-label="Afastar"
+              className="h-10 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <ZoomOut className="h-4 w-4" />
             </button>
-          )}
+            <span className="u-label !tracking-normal w-11 text-center hidden sm:block tabular-nums">{Math.round(transform.scale * 100)}%</span>
+            <button type="button" onClick={zoomIn} title="Aproximar" aria-label="Aproximar"
+              className="h-10 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            <div className="h-5 w-px bg-border" />
+            <button type="button" onClick={resetView} title="Centralizar" aria-label="Centralizar"
+              className="h-10 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Zoom — bigger tap targets on mobile */}
-        <div className="flex items-center gap-0.5 bg-slate-800/60 border border-slate-700/50 rounded-xl p-0.5 shrink-0">
-          <button onClick={zoomOut} className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 active:scale-95 transition-colors">
-            <ZoomOut className="h-3.5 w-3.5" />
-          </button>
-          <span className="text-[10px] font-black text-slate-500 w-9 text-center hidden sm:block">{Math.round(transform.scale * 100)}%</span>
-          <button onClick={zoomIn} className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 active:scale-95 transition-colors">
-            <ZoomIn className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={resetView} className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 active:scale-95 transition-colors">
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </header>
-
-      {/* ── Graph canvas ── */}
+      {/* ── Canvas: superfície do sistema, ocupa o resto da altura ── */}
       <div
         ref={containerRef}
-        className={`flex-1 relative overflow-hidden select-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+        className={`relative flex-1 min-h-0 u-surface overflow-hidden select-none touch-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
         onWheel={onWheel}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -358,28 +371,28 @@ export default function NotesGraphPage() {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Dot-grid background */}
+        {/* Grade de pontos: referência de pan/zoom, derivada do tema */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)",
-            backgroundSize: "36px 36px",
+            backgroundImage: "radial-gradient(circle, hsl(var(--foreground) / 0.08) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
           }}
         />
 
         {/* Empty state */}
-        {notes.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-8">
-            <Network className="h-16 w-16 text-slate-700" />
-            <div className="space-y-2">
-              <p className="u-display text-white text-xl">Nenhuma nota ainda</p>
-              <p className="text-slate-500 font-medium text-sm max-w-xs">
-                Crie notas no caderno e use <code className="bg-slate-800 px-1.5 py-0.5 rounded text-primary font-mono text-xs">[[nome da nota]]</code> para criar conexões.
+        {notes.length === 0 && (
+          <div className="relative flex flex-col items-center justify-center h-full gap-4 text-center px-8">
+            <Network className="h-12 w-12 text-muted-foreground/60" />
+            <div className="space-y-1.5">
+              <p className="font-semibold text-foreground">Nenhuma nota ainda</p>
+              <p className="text-muted-foreground text-sm max-w-xs">
+                Crie notas no caderno e use <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs text-foreground">[[nome da nota]]</code> para criar conexões.
               </p>
             </div>
-            <Button asChild className="rounded-2xl bg-primary border-none font-black gap-2 shadow-xl shadow-primary/30">
+            <Button asChild variant="arcade">
               <Link href="/dashboard/student/notes">
-                <BookOpen className="h-4 w-4" /> Abrir Caderno
+                <BookOpen /> Abrir caderno
               </Link>
             </Button>
           </div>
@@ -387,19 +400,7 @@ export default function NotesGraphPage() {
 
         {/* SVG Graph */}
         {notes.length > 0 && Object.keys(positions).length > 0 && (
-          <svg className="w-full h-full">
-            <defs>
-              {/* Glow filter */}
-              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-              <filter id="glow-strong" x="-80%" y="-80%" width="260%" height="260%">
-                <feGaussianBlur stdDeviation="8" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-            </defs>
-
+          <svg className="relative w-full h-full">
             <g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
 
               {/* ── Edges ── */}
@@ -411,10 +412,12 @@ export default function NotesGraphPage() {
                 return (
                   <line key={i}
                     x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                    stroke={active ? srcColor : "#334155"}
-                    strokeWidth={active ? 2 : 1}
-                    strokeOpacity={active ? 0.7 : 0.35}
-                    style={{ transition: "stroke 0.15s, stroke-opacity 0.15s" }}
+                    style={{
+                      stroke: active ? srcColor : MUTED,
+                      strokeWidth: active ? 2 : 1,
+                      strokeOpacity: active ? 0.85 : 0.35,
+                      transition: "stroke 0.15s, stroke-opacity 0.15s",
+                    }}
                   />
                 );
               })}
@@ -432,6 +435,7 @@ export default function NotesGraphPage() {
                   (e.target === hoveredId && e.source === note.id)
                 );
                 const dimmed = hoveredId && !isHov && !isAdj;
+                const marked = isHov || isHigh;
 
                 return (
                   <g
@@ -442,20 +446,13 @@ export default function NotesGraphPage() {
                     onMouseLeave={() => setHoveredId(null)}
                     onClick={() => router.push(`/dashboard/student/notes?open=${note.id}`)}
                   >
-                    {/* Aura */}
-                    {(isHov || isHigh) && (
-                      <circle r={r + 14} fill={color} opacity={0.12}
-                        filter="url(#glow-strong)" />
-                    )}
                     {/* Halo */}
-                    <circle r={r + 4} fill={color} opacity={0.1} />
-                    {/* Body */}
+                    <circle r={r + 4} fill={color} opacity={marked ? 0.22 : 0.12} />
+                    {/* Body — anel na cor do texto marca hover/busca sem glow */}
                     <circle
                       r={r}
                       fill={color}
-                      stroke={isHov || isHigh ? "#ffffff" : "transparent"}
-                      strokeWidth={isHov || isHigh ? 2.5 : 0}
-                      filter={isHov ? "url(#glow)" : undefined}
+                      style={{ stroke: marked ? FG : "transparent", strokeWidth: marked ? 2.5 : 0 }}
                     />
                     {/* Initial letter */}
                     <text
@@ -463,24 +460,27 @@ export default function NotesGraphPage() {
                       dy="0.35em"
                       fill="white"
                       fontSize={Math.max(8, r * 0.75)}
-                      fontWeight="900"
+                      fontWeight="700"
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
                       {note.title.charAt(0).toUpperCase()}
                     </text>
                     {/* Pinned dot */}
                     {note.is_pinned && (
-                      <circle r={3.5} cx={r - 1} cy={-r + 1} fill="#fbbf24"
-                        stroke="#1e293b" strokeWidth={1.5} />
+                      <circle r={3.5} cx={r - 1} cy={-r + 1}
+                        style={{ fill: "hsl(var(--brand-yellow))", stroke: FG, strokeWidth: 1.2 }} />
                     )}
-                    {/* Label */}
+                    {/* Label — contorno na cor da superfície para ler por cima das arestas */}
                     <text
                       y={r + 16}
                       textAnchor="middle"
-                      fill={isHov || isHigh ? "#f1f5f9" : "#64748b"}
-                      fontSize={isHov ? 12 : 10}
-                      fontWeight={isHov ? "900" : "600"}
-                      style={{ pointerEvents: "none", userSelect: "none", transition: "fill 0.15s, font-size 0.15s" }}
+                      fontSize={marked ? 12 : 11}
+                      fontWeight={marked ? 700 : 500}
+                      style={{
+                        fill: marked ? FG : MUTED,
+                        stroke: CARD, strokeWidth: 3, paintOrder: "stroke", strokeLinejoin: "round",
+                        pointerEvents: "none", userSelect: "none",
+                      }}
                     >
                       {note.title.length > 22 ? note.title.slice(0, 20) + "…" : note.title}
                     </text>
@@ -489,10 +489,9 @@ export default function NotesGraphPage() {
                       <text
                         y={r + 30}
                         textAnchor="middle"
-                        fill="#6366f1"
-                        fontSize={9}
-                        fontWeight="900"
-                        style={{ pointerEvents: "none", userSelect: "none" }}
+                        fontSize={10}
+                        fontWeight={600}
+                        style={{ fill: MUTED, stroke: CARD, strokeWidth: 3, paintOrder: "stroke", pointerEvents: "none", userSelect: "none" }}
                       >
                         {degree[note.id]} link{degree[note.id] !== 1 ? "s" : ""}
                       </text>
@@ -506,76 +505,65 @@ export default function NotesGraphPage() {
 
         {/* Calculating state */}
         {notes.length > 0 && Object.keys(positions).length === 0 && (
-          <div className="flex items-center justify-center h-full gap-3 text-slate-600">
-            <Network className="h-5 w-5 animate-pulse" />
-            <span className="text-sm font-bold">Calculando layout...</span>
+          <div className="relative flex items-center justify-center h-full gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Calculando layout…</span>
+          </div>
+        )}
+
+        {/* ── Hub principal (canto superior esquerdo) ── */}
+        {topNote && (degree[topNote.id] ?? 0) > 0 && (
+          <div className="absolute top-3 left-3 z-20 bg-card/95 border border-border rounded-control px-3 py-2 flex items-center gap-2.5 pointer-events-none">
+            <div className="h-7 w-7 rounded-control flex items-center justify-center font-bold text-sm text-white shrink-0"
+              style={{ background: nodeColor(topNote) }}>
+              {topNote.title.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="u-label">Nota mais conectada</p>
+              <p className="text-sm font-semibold text-foreground leading-tight truncate max-w-[10rem]">{topNote.title}</p>
+            </div>
+            <span className="u-num text-sm text-foreground">{degree[topNote.id]}</span>
+          </div>
+        )}
+
+        {/* ── Legenda compacta (canto superior direito) ── */}
+        {usedSubjects.length > 0 && (
+          <div className="hidden sm:block absolute top-3 right-3 z-20 w-48 bg-card/95 border border-border rounded-control p-3 max-h-[45%] overflow-y-auto">
+            <p className="u-label mb-2">Matérias</p>
+            <div className="space-y-1.5">
+              {usedSubjects.map(s => (
+                <div key={s.id} className="flex items-center gap-2 min-w-0">
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: SUBJECT_HEX[s.name] ?? DEFAULT_COLOR }} />
+                  <span className="text-xs text-foreground/80 truncate">{s.name}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2.5 pt-2 border-t border-border text-[11px] leading-snug text-muted-foreground">
+              Quanto maior o nó, mais conexões a nota tem.
+            </p>
           </div>
         )}
 
         {/* ── Hover tooltip ── */}
         {hovNote && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-30
-            bg-slate-800/95 backdrop-blur-md border border-slate-700/60 rounded-2xl px-5 py-3.5
-            shadow-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none z-30
+            bg-card border border-border rounded-control shadow-xl px-4 py-3 flex items-center gap-3 max-w-[calc(100%-2rem)]">
             <div
-              className="h-11 w-11 rounded-xl flex items-center justify-center font-black text-lg text-white shrink-0"
+              className="h-9 w-9 rounded-control flex items-center justify-center font-bold text-white shrink-0"
               style={{ background: nodeColor(hovNote) }}
             >
               {hovNote.title.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="u-display text-white text-base leading-tight truncate max-w-[200px]">{hovNote.title}</p>
-              <div className="flex items-center gap-3 mt-1">
-                {hovSubj && <span className="text-[10px] font-black uppercase text-slate-400">{hovSubj.name}</span>}
-                <span className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-1">
-                  <Link2 className="h-3 w-3" /> {degree[hovNote.id] ?? 0} conexões
+              <p className="font-semibold text-sm text-foreground leading-tight truncate max-w-[16rem]">{hovNote.title}</p>
+              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                {hovSubj && <span>{hovSubj.name}</span>}
+                <span className="flex items-center gap-1">
+                  <Link2 className="h-3 w-3" /> {degree[hovNote.id] ?? 0} conex{(degree[hovNote.id] ?? 0) !== 1 ? "ões" : "ão"}
                 </span>
               </div>
             </div>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest shrink-0">clique para abrir →</span>
-          </div>
-        )}
-
-        {/* ── Legend ── */}
-        {usedSubjects.length > 0 && (
-          <div className="absolute bottom-6 right-5 z-20
-            bg-slate-900/80 backdrop-blur-sm border border-slate-800/60 rounded-2xl p-4 space-y-2.5
-            max-h-64 overflow-y-auto">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-600">Matérias</p>
-            {usedSubjects.map(s => (
-              <div key={s.id} className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ background: SUBJECT_HEX[s.name] ?? DEFAULT_COLOR }} />
-                <span className="text-[11px] font-bold text-slate-400">{s.name}</span>
-              </div>
-            ))}
-            <div className="border-t border-slate-800 pt-2 mt-1 space-y-1.5">
-              <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-slate-700 shrink-0" />
-                <span className="text-[10px] font-bold text-slate-600">Nó pequeno = poucas conexões</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3.5 w-3.5 rounded-full bg-slate-500 shrink-0" />
-                <span className="text-[10px] font-bold text-slate-600">Nó grande = hub central</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Most connected note badge ── */}
-        {topNote && (degree[topNote.id] ?? 0) > 0 && (
-          <div className="absolute top-4 left-5 z-20
-            bg-slate-900/80 backdrop-blur-sm border border-slate-800/60 rounded-2xl px-4 py-2.5
-            flex items-center gap-3">
-            <div className="h-7 w-7 rounded-xl flex items-center justify-center font-black text-sm text-white shrink-0"
-              style={{ background: nodeColor(topNote) }}>
-              {topNote.title.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Hub Principal</p>
-              <p className="u-display text-xs text-white leading-tight truncate max-w-[120px]">{topNote.title}</p>
-            </div>
-            <span className="text-[9px] font-black text-primary">{degree[topNote.id]}×</span>
+            <span className="u-label shrink-0 hidden sm:block">Clique para abrir</span>
           </div>
         )}
       </div>

@@ -702,8 +702,13 @@ export default function SimuladoPage() {
           </div>
 
           <div className="flex flex-col items-center">
-            {/* Circular Ring Gauge */}
-            <div className="relative shrink-0 flex items-center justify-center h-28 w-28 mb-3 mt-4">
+            {/* Circular Ring Gauge. O veredito entra em sequência com as
+                classes de CSS puro (anim-pop/anim-rise) — só aqui no resultado;
+                a prova em andamento é nível baixo e fica parada. */}
+            <div
+              className="anim-pop relative shrink-0 flex items-center justify-center h-28 w-28 mb-3 mt-4"
+              style={{ '--i': 0 } as React.CSSProperties}
+            >
               <ScoreRing pct={pct} size={110} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <p className="u-num text-white text-3xl leading-none">{pct}<span className="text-sm text-white/50">%</span></p>
@@ -711,7 +716,10 @@ export default function SimuladoPage() {
               </div>
             </div>
 
-            <h2 className="u-page-title text-2xl sm:text-3xl text-white leading-[1.2] mb-1">
+            <h2
+              className="anim-rise u-page-title text-2xl sm:text-3xl text-white leading-[1.2] mb-1"
+              style={{ '--i': 3 } as React.CSSProperties}
+            >
               {resultLabel}
             </h2>
             <p className="text-white/60 text-xs font-semibold max-w-sm">
@@ -719,7 +727,10 @@ export default function SimuladoPage() {
             </p>
 
             {/* Tempo total gasto */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-control border-2 border-white/25 px-4 py-2">
+            <div
+              className="anim-rise mt-4 inline-flex items-center gap-2 rounded-control border-2 border-white/25 px-4 py-2"
+              style={{ '--i': 5 } as React.CSSProperties}
+            >
               <Clock className="h-4 w-4 text-primary" />
               <span className="u-label !text-white/40">Tempo total</span>
               <span className="u-num text-sm text-white tabular-nums">{formatTime(elapsedSeconds)}</span>
@@ -727,7 +738,10 @@ export default function SimuladoPage() {
           </div>
 
           {/* Gamified Reward Banner */}
-          <div className="border-2 border-white/25 rounded-control p-4 flex items-center justify-center gap-6 max-w-md mx-auto">
+          <div
+            className="anim-pop border-2 border-white/25 rounded-control p-4 flex items-center justify-center gap-6 max-w-md mx-auto"
+            style={{ '--i': 4 } as React.CSSProperties}
+          >
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-control bg-brand-yellow flex items-center justify-center">
                 <Zap className="h-4 w-4 text-foreground fill-foreground" />
@@ -757,8 +771,12 @@ export default function SimuladoPage() {
               { label: 'Acertos', value: score, color: 'text-emerald-400', icon: CheckCircle2 },
               { label: 'Erros',   value: answers.length - score, color: 'text-red-400', icon: XCircle },
               { label: 'Total',   value: answers.length, color: 'text-white', icon: ClipboardList },
-            ].map(s => (
-              <div key={s.label} className="text-center px-1">
+            ].map((s, si) => (
+              <div
+                key={s.label}
+                className="anim-pop text-center px-1"
+                style={{ '--i': 5 + si } as React.CSSProperties}
+              >
                 <s.icon className={`h-4 w-4 mx-auto mb-1 ${s.color}`} />
                 <p className={`u-num text-3xl leading-none ${s.color}`}>{s.value}</p>
                 <p className="u-label !text-[8px] !text-white/40 mt-1">{s.label}</p>

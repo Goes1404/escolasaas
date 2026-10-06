@@ -5,9 +5,10 @@ import {
   Plus, Search, Trash2, List, ListOrdered, CheckSquare,
   Minus, Type, Heading1, Heading2, Heading3, Quote,
   BookOpen, Loader2, Pin, PinOff, ChevronLeft,
-  StickyNote, Circle, CheckCircle2, Link2, Network, ArrowRight, FileText,
+  StickyNote, Circle, CheckCircle2, Link2, Network, ArrowRight, FileText, X,
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -43,22 +44,31 @@ interface Note {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const SUBJECT_PALETTE: Record<string, { bg: string; text: string; dot: string }> = {
-  "Matemática":            { bg: "bg-blue-50",    text: "text-blue-700",    dot: "bg-blue-400" },
-  "Português":             { bg: "bg-purple-50",  text: "text-purple-700",  dot: "bg-purple-400" },
-  "Língua Portuguesa":     { bg: "bg-purple-50",  text: "text-purple-700",  dot: "bg-purple-400" },
-  "Linguagens":            { bg: "bg-violet-50",  text: "text-violet-700",  dot: "bg-violet-400" },
-  "História":              { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400" },
-  "Ciências Humanas":      { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400" },
-  "Geografia":             { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
-  "Biologia":              { bg: "bg-green-50",   text: "text-green-700",   dot: "bg-green-400" },
-  "Ciências da Natureza":  { bg: "bg-teal-50",    text: "text-teal-700",    dot: "bg-teal-400" },
-  "Física":                { bg: "bg-cyan-50",    text: "text-cyan-700",    dot: "bg-cyan-400" },
-  "Química":               { bg: "bg-rose-50",    text: "text-rose-700",    dot: "bg-rose-400" },
-  "Redação":               { bg: "bg-pink-50",    text: "text-pink-700",    dot: "bg-pink-400" },
+// A cor da matéria é categórica (diz o que a nota é), então fica — mas só no
+// ponto. Chip inteiro colorido em tela de horas vira decoração. Os tons batem
+// com os nós do grafo (notes/graph), para a mesma matéria ter a mesma cor.
+const SUBJECT_DOT: Record<string, string> = {
+  "Matemática":            "bg-blue-500",
+  "Português":             "bg-violet-500",
+  "Língua Portuguesa":     "bg-violet-500",
+  "Linguagens":            "bg-violet-600",
+  "História":              "bg-amber-500",
+  "Ciências Humanas":      "bg-amber-600",
+  "Geografia":             "bg-emerald-500",
+  "Biologia":              "bg-green-500",
+  "Ciências da Natureza":  "bg-teal-500",
+  "Física":                "bg-cyan-500",
+  "Química":               "bg-rose-500",
+  "Redação":               "bg-pink-500",
 };
-const DEFAULT_PAL = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" };
-const subjectPalette = (name: string) => SUBJECT_PALETTE[name] ?? DEFAULT_PAL;
+const subjectDot = (name: string) => SUBJECT_DOT[name] ?? "bg-muted-foreground";
+
+// Trecho de leitura do card: primeiro bloco com texto, sem a marcação crua
+// (`**`, `[[ ]]`) que no card não seria renderizada.
+const snippetOf = (note: Note) => {
+  const b = note.blocks.find(x => x.type !== "divider" && x.content.trim());
+  return (b?.content ?? "").replace(/\[\[([^\]]*)\]\]/g, "$1").replace(/[*`]/g, "").trim();
+};
 
 const SLASH_ITEMS = [
   { type: "text"     as BlockType, Icon: Type,        label: "Texto",          desc: "Parágrafo simples" },
@@ -90,7 +100,7 @@ function InlineText({ text }: { text: string }) {
       {parts.map((p, i) => {
         if (p.startsWith("**") && p.endsWith("**")) return <strong key={i}>{p.slice(2, -2)}</strong>;
         if (p.startsWith("*") && p.endsWith("*")) return <em key={i}>{p.slice(1, -1)}</em>;
-        if (p.startsWith("`") && p.endsWith("`")) return <code key={i} className="bg-zinc-100 text-zinc-700 px-1 py-0.5 rounded text-[0.85em] font-mono">{p.slice(1, -1)}</code>;
+        if (p.startsWith("`") && p.endsWith("`")) return <code key={i} className="bg-muted text-foreground px-1 py-0.5 rounded text-[0.85em] font-mono">{p.slice(1, -1)}</code>;
         return <span key={i}>{p}</span>;
       })}
     </>
@@ -103,12 +113,14 @@ function renderContent(content: string, notes: Note[], onWikiClick: (id: string)
     if (seg.startsWith("[[") && seg.endsWith("]]")) {
       const title = seg.slice(2, -2);
       const target = notes.find(n => n.title.toLowerCase() === title.toLowerCase());
+      // Ciano como texto não passa contraste no branco: o acento vai no
+      // fundo e no sublinhado, o texto fica na cor de leitura.
       return (
         <button
           key={i} type="button"
           onMouseDown={e => { e.preventDefault(); e.stopPropagation(); if (target) onWikiClick(target.id); }}
           className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded text-[0.9em] font-medium transition-colors ${
-            target ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-zinc-100 text-zinc-400 line-through"
+            target ? "bg-primary/15 text-foreground underline decoration-primary underline-offset-2 hover:bg-primary/25" : "bg-muted text-muted-foreground line-through"
           }`}
         >
           <Link2 className="h-3 w-3 shrink-0" />{title}
@@ -133,46 +145,49 @@ function BlockRow({
   onWikiClick: (id: string) => void;
 }) {
   if (block.type === "divider") {
-    return <div className="py-3 px-2 cursor-pointer" onClick={onFocus}><div className="h-px bg-zinc-200" /></div>;
+    return <div className="py-3 px-2 cursor-pointer" onClick={onFocus}><div className="h-px bg-border" /></div>;
   }
 
   const prefix = (
     <>
-      {block.type === "bullet" && <span className="pt-[3px] shrink-0 text-zinc-400 font-bold text-base leading-none select-none">•</span>}
-      {block.type === "numbered" && <span className="pt-[2px] shrink-0 text-zinc-400 text-sm w-5 text-right select-none">{blockNumber}.</span>}
+      {block.type === "bullet" && <span className="pt-[3px] shrink-0 text-muted-foreground font-bold text-base leading-none select-none">•</span>}
+      {block.type === "numbered" && <span className="pt-[2px] shrink-0 text-muted-foreground text-sm w-5 text-right select-none">{blockNumber}.</span>}
       {block.type === "todo" && (
         <button type="button"
           onMouseDown={e => { e.preventDefault(); e.stopPropagation(); onToggleCheck(); }}
-          className="pt-[3px] shrink-0 text-zinc-400 hover:text-violet-500 transition-colors">
-          {block.checked ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4" />}
+          className="pt-[3px] shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+          {block.checked ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Circle className="h-4 w-4" />}
         </button>
       )}
-      {block.type === "quote" && <div className="self-stretch w-0.5 bg-violet-400 rounded-full shrink-0 my-1" />}
+      {block.type === "quote" && <div className="self-stretch w-0.5 bg-primary rounded-full shrink-0 my-1" />}
     </>
   );
 
-  const viewClass: Record<BlockType, string> = {
-    text:     "text-[15px] text-zinc-700 leading-relaxed",
-    h1:       "text-[2rem] font-bold text-zinc-900 tracking-tight leading-tight",
-    h2:       "text-[1.4rem] font-bold text-zinc-800 leading-tight",
-    h3:       "text-[1.1rem] font-semibold text-zinc-800",
-    bullet:   "text-[15px] text-zinc-700 leading-relaxed",
-    numbered: "text-[15px] text-zinc-700 leading-relaxed",
-    todo:     "text-[15px] text-zinc-700 leading-relaxed",
-    quote:    "text-[15px] text-zinc-500 italic",
+  // Mesma tipografia na leitura e na edição: o bloco não pode "pular" de
+  // tamanho quando recebe foco.
+  const typeClass: Record<BlockType, string> = {
+    text:     "text-[15px] text-foreground/85 leading-relaxed",
+    h1:       "text-[2rem] font-bold text-foreground tracking-tight leading-tight",
+    h2:       "text-[1.4rem] font-bold text-foreground leading-tight",
+    h3:       "text-[1.1rem] font-semibold text-foreground",
+    bullet:   "text-[15px] text-foreground/85 leading-relaxed",
+    numbered: "text-[15px] text-foreground/85 leading-relaxed",
+    todo:     "text-[15px] text-foreground/85 leading-relaxed",
+    quote:    "text-[15px] text-muted-foreground italic",
     divider:  "",
   };
+  const checkedClass = block.type === "todo" && block.checked ? "line-through !text-muted-foreground" : "";
 
-  const wrap = "group flex items-start gap-2 px-2 py-0.5 rounded-lg transition-colors";
+  const wrap = "group flex items-start gap-2 px-2 py-0.5 rounded-control transition-colors";
 
   if (!isFocused) {
     const empty = !block.content.trim();
     return (
-      <div className={`${wrap} cursor-text hover:bg-zinc-50/80`} onClick={onFocus}>
+      <div className={`${wrap} cursor-text hover:bg-muted/40`} onClick={onFocus}>
         {prefix}
-        <div className={`flex-1 min-w-0 ${viewClass[block.type]} ${block.type === "todo" && block.checked ? "line-through text-zinc-400" : ""}`}>
+        <div className={`flex-1 min-w-0 ${typeClass[block.type]} ${checkedClass}`}>
           {empty
-            ? <span className="text-zinc-300 select-none">{PLACEHOLDER[block.type]}</span>
+            ? <span className="text-muted-foreground/50 select-none">{PLACEHOLDER[block.type]}</span>
             : renderContent(block.content, notes, onWikiClick)
           }
         </div>
@@ -180,20 +195,8 @@ function BlockRow({
     );
   }
 
-  const editClass: Record<BlockType, string> = {
-    text:     "text-[15px] text-zinc-700 leading-relaxed",
-    h1:       "text-[2rem] font-bold text-zinc-900 tracking-tight",
-    h2:       "text-[1.4rem] font-bold text-zinc-800",
-    h3:       "text-[1.1rem] font-semibold text-zinc-800",
-    bullet:   "text-[15px] text-zinc-700 leading-relaxed",
-    numbered: "text-[15px] text-zinc-700 leading-relaxed",
-    todo:     "text-[15px] text-zinc-700 leading-relaxed",
-    quote:    "text-[15px] text-zinc-500 italic",
-    divider:  "",
-  };
-
   return (
-    <div className={`${wrap} bg-violet-50/40`}>
+    <div className={`${wrap} bg-muted/50`}>
       {prefix}
       <textarea
         ref={textareaRef} rows={1} value={block.content}
@@ -201,25 +204,63 @@ function BlockRow({
         onFocus={onFocus} onBlur={onBlur}
         onChange={e => { onChange(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
         onKeyDown={onKeyDown}
-        className={`w-full flex-1 bg-transparent resize-none outline-none placeholder-zinc-300 ${editClass[block.type]} ${block.type === "todo" && block.checked ? "line-through text-zinc-400" : ""}`}
+        className={`w-full flex-1 bg-transparent resize-none outline-none placeholder:text-muted-foreground/50 ${typeClass[block.type]} ${checkedClass}`}
         style={{ minHeight: "28px", overflow: "hidden" }}
       />
     </div>
   );
 }
 
-// ── NoteCard ──────────────────────────────────────────────────────────────────
+// ── Cards ─────────────────────────────────────────────────────────────────────
 
-function NoteCard({ note, subjects, isActive, onClick }: { note: Note; subjects: { id: string; name: string }[]; isActive: boolean; onClick: () => void }) {
-  const preview = note.blocks.find(b => b.type === "text" && b.content.trim())?.content ?? "";
+/** Card da grade. Altura fixa: título em até 2 linhas e trecho em até 3,
+ *  para a grade não virar uma escada de alturas diferentes. */
+function NoteGridCard({ note, subject, onClick }: { note: Note; subject?: { id: string; name: string }; onClick: () => void }) {
+  const snippet = snippetOf(note);
   return (
-    <button onClick={onClick} className={`w-full text-left px-2 py-1.5 rounded-md transition-all ${isActive ? "bg-zinc-700" : "hover:bg-zinc-800"}`}>
-      <div className="flex items-center gap-1.5">
-        <FileText className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-violet-400" : "text-zinc-600"}`} />
-        <p className={`text-sm truncate flex-1 font-medium ${isActive ? "text-white" : "text-zinc-300"}`}>{note.title || "Sem título"}</p>
-        {note.is_pinned && <Pin className={`h-3 w-3 shrink-0 fill-current ${isActive ? "text-violet-300" : "text-zinc-600"}`} />}
+    <button
+      type="button" onClick={onClick}
+      className="lift group u-surface flex flex-col w-full h-48 p-4 text-left transition-[transform,border-color] hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <div className="flex items-start gap-2">
+        <h3 className="flex-1 min-w-0 font-semibold text-[15px] leading-snug text-foreground line-clamp-2">
+          {note.title || "Sem título"}
+        </h3>
+        {note.is_pinned && <Pin className="h-3.5 w-3.5 mt-0.5 shrink-0 fill-current text-foreground/70" aria-label="Fixada" />}
       </div>
-      {preview && <p className={`text-xs truncate mt-0.5 pl-5 ${isActive ? "text-zinc-400" : "text-zinc-600"}`}>{preview}</p>}
+      <p className="mt-2 flex-1 min-h-0 text-sm leading-relaxed text-muted-foreground line-clamp-3">
+        {snippet || <span className="italic text-muted-foreground/60">Nota vazia</span>}
+      </p>
+      <div className="mt-3 flex items-center gap-2 min-w-0">
+        {subject && (
+          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-control bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground/80">
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subjectDot(subject.name)}`} />
+            <span className="truncate">{subject.name}</span>
+          </span>
+        )}
+        {note.tags?.slice(0, 2).map(t => (
+          <span key={t} className="hidden sm:inline truncate max-w-[6rem] text-[11px] text-muted-foreground">#{t}</span>
+        ))}
+        <span className="u-label ml-auto shrink-0 !tracking-[0.18em]">
+          {format(new Date(note.updated_at), "d MMM yy", { locale: ptBR })}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+/** Linha da lista lateral do editor (só no desktop): troca rápida de nota. */
+function NoteListItem({ note, isActive, onClick }: { note: Note; isActive: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button" onClick={onClick}
+      className={`w-full text-left px-2.5 py-2 rounded-control transition-colors ${isActive ? "bg-muted text-foreground" : "text-foreground/80 hover:bg-muted/50"}`}
+    >
+      <div className="flex items-center gap-2">
+        <FileText className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-foreground" : "text-muted-foreground"}`} />
+        <p className={`text-sm truncate flex-1 ${isActive ? "font-semibold" : "font-medium"}`}>{note.title || "Sem título"}</p>
+        {note.is_pinned && <Pin className="h-3 w-3 shrink-0 fill-current text-muted-foreground" />}
+      </div>
     </button>
   );
 }
@@ -242,7 +283,6 @@ export default function StudentNotesPage() {
   const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
   const [filterSubject, setFilterSubject] = useState<string | null>(null);
   const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<"list" | "editor">("list");
 
   const [slash, setSlash] = useState<{ open: boolean; blockId: string; y: number; x: number; filter: string; cursor: number }>
     ({ open: false, blockId: "", y: 0, x: 0, filter: "", cursor: 0 });
@@ -309,9 +349,27 @@ export default function StudentNotesPage() {
     setNoteSubjectId(note.subject_id);
     setNoteIsPinned(note.is_pinned);
     setFocusedBlockId(null);
-    setMobileView("editor");
     setTimeout(() => titleRef.current?.focus(), 80);
   }, []);
+
+  // Volta para a grade. O salvamento pendente (debounce) segue sozinho.
+  const closeNote = () => {
+    setActiveId(null);
+    setFocusedBlockId(null);
+    setSlash(s => ({ ...s, open: false }));
+    setWikiMenu(null);
+  };
+
+  // O grafo abre uma nota via `?open=<id>`. Lido do `window` (e não de
+  // `useSearchParams`) para a página não precisar de um Suspense só por isso.
+  const openedFromUrl = useRef(false);
+  useEffect(() => {
+    if (loading || openedFromUrl.current) return;
+    openedFromUrl.current = true;
+    const id = new URLSearchParams(window.location.search).get("open");
+    const note = id ? notes.find(n => n.id === id) : undefined;
+    if (note) openNote(note);
+  }, [loading, notes, openNote]);
 
   const openNoteById = useCallback((id: string) => {
     const note = notes.find(n => n.id === id);
@@ -331,7 +389,7 @@ export default function StudentNotesPage() {
   const deleteNote = async (id: string) => {
     await supabase.from("notes").delete().eq("id", id);
     setNotes(prev => prev.filter(n => n.id !== id));
-    if (activeId === id) { setActiveId(null); setMobileView("list"); }
+    if (activeId === id) setActiveId(null);
     toast({ title: "Nota apagada" });
   };
 
@@ -484,6 +542,10 @@ export default function StudentNotesPage() {
   const recents = filtered.filter(n => !n.is_pinned);
   const activeNote    = notes.find(n => n.id === activeId);
   const activeSubject = subjects.find(s => s.id === noteSubjectId);
+  const subjectById   = (id: string | null) => (id ? subjects.find(s => s.id === id) : undefined);
+  // O filtro só oferece matérias que têm nota: chip que leva a lista vazia é ruído.
+  const usedSubjects  = subjects.filter(s => notes.some(n => n.subject_id === s.id));
+  const hasFilter     = !!search || !!filterSubject;
 
   let ctr = 0;
   const numMap: Record<string, number> = {};
@@ -495,254 +557,311 @@ export default function StudentNotesPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="h-10 w-10 animate-spin text-violet-500" />
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
 
+  const searchBox = (className = "") => (
+    <div className={`relative ${className}`}>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <input
+        type="text" placeholder="Buscar pelo título…" value={search}
+        onChange={e => setSearch(e.target.value)}
+        aria-label="Buscar notas"
+        className="w-full h-10 pl-9 pr-9 rounded-control border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
+      {search && (
+        <button type="button" onClick={() => setSearch("")} aria-label="Limpar busca"
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+
+  const subjectFilter = usedSubjects.length > 0 && (
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mb-1 min-w-0" role="group" aria-label="Filtrar por matéria">
+      <button type="button" onClick={() => setFilterSubject(null)}
+        className={`h-8 shrink-0 px-3 rounded-control border text-xs font-medium transition-colors ${!filterSubject ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"}`}>
+        Todas
+      </button>
+      {usedSubjects.map(s => {
+        const on = filterSubject === s.id;
+        return (
+          <button key={s.id} type="button" onClick={() => setFilterSubject(on ? null : s.id)}
+            className={`h-8 shrink-0 inline-flex items-center gap-1.5 px-3 rounded-control border text-xs font-medium transition-colors ${on ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(s.name)}`} />
+            {s.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  // Fora do editor: a grade usa a largura toda. Dentro dele, a lista vira
+  // coluna lateral (só no desktop) para trocar de nota sem voltar.
   return (
-    <div className="flex h-[calc(100dvh-4rem)] -mx-4 md:-mx-8 overflow-hidden">
-
-      {/* ── SIDEBAR (dark) ──────────────────────────────────────────────────── */}
-      <aside className={`${mobileView === "editor" ? "hidden" : "flex"} md:flex flex-col w-full md:w-[260px] shrink-0 bg-zinc-900 overflow-hidden`}>
-
-        <div className="px-3 pt-3 pb-2 border-b border-zinc-800">
-          <div className="flex items-center justify-between mb-2.5">
+    <>
+      {!activeId ? (
+        // ── GRADE ───────────────────────────────────────────────────────────
+        <div className="space-y-6">
+          {/* Cabeçalho em nível médio; o corpo abaixo é sóbrio (tela de horas). */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="u-label flex items-center gap-2"><BookOpen className="h-3.5 w-3.5" /> Caderno · notas</p>
+              <h1 className="u-page-title text-3xl mt-1">Minhas notas</h1>
+              <p className="text-sm text-muted-foreground mt-2">
+                {notes.length} nota{notes.length !== 1 ? "s" : ""}
+                {notes.some(n => n.is_pinned) && ` · ${notes.filter(n => n.is_pinned).length} fixada${notes.filter(n => n.is_pinned).length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
             <div className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-violet-400" />
-              <span className="text-sm font-bold text-zinc-200">Meu Caderno</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Link href="/dashboard/student/notes/graph" className="h-7 w-7 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors" title="Grafo">
-                <Network className="h-4 w-4" />
-              </Link>
-              <button onClick={createNote} className="h-7 w-7 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors" title="Nova nota">
-                <Plus className="h-4 w-4" />
-              </button>
+              <Button asChild variant="outline" className="hover:bg-muted hover:text-foreground">
+                <Link href="/dashboard/student/notes/graph"><Network /> Grafo</Link>
+              </Button>
+              {/* Único CTA primário da tela: é o único com sombra dura. */}
+              <Button variant="arcade" onClick={createNote}><Plus /> Nova nota</Button>
             </div>
           </div>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
-            <input
-              type="text" placeholder="Buscar notas…" value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full h-8 pl-8 pr-3 bg-zinc-800 rounded-md text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:ring-1 focus:ring-violet-500 border-none"
-            />
-          </div>
-        </div>
 
-        {subjects.length > 0 && (
-          <div className="px-3 py-2 border-b border-zinc-800 flex gap-1 flex-wrap">
-            <button onClick={() => setFilterSubject(null)}
-              className={`h-5 px-2 rounded text-[10px] font-bold uppercase tracking-wide transition-colors ${!filterSubject ? "bg-violet-600 text-white" : "text-zinc-600 hover:text-zinc-300"}`}>
-              Todas
-            </button>
-            {subjects.slice(0, 5).map(s => (
-              <button key={s.id} onClick={() => setFilterSubject(filterSubject === s.id ? null : s.id)}
-                className={`h-5 px-2 rounded text-[10px] font-bold uppercase tracking-wide transition-colors ${filterSubject === s.id ? "bg-violet-600 text-white" : "text-zinc-600 hover:text-zinc-300"}`}>
-                {s.name.split(" ")[0]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-px">
-          {filtered.length === 0 && (
-            <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <StickyNote className="h-8 w-8 text-zinc-700" />
-              <p className="text-sm text-zinc-600">Nenhuma nota ainda</p>
-              <button onClick={createNote} className="h-7 px-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5">
-                <Plus className="h-3 w-3" /> Nova nota
-              </button>
+          {notes.length > 0 && (
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              {searchBox("lg:w-80 shrink-0")}
+              {subjectFilter}
             </div>
           )}
-          {pinned.length > 0 && <>
-            <p className="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Fixadas</p>
-            {pinned.map(n => <NoteCard key={n.id} note={n} subjects={subjects} isActive={activeId === n.id} onClick={() => openNote(n)} />)}
-          </>}
-          {recents.length > 0 && <>
-            <p className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Notas</p>
-            {recents.map(n => <NoteCard key={n.id} note={n} subjects={subjects} isActive={activeId === n.id} onClick={() => openNote(n)} />)}
-          </>}
-        </div>
 
-        <div className="px-3 py-2.5 border-t border-zinc-800">
-          <p className="text-[11px] text-zinc-600">{notes.length} nota{notes.length !== 1 ? "s" : ""}</p>
-        </div>
-      </aside>
-
-      {/* ── EDITOR (light) ──────────────────────────────────────────────────── */}
-      <main className={`${mobileView === "list" ? "hidden" : "flex"} md:flex flex-1 flex-col overflow-hidden bg-white`}>
-        {!activeId ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8">
-            <div className="h-20 w-20 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center">
-              <BookOpen className="h-10 w-10 text-zinc-200" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-zinc-800 mb-1">Selecione uma nota</h2>
-              <p className="text-sm text-zinc-400">Escolha na lista ou crie uma nova.</p>
-            </div>
-            <button onClick={createNote} className="h-10 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-colors flex items-center gap-2">
-              <Plus className="h-4 w-4" /> Nova Nota
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between px-4 md:px-8 py-2 border-b border-zinc-100 shrink-0 gap-2 min-h-[44px]">
-              <button className="md:hidden flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-800 transition-colors" onClick={() => setMobileView("list")}>
-                <ChevronLeft className="h-4 w-4" /> Notas
-              </button>
-              <div className="flex items-center gap-1.5 flex-wrap flex-1">
-                {subjects.slice(0, 6).map(s => {
-                  const pal = subjectPalette(s.name);
-                  const isAct = noteSubjectId === s.id;
-                  return (
-                    <button key={s.id} onClick={() => handleSubjectChange(s.id)}
-                      className={`h-6 px-2.5 rounded-full text-[10px] font-bold uppercase tracking-wide border transition-all ${isAct ? `${pal.bg} ${pal.text} border-transparent` : "border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600"}`}>
-                      {s.name.length > 10 ? s.name.split(" ")[0] : s.name}
-                    </button>
-                  );
-                })}
+          {notes.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border bg-card px-6 py-16 flex flex-col items-center text-center gap-4">
+              <StickyNote className="h-10 w-10 text-muted-foreground/60" />
+              <div className="space-y-1.5 max-w-sm">
+                <p className="font-semibold text-foreground">Seu caderno está vazio</p>
+                <p className="text-sm text-muted-foreground">
+                  Anote resumos e fórmulas. Digite <kbd className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">/</kbd> para
+                  trocar o tipo de bloco e <kbd className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">[[</kbd> para ligar uma nota a outra.
+                </p>
               </div>
-              <div className="flex items-center gap-0.5 shrink-0">
-                {saving && <span className="hidden sm:flex items-center gap-1 text-[10px] text-zinc-400 mr-2"><Loader2 className="h-3 w-3 animate-spin" /> Salvando</span>}
-                <button onClick={togglePin} title={noteIsPinned ? "Desafixar" : "Fixar"}
-                  className={`h-8 w-8 flex items-center justify-center rounded-lg transition-colors ${noteIsPinned ? "text-amber-500 bg-amber-50" : "text-zinc-400 hover:text-amber-500 hover:bg-amber-50"}`}>
-                  {noteIsPinned ? <Pin className="h-4 w-4 fill-current" /> : <PinOff className="h-4 w-4" />}
-                </button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-2xl border-none shadow-2xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="font-bold">Apagar nota?</AlertDialogTitle>
-                      <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteNote(activeId!)} className="rounded-xl bg-red-500 hover:bg-red-600 border-none">Apagar</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+              <Button variant="outline" onClick={createNote} className="hover:bg-muted hover:text-foreground"><Plus /> Criar primeira nota</Button>
             </div>
-
-            <div className="flex-1 overflow-y-auto">
-              <div className="max-w-[720px] mx-auto px-6 md:px-14 py-8 md:py-12">
-
-                {activeSubject && (() => {
-                  const pal = subjectPalette(activeSubject.name);
-                  return (
-                    <div className="mb-5">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${pal.bg} ${pal.text}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${pal.dot}`} />{activeSubject.name}
-                      </span>
+          ) : filtered.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border px-6 py-12 flex flex-col items-center text-center gap-3">
+              <Search className="h-8 w-8 text-muted-foreground/60" />
+              <p className="text-sm text-muted-foreground">Nenhuma nota encontrada com esses filtros.</p>
+              {hasFilter && (
+                <Button variant="outline" size="sm" className="hover:bg-muted hover:text-foreground"
+                  onClick={() => { setSearch(""); setFilterSubject(null); }}>
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {[{ label: "Fixadas", items: pinned }, { label: pinned.length > 0 ? "Outras notas" : "Notas", items: recents }]
+                .filter(sec => sec.items.length > 0)
+                .map(sec => (
+                  <section key={sec.label}>
+                    <p className="u-label mb-3">{sec.label} · {sec.items.length}</p>
+                    {/* auto-fill: o número de colunas segue a largura real (com ou sem
+                        sidebar aberta), sem cards espremidos nem faixas vazias. */}
+                    <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+                      {/* Só a grade anima (anim-rise, CSS puro); o editor é tela
+                          de horas e fica parado. Invólucro para o fill da
+                          animação não anular o lift do card. */}
+                      {sec.items.map((n, i) => (
+                        <div key={n.id} className="anim-rise" style={{ '--i': Math.min(i, 10) } as React.CSSProperties}>
+                          <NoteGridCard note={n} subject={subjectById(n.subject_id)} onClick={() => openNote(n)} />
+                        </div>
+                      ))}
                     </div>
-                  );
-                })()}
+                  </section>
+                ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        // ── EDITOR ──────────────────────────────────────────────────────────
+        // No desktop a altura é a da viewport menos o cabeçalho do app (4rem) e o
+        // padding do <main> (2rem + 2rem): cada coluna rola por conta própria.
+        <div className="flex flex-col gap-4 lg:h-[calc(100dvh-8rem)]">
+          <div className="flex items-center gap-3 shrink-0">
+            <button type="button" onClick={closeNote}
+              className="inline-flex items-center gap-1 h-9 pl-1.5 pr-3 rounded-control text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <ChevronLeft className="h-4 w-4" /> Todas as notas
+            </button>
+            <p className="u-label hidden sm:block">Caderno · nota</p>
+            <div className="ml-auto flex items-center gap-1">
+              {saving && <span className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground mr-2"><Loader2 className="h-3 w-3 animate-spin" /> Salvando</span>}
+              <button type="button" onClick={togglePin} title={noteIsPinned ? "Desafixar" : "Fixar"} aria-pressed={noteIsPinned}
+                className={`h-9 w-9 flex items-center justify-center rounded-control transition-colors ${noteIsPinned ? "text-foreground bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
+                {noteIsPinned ? <Pin className="h-4 w-4 fill-current" /> : <PinOff className="h-4 w-4" />}
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button type="button" title="Apagar nota"
+                    className="h-9 w-9 flex items-center justify-center rounded-control text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-card">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="font-bold">Apagar nota?</AlertDialogTitle>
+                    <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteNote(activeId!)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Apagar</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
 
-                <textarea
-                  ref={titleRef} rows={1} value={noteTitle} placeholder="Sem título"
-                  onChange={e => { handleTitleChange(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
-                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (blocks[0]) setTimeout(() => { handleBlockFocus(blocks[0].id); textareaRefs.current[blocks[0].id]?.focus(); }, 30); } }}
-                  className="w-full bg-transparent resize-none outline-none text-[2.2rem] md:text-[2.8rem] font-bold text-zinc-900 placeholder-zinc-200 leading-tight mb-1"
-                  style={{ minHeight: "52px", overflow: "hidden" }}
-                />
-
-                {activeNote && (
-                  <p className="text-[11px] text-zinc-300 uppercase tracking-wider mb-8">
-                    {format(new Date(activeNote.updated_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                  </p>
-                )}
-
-                <div className="space-y-0.5">
-                  {blocks.map((block, idx) => (
-                    <BlockRow
-                      key={block.id} block={block}
-                      blockNumber={numMap[block.id] ?? idx + 1}
-                      isFocused={focusedBlockId === block.id}
-                      notes={notes}
-                      onFocus={() => handleBlockFocus(block.id)}
-                      onBlur={handleBlockBlur}
-                      onChange={c => handleBlockChange(block.id, c)}
-                      onToggleCheck={() => toggleCheck(block.id)}
-                      onKeyDown={e => handleKeyDown(e, block.id)}
-                      textareaRef={el => { textareaRefs.current[block.id] = el; }}
-                      onWikiClick={openNoteById}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => addBlockAfter(blocks[blocks.length - 1].id)}
-                  className="w-full mt-6 py-2.5 rounded-lg border border-dashed border-zinc-200 hover:border-violet-300 hover:bg-violet-50/40 transition-all flex items-center justify-center gap-2 text-zinc-300 hover:text-violet-400 text-sm">
-                  <Plus className="h-4 w-4" /> Adicionar bloco
+          <div className="flex-1 min-h-0 flex gap-4">
+            {/* Lista lateral — só no desktop; no celular o "voltar" já leva à grade. */}
+            <aside className="hidden lg:flex w-64 shrink-0 flex-col u-surface overflow-hidden">
+              <div className="p-3 border-b border-border">{searchBox()}</div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-px">
+                {filtered.length === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">Nenhuma nota</p>}
+                {pinned.length > 0 && <p className="u-label px-2.5 pt-2 pb-1">Fixadas</p>}
+                {pinned.map(n => <NoteListItem key={n.id} note={n} isActive={activeId === n.id} onClick={() => openNote(n)} />)}
+                {recents.length > 0 && pinned.length > 0 && <p className="u-label px-2.5 pt-3 pb-1">Notas</p>}
+                {recents.map(n => <NoteListItem key={n.id} note={n} isActive={activeId === n.id} onClick={() => openNote(n)} />)}
+              </div>
+              <div className="p-2 border-t border-border">
+                <button type="button" onClick={createNote}
+                  className="w-full h-9 inline-flex items-center justify-center gap-1.5 rounded-control text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <Plus className="h-4 w-4" /> Nova nota
                 </button>
+              </div>
+            </aside>
 
-                <div className="flex items-center justify-center gap-6 mt-3 flex-wrap">
-                  {(["/ tipos de bloco", "[[ linkar nota", "** negrito", "* itálico"] as const).map(hint => {
-                    const [key, ...rest] = hint.split(" ");
+            <section className="flex-1 min-w-0 u-surface flex flex-col overflow-hidden">
+              {/* Matéria da nota: seletor discreto, ponto colorido como sinal. */}
+              {subjects.length > 0 && (
+                <div className="flex items-center gap-1.5 px-4 md:px-6 py-2.5 border-b border-border overflow-x-auto shrink-0">
+                  <span className="u-label shrink-0 mr-1">Matéria</span>
+                  {subjects.map(s => {
+                    const on = noteSubjectId === s.id;
                     return (
-                      <p key={key} className="text-[10px] text-zinc-300">
-                        <kbd className="bg-zinc-100 text-zinc-400 px-1.5 py-0.5 rounded font-mono">{key}</kbd> {rest.join(" ")}
-                      </p>
+                      <button key={s.id} type="button" onClick={() => handleSubjectChange(s.id)} aria-pressed={on}
+                        className={`h-7 shrink-0 inline-flex items-center gap-1.5 px-2.5 rounded-control border text-xs font-medium transition-colors ${on ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(s.name)}`} />
+                        {s.name}
+                      </button>
                     );
                   })}
                 </div>
+              )}
 
-                {backlinks.length > 0 && (
-                  <div className="mt-12 pt-8 border-t border-zinc-100">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Link2 className="h-4 w-4 text-zinc-400" />
-                      <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+              <div className="flex-1 overflow-y-auto">
+                <div className="max-w-[720px] mx-auto px-5 md:px-12 py-8 md:py-10">
+
+                  <textarea
+                    ref={titleRef} rows={1} value={noteTitle} placeholder="Sem título"
+                    onChange={e => { handleTitleChange(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (blocks[0]) setTimeout(() => { handleBlockFocus(blocks[0].id); textareaRefs.current[blocks[0].id]?.focus(); }, 30); } }}
+                    className="w-full bg-transparent resize-none outline-none text-[2rem] md:text-[2.5rem] font-bold tracking-tight text-foreground placeholder:text-muted-foreground/40 leading-tight mb-2"
+                    style={{ minHeight: "52px", overflow: "hidden" }}
+                  />
+
+                  {activeNote && (
+                    <p className="u-label mb-8 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {activeSubject && (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(activeSubject.name)}`} />{activeSubject.name}
+                        </span>
+                      )}
+                      <span>Editada em {format(new Date(activeNote.updated_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                    </p>
+                  )}
+
+                  <div className="space-y-0.5">
+                    {blocks.map((block, idx) => (
+                      <BlockRow
+                        key={block.id} block={block}
+                        blockNumber={numMap[block.id] ?? idx + 1}
+                        isFocused={focusedBlockId === block.id}
+                        notes={notes}
+                        onFocus={() => handleBlockFocus(block.id)}
+                        onBlur={handleBlockBlur}
+                        onChange={c => handleBlockChange(block.id, c)}
+                        onToggleCheck={() => toggleCheck(block.id)}
+                        onKeyDown={e => handleKeyDown(e, block.id)}
+                        textareaRef={el => { textareaRefs.current[block.id] = el; }}
+                        onWikiClick={openNoteById}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => addBlockAfter(blocks[blocks.length - 1].id)}
+                    className="w-full mt-6 py-2.5 rounded-control border border-dashed border-border hover:border-foreground/30 hover:bg-muted/40 transition-colors flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-sm">
+                    <Plus className="h-4 w-4" /> Adicionar bloco
+                  </button>
+
+                  <div className="flex items-center justify-center gap-x-6 gap-y-2 mt-3 flex-wrap">
+                    {(["/ tipos de bloco", "[[ linkar nota", "** negrito", "* itálico"] as const).map(hint => {
+                      const [key, ...rest] = hint.split(" ");
+                      return (
+                        <p key={key} className="text-[11px] text-muted-foreground">
+                          <kbd className="bg-muted text-foreground/70 px-1.5 py-0.5 rounded font-mono">{key}</kbd> {rest.join(" ")}
+                        </p>
+                      );
+                    })}
+                  </div>
+
+                  {backlinks.length > 0 && (
+                    <div className="mt-12 pt-8 border-t border-border">
+                      <p className="u-label mb-4 flex items-center gap-2">
+                        <Link2 className="h-3.5 w-3.5" />
                         {backlinks.length} link{backlinks.length !== 1 ? "s" : ""} reverso{backlinks.length !== 1 ? "s" : ""}
                       </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {backlinks.map(note => {
+                          const subj = subjectById(note.subject_id);
+                          return (
+                            <button key={note.id} type="button" onClick={() => openNote(note)}
+                              className="flex items-center gap-3 p-3 rounded-control border border-border hover:border-foreground/30 hover:bg-muted/40 transition-colors text-left group">
+                              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-foreground text-sm truncate">{note.title}</p>
+                                {subj && (
+                                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(subj.name)}`} />{subj.name}
+                                  </span>
+                                )}
+                              </div>
+                              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {backlinks.map(note => {
-                        const subj = subjects.find(s => s.id === note.subject_id);
-                        const pal = subj ? subjectPalette(subj.name) : null;
-                        return (
-                          <button key={note.id} onClick={() => openNote(note)}
-                            className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 hover:border-violet-200 hover:bg-violet-50/40 transition-all text-left group">
-                            <div className="h-8 w-8 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 font-bold text-violet-600 text-sm">
-                              {note.title.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-zinc-800 text-sm truncate">{note.title}</p>
-                              {subj && pal && <span className={`text-[9px] font-bold uppercase ${pal.text}`}>{subj.name}</span>}
-                            </div>
-                            <ArrowRight className="h-3.5 w-3.5 text-zinc-300 group-hover:text-violet-400 transition-colors shrink-0" />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          </>
-        )}
-      </main>
+            </section>
+          </div>
+        </div>
+      )}
 
       {/* ── SLASH MENU ──────────────────────────────────────────────────────── */}
       {slash.open && slashFiltered.length > 0 && (
-        <div className="fixed z-50 w-64 bg-white rounded-xl shadow-2xl border border-zinc-100 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100"
+        <div className="fixed z-50 w-64 bg-popover text-popover-foreground rounded-control shadow-xl border border-border overflow-hidden py-1"
           style={{ top: Math.min(slash.y, window.innerHeight - 320), left: Math.min(slash.x, window.innerWidth - 270) }}>
-          <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+          <p className="u-label px-3 pt-2 pb-1">
             Tipos de bloco {slash.filter && `· "${slash.filter}"`}
           </p>
           {slashFiltered.map((item, i) => (
-            <button key={item.type} onMouseDown={e => { e.preventDefault(); changeBlockType(slash.blockId, item.type); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 transition-colors ${i === slash.cursor ? "bg-violet-50 text-violet-700" : "hover:bg-zinc-50 text-zinc-700"}`}>
-              <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${i === slash.cursor ? "bg-violet-600 text-white" : "bg-zinc-100 text-zinc-500"}`}>
+            <button key={item.type} type="button" onMouseDown={e => { e.preventDefault(); changeBlockType(slash.blockId, item.type); }}
+              className={`w-full flex items-center gap-3 px-3 py-2 transition-colors ${i === slash.cursor ? "bg-muted" : "hover:bg-muted/50"}`}>
+              <div className={`h-7 w-7 rounded-control flex items-center justify-center shrink-0 ${i === slash.cursor ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
                 <item.Icon className="h-3.5 w-3.5" />
               </div>
               <div className="text-left">
                 <p className="font-medium text-sm leading-none">{item.label}</p>
-                <p className="text-[10px] text-zinc-400 mt-0.5">{item.desc}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
             </button>
           ))}
@@ -751,31 +870,32 @@ export default function StudentNotesPage() {
 
       {/* ── WIKILINK MENU ───────────────────────────────────────────────────── */}
       {wikiMenu && wikiSuggestions.length > 0 && (
-        <div className="fixed z-50 w-64 bg-white rounded-xl shadow-2xl border border-zinc-100 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100"
+        <div className="fixed z-50 w-64 bg-popover text-popover-foreground rounded-control shadow-xl border border-border overflow-hidden py-1"
           style={{ top: Math.min(wikiMenu.y, window.innerHeight - 280), left: Math.min(wikiMenu.x, window.innerWidth - 270) }}>
-          <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+          <p className="u-label px-3 pt-2 pb-1 flex items-center gap-1.5">
             <Link2 className="h-3 w-3" /> Linkar nota
-            {wikiMenu.query && <span className="text-violet-500">· "{wikiMenu.query}"</span>}
+            {wikiMenu.query && <span className="normal-case tracking-normal">· &quot;{wikiMenu.query}&quot;</span>}
           </p>
           {wikiSuggestions.map(note => {
-            const subj = subjects.find(s => s.id === note.subject_id);
-            const pal = subj ? subjectPalette(subj.name) : null;
+            const subj = subjectById(note.subject_id);
             return (
-              <button key={note.id} onMouseDown={e => { e.preventDefault(); insertWikilink(wikiMenu.blockId, note.title); }}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-violet-50 transition-colors">
-                <div className="h-7 w-7 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 font-bold text-violet-600 text-sm">
-                  {note.title.charAt(0).toUpperCase()}
-                </div>
+              <button key={note.id} type="button" onMouseDown={e => { e.preventDefault(); insertWikilink(wikiMenu.blockId, note.title); }}
+                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted transition-colors">
+                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="text-left min-w-0">
-                  <p className="font-medium text-sm leading-tight truncate text-zinc-800">{note.title}</p>
-                  {subj && pal && <p className={`text-[9px] font-bold uppercase ${pal.text}`}>{subj.name}</p>}
+                  <p className="font-medium text-sm leading-tight truncate text-foreground">{note.title}</p>
+                  {subj && (
+                    <p className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(subj.name)}`} />{subj.name}
+                    </p>
+                  )}
                 </div>
               </button>
             );
           })}
-          <p className="px-3 pt-1 pb-2 text-[9px] text-zinc-300">Enter para inserir o primeiro</p>
+          <p className="px-3 pt-1 pb-2 text-[11px] text-muted-foreground">Enter para inserir o primeiro</p>
         </div>
       )}
-    </div>
+    </>
   );
 }

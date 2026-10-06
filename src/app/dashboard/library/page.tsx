@@ -145,7 +145,9 @@ export default function LibraryPage() {
               <Sparkles className="h-3.5 w-3.5 text-accent" />
               <span className="text-[9px] font-black uppercase tracking-widest text-white/80">Biblioteca Digital</span>
             </div>
-            <h1 className="u-page-title text-3xl md:text-5xl leading-[1.1]">
+            {/* Mesmo respiro do título de trilhas: a fonte de display encosta
+                palavras e linhas. */}
+            <h1 className="u-page-title text-3xl md:text-5xl leading-[1.5] md:leading-[1.5] [word-spacing:0.15em]">
               Acervo de <br /><span className="text-accent">alta performance</span>
             </h1>
             <p className="text-xs md:text-sm text-gray-300 font-medium italic leading-relaxed">
@@ -166,8 +168,13 @@ export default function LibraryPage() {
       </section>
 
       <Tabs defaultValue="Todos" className="w-full space-y-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between overflow-x-auto pb-2 gap-4">
-          <TabsList className="bg-white/80 p-1.5 h-14 rounded-2xl border-none shadow-sm flex items-center gap-1 overflow-x-auto max-w-full scrollbar-hide">
+        {/* Barra fixa no topo do <main>, com fundo opaco e margem negativa até a
+            borda dele (p-4/p-8 do layout) para os cards não aparecerem por trás.
+            O TabsList do shadcn vem com justify-center: quando as abas não
+            cabem, o excesso transborda para os dois lados e o início ("Todos")
+            fica fora do alcance da rolagem — por isso o justify-start. */}
+        <div className="sticky top-0 z-30 -mx-4 px-4 md:-mx-8 md:px-8 py-3 bg-background flex flex-col sm:flex-row items-center justify-between gap-4">
+          <TabsList className="bg-white p-1.5 h-14 rounded-2xl border-none shadow-sm flex justify-start items-center gap-1 overflow-x-auto overflow-y-hidden min-w-0 max-w-full hide-scrollbar">
             {categories.map(cat => (
               <TabsTrigger 
                 key={cat} 
@@ -204,8 +211,15 @@ export default function LibraryPage() {
 
         {filteredResources.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Entrada em CSS puro no invólucro: no próprio Card, o fill da
+                animação prenderia o transform e anularia o hover:-translate. */}
             {filteredResources.map((item, index) => (
-              <Card key={item.id} className="gradient-border overflow-hidden border-none shadow-xl hover:shadow-2xl hover:-translate-y-1.5 hover:glow-orange-strong transition-all duration-300 group bg-white rounded-card flex flex-col h-full">
+              <div
+                key={item.id}
+                className="anim-rise"
+                style={{ '--i': Math.min(index, 10) } as React.CSSProperties}
+              >
+              <Card className="gradient-border overflow-hidden border-none shadow-xl hover:shadow-2xl hover:-translate-y-1.5 hover:glow-orange-strong transition-all duration-300 group bg-white rounded-card flex flex-col h-full">
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0">
                   <Image
                     src={getSafeLibraryImage(item.image_url, item.category)}
@@ -253,6 +267,7 @@ export default function LibraryPage() {
                   </div>
                 </CardFooter>
               </Card>
+              </div>
             ))}
           </div>
         ) : (

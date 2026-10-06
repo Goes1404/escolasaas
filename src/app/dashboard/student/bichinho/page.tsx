@@ -91,7 +91,7 @@ export default function BichinhoPage() {
       setBicho(await adotarBichinho(especie, escolhido));
       celebrate();
       toast({
-        title: `${escolhido} é seu! ${arquetipo(especie).emoji}`,
+        title: `${escolhido} é seu!`,
         description: 'Ele cresce a cada dia que você estuda.',
       });
     } catch (e) {
@@ -139,7 +139,7 @@ export default function BichinhoPage() {
       setBicho(await adotarBichinho(especie, escolhido));
       setTrocando(false);
       toast({
-        title: `Agora é ${escolhido}, o ${arquetipo(especie).nome}! ✨`,
+        title: `Agora é ${escolhido}, o ${arquetipo(especie).nome}!`,
         description: 'Seu nível, sua ofensiva e seu XP continuam iguais.',
       });
     } catch (e) {
@@ -157,7 +157,7 @@ export default function BichinhoPage() {
     setSalvando(true);
     try {
       setBicho(await comprarProtecao());
-      toast({ title: 'Proteção comprada 🛡️', description: 'Ela segura sua ofensiva num dia que você faltar.' });
+      toast({ title: 'Proteção comprada', description: 'Ela segura sua ofensiva num dia que você faltar.' });
     } catch (e) {
       toast({
         title: 'Não foi possível comprar',
@@ -188,7 +188,7 @@ export default function BichinhoPage() {
           <button
             type="button"
             onClick={() => void carregar()}
-            className="h-12 px-8 rounded-control bg-rose-600 hover:opacity-90 text-white border-2 border-foreground u-label !text-white"
+            className="press h-12 px-8 rounded-control bg-rose-600 hover:opacity-90 text-white border-2 border-foreground u-label !text-white"
           >
             Tentar de novo
           </button>
@@ -211,7 +211,7 @@ export default function BichinhoPage() {
           </p>
         </header>
 
-        <div className="rounded-card bg-card shadow-hard border-2 border-foreground p-8 space-y-7">
+        <div className="anim-rise rounded-card bg-card shadow-hard border-2 border-foreground p-8 space-y-7">
           <SeletorArquetipo valor={especie} onChange={setEspecie} />
 
           <div className="space-y-3">
@@ -263,7 +263,7 @@ export default function BichinhoPage() {
       {/* Nível alto: cor CHAPADA da paleta em vez de gradiente, e o humor é
           que escolhe a cor — ciano quando o bicho está bem, amarelo quando
           está com fome, escuro quando o aluno sumiu. */}
-      <div className={`rounded-card border-2 border-foreground shadow-hard overflow-hidden ${
+      <div className={`anim-rise rounded-card border-2 border-foreground shadow-hard overflow-hidden ${
         animado
           ? 'bg-primary text-primary-foreground'
           : bicho.humor === 'com_fome'
@@ -272,13 +272,15 @@ export default function BichinhoPage() {
       }`}>
         <div className="p-6 md:p-8 text-center space-y-4">
           <div className="space-y-1.5">
-            <h1 className="u-page-title text-[clamp(1.6rem,7vw,2.4rem)]">{apelido}</h1>
+            {/* Respiro lateral: a Boldonse passa da própria largura na última
+                letra, e o cartão com overflow-hidden cortaria o glifo. */}
+            <h1 className="u-page-title text-[clamp(1.6rem,7vw,2.4rem)] px-[0.12em]">{apelido}</h1>
             <p className="u-label !text-current opacity-70">
               Nível {bicho.nivel} · {nomeDoNivel(bicho.nivel)} · {humor.rotulo}
             </p>
           </div>
           <p className="text-sm font-bold opacity-90 max-w-sm mx-auto leading-relaxed">
-            {humor.emoji} {humor.fala(apelido)}
+            {humor.fala(apelido)}
           </p>
 
           <div className="pt-2 space-y-1.5 max-w-md mx-auto">
@@ -303,7 +305,13 @@ export default function BichinhoPage() {
             { icone: <Shield className="h-3 w-3" />, rot: 'Proteções', val: bicho.protecoes },
             { icone: <Trophy className="h-3 w-3" />, rot: 'XP livre', val: bicho.saldo },
           ].map((c, i) => (
-            <div key={c.rot} className={`p-4 md:p-5 text-center ${i < 2 ? 'border-r-2 border-current/25' : ''}`}>
+            // Contadores pulam um a um depois que o cartão assenta — festa em
+            // CSS puro, sem estado por quadro. A ordem é a de leitura.
+            <div
+              key={c.rot}
+              style={{ '--i': i + 2 } as React.CSSProperties}
+              className={`anim-pop p-4 md:p-5 text-center ${i < 2 ? 'border-r-2 border-current/25' : ''}`}
+            >
               <p className="u-label !text-current !text-[8px] opacity-70 mb-1 flex items-center justify-center gap-1">
                 {c.icone} {c.rot}
               </p>
@@ -369,7 +377,7 @@ export default function BichinhoPage() {
             type="button"
             onClick={comprar}
             disabled={!podeComprar || salvando}
-            className="h-12 px-6 rounded-control bg-emerald-600 hover:opacity-90 text-white border-2 border-foreground font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+            className="press h-12 px-6 rounded-control bg-emerald-600 hover:opacity-90 text-white border-2 border-foreground font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
           >
             {salvando && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {bicho.protecoes >= 2
@@ -427,7 +435,7 @@ export default function BichinhoPage() {
               <button
                 type="button"
                 onClick={() => setTrocando(false)}
-                className="h-12 px-6 rounded-control bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest"
+                className="press h-12 px-6 rounded-control bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest"
               >
                 Cancelar
               </button>
@@ -435,7 +443,7 @@ export default function BichinhoPage() {
                 type="button"
                 onClick={trocar}
                 disabled={salvando || !nomeTroca.trim() || (especie === bicho.especie && nomeTroca.trim() === bicho.nome)}
-                className="flex-1 h-12 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
+                className="press flex-1 h-12 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {salvando && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 {especie === bicho.especie && nomeTroca.trim() === bicho.nome
@@ -453,7 +461,7 @@ export default function BichinhoPage() {
             <button
               type="button"
               onClick={() => { escolherNaTroca(bicho.especie ?? 'lobinho'); setTrocando(true); }}
-              className="h-12 px-6 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest shrink-0"
+              className="press h-12 px-6 rounded-control bg-brand-pink hover:opacity-90 text-white border-2 border-foreground font-black text-[11px] uppercase tracking-widest shrink-0"
             >
               Escolher outro
             </button>

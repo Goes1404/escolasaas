@@ -81,7 +81,7 @@ export function DailyQuestionCard({ userId, profile }: Props) {
                   {state === 'done' ? 'Concluído!' : 'Disponível agora'}
                 </p>
                 <p className="text-sm font-black italic leading-tight">
-                  Desafio do Dia 🎯
+                  Desafio do Dia
                 </p>
               </div>
             </div>
@@ -105,7 +105,7 @@ export function DailyQuestionCard({ userId, profile }: Props) {
             <div className="flex items-center gap-2 bg-white/15 rounded-2xl px-3 py-2 border border-white/10">
               <Flame className="h-3.5 w-3.5 text-yellow-200 shrink-0" />
               <span className="text-xs font-bold">
-                {isCorrect ? 'Você acertou! Streak mantido 🔥' : 'Você respondeu. Volte amanhã!'}
+                {isCorrect ? 'Você acertou! Streak mantido' : 'Você respondeu. Volte amanhã!'}
               </span>
             </div>
           )}

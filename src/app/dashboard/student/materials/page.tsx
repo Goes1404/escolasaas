@@ -352,8 +352,11 @@ export default function StudentMaterialsPage() {
 
       {/* ── BARRA DE FILTROS STICKY ── */}
       {!loading && materials.length > 0 && (
-        <div className="relative md:sticky md:top-2 z-20">
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-100/80 p-2.5 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+        // Gruda colada no topo do <main> (top-0) e com fundo opaco: com top-2 e
+        // vidro translúcido, os cards passavam visíveis por cima e pelas bordas
+        // da barra, e ela parecia deslizar junto com o conteúdo.
+        <div className="relative md:sticky md:top-0 z-30 -mx-1 px-1 md:py-2 bg-background">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2.5 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
 
             {/* Busca */}
             <div className="relative flex-1 group min-w-0">
@@ -495,15 +498,20 @@ export default function StudentMaterialsPage() {
             const isBusy = toggling === m.id;
             const wasJustChecked = justChecked === m.id;
 
+            // A entrada (anim-rise) fica num invólucro, não no card: o fill da
+            // animação prenderia o transform e mataria o hover:-translate do card.
             return (
-              <article
+              <div
                 key={m.id}
-                className={`group relative bg-white rounded-card border overflow-hidden transition-all duration-300
+                className="anim-rise"
+                style={{ '--i': Math.min(idx, 10) } as React.CSSProperties}
+              >
+              <article
+                className={`group relative h-full bg-white rounded-card border overflow-hidden transition-all duration-300
                   ${isViewed
                     ? 'border-emerald-200 shadow-md hover:shadow-lg'
                     : 'border-slate-100 shadow-md hover:shadow-xl hover:-translate-y-1'
                   }`}
-                style={{ animationDelay: `${idx * 60}ms` }}
               >
                 {/* Barra colorida superior */}
                 <div className={`h-1.5 w-full ${meta.accent} ${!isViewed ? 'opacity-100' : 'opacity-30'} transition-opacity`} />
@@ -600,13 +608,14 @@ export default function StudentMaterialsPage() {
                   </div>
                 </div>
               </article>
+              </div>
             );
           })}
         </div>
       ) : (
         /* ── VIEW LISTA ── */
         <div className="space-y-2">
-          {filtered.map(m => {
+          {filtered.map((m, idx) => {
             const meta = FILE_TYPES[m.file_type] ?? FILE_TYPES.outro;
             const Icon = meta.icon;
             const isViewed = viewedIds.has(m.id);
@@ -615,7 +624,8 @@ export default function StudentMaterialsPage() {
             return (
               <div
                 key={m.id}
-                className={`group flex items-center gap-3 md:gap-4 bg-white rounded-2xl px-4 py-3 border transition-all duration-200 hover:shadow-md
+                style={{ '--i': Math.min(idx, 10) } as React.CSSProperties}
+                className={`anim-rise group flex items-center gap-3 md:gap-4 bg-white rounded-2xl px-4 py-3 border transition-all duration-200 hover:shadow-md
                   ${isViewed ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 hover:border-slate-200'}`}
               >
                 {/* Ícone */}

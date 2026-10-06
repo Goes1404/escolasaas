@@ -145,6 +145,17 @@
   overflow: hidden;
 }
 
+/* Manchete do hero: linhas com folga para o desenho alto da fonte de
+   display, e máscara da entrada (SplitText) com respiro para dentro —
+   o padding alarga o recorte, a margem negativa devolve o layout. */
+.l-hero-title {
+  line-height: 1.22;
+}
+.l-hero-title .split-line-mask {
+  padding: 0.2em 0.06em;
+  margin: -0.2em -0.06em;
+}
+
 /* ── Preloader (cortina dupla ciano + rosa) ────────────────────────────────── */
 
 .l-preloader {

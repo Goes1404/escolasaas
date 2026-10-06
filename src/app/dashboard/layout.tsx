@@ -12,20 +12,25 @@ import { useEffect, useState, useMemo, memo, Suspense } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import Image from "next/image";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import { LoadingShell } from "@/components/LoadingShell";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UrgentNotice } from "@/components/UrgentNotice";
 import { PhoneGate } from "@/components/PhoneGate";
 import { TelemetryProvider } from "@/components/TelemetryProvider";
-import { PushPermissionBanner } from "@/components/push-permission-banner";
 import { useTimeTracker } from "@/hooks/useTimeTracker";
 import { ExtractionProvider } from "@/lib/ExtractionContext";
-import { FloatingExtractionBubble } from "@/components/FloatingExtractionBubble";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
-import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { useTenant } from "@/components/TenantProvider";
+import dynamic from "next/dynamic";
+
+// Peças que só aparecem depois da interação (ou nem aparecem): tour, aviso de
+// push, bolha de extração e widget de feedback. Importadas direto, iam no JS
+// de TODA rota do painel — o feedback sozinho arrastava o framer-motion.
+const OnboardingTour = dynamic(() => import("@/components/OnboardingTour").then(m => m.OnboardingTour), { ssr: false });
+const PushPermissionBanner = dynamic(() => import("@/components/push-permission-banner").then(m => m.PushPermissionBanner), { ssr: false });
+const FloatingExtractionBubble = dynamic(() => import("@/components/FloatingExtractionBubble").then(m => m.FloatingExtractionBubble), { ssr: false });
+const FeedbackWidget = dynamic(() => import("@/components/FeedbackWidget").then(m => m.FeedbackWidget), { ssr: false });
 
 type NavChild = { icon: any; label: string; href: string; id: string; badge?: boolean };
 type NavItem  = { icon: any; label: string; href?: string; id: string; badge?: boolean; initialOpen?: boolean; children?: NavChild[] };
@@ -45,11 +50,11 @@ const studentItems: NavItem[] = [
   {
     icon: BrainCircuit, label: "Provas & Estudo", id: "nav-provas-estudo",
     children: [
-      { icon: Zap,         label: "Desafio Diário 🎯",        href: "/dashboard/student/daily",      id: "nav-daily" },
+      { icon: Zap,         label: "Desafio Diário",        href: "/dashboard/student/daily",      id: "nav-daily" },
       { icon: FileText,    label: "Simulados por Matéria", href: "/dashboard/student/simulados",   id: "nav-simulados" },
       { icon: Scroll,      label: "Provas Completas",      href: "/dashboard/student/provas",      id: "nav-provas" },
       { icon: FilePenLine, label: "Treinar Redação",       href: "/dashboard/student/essays",      id: "nav-essays" },
-      { icon: Layers,      label: "Flash Cards 🧠",         href: "/dashboard/student/flashcards",  id: "nav-flashcards" },
+      { icon: Layers,      label: "Flash Cards",         href: "/dashboard/student/flashcards",  id: "nav-flashcards" },
       { icon: BarChart3,   label: "Meu Desempenho",        href: "/dashboard/student/performance", id: "nav-performance" },
     ],
   },
@@ -63,7 +68,7 @@ const studentItems: NavItem[] = [
   {
     icon: Flame, label: "Meu Progresso", id: "nav-progresso", initialOpen: true,
     children: [
-      { icon: Sparkles,   label: "Meu Bichinho 🐾", href: "/dashboard/student/bichinho", id: "nav-student-bichinho" },
+      { icon: Sparkles,   label: "Meu Bichinho", href: "/dashboard/student/bichinho", id: "nav-student-bichinho" },
       { icon: Target,     label: "Metas",   href: "/dashboard/student/goals",   id: "nav-student-goals" },
       { icon: GraduationCap, label: "Meu Boletim", href: "/dashboard/student/report-card", id: "nav-student-report-card" },
       { icon: BookHeart,  label: "Diário",  href: "/dashboard/student/journal", id: "nav-student-journal" },
@@ -471,7 +476,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </SidebarHeader>
 
-        <SidebarContent className="px-2.5">
+        <SidebarContent className="px-2.5 sidebar-scroll">
           <SidebarGroup>
             <NavMenu items={navItems} pathname={pathname || ''} unreadCount={unreadCount} />
           </SidebarGroup>

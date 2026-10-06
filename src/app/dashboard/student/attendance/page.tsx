@@ -189,16 +189,16 @@ export default function StudentAttendancePage() {
     <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero ── */}
-      <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl ${
-        isStellar
-          ? "bg-emerald-600 border-2 border-foreground"
-          : "bg-brand-yellow border-2 border-foreground"
+      {/* Amarelo pede tinta escura (par accent + onAccent); o verde da
+          frequência exemplar segue com texto branco. Cor fixa, e não
+          `foreground`, porque no tema escuro ela clareia sobre o amarelo. */}
+      <div className={`relative rounded-card overflow-hidden p-6 shadow-2xl border-2 border-foreground ${
+        isStellar ? "bg-emerald-600 text-white" : "bg-brand-yellow text-slate-950"
       }`}>
-        <div className="absolute top-[-10%] right-[-5%] w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
-            {isStellar && <Sparkles className="h-3 w-3 text-white/80 animate-pulse" />}
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
+            {isStellar && <Sparkles className="h-3 w-3 text-white/80" />}
+            <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isStellar ? "text-white/80" : "text-slate-950/70"}`}>
               {isStellar ? "Frequência exemplar" : "Aluno"}
             </p>
           </div>
@@ -209,34 +209,44 @@ export default function StudentAttendancePage() {
           {/* KPI row */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Aulas", value: totalSessions, color: "text-white" },
-              { label: "Presente", value: presentes, color: "text-emerald-200" },
-              { label: "Ausente", value: ausentes, color: "text-red-200" },
-              { label: "Taxa", value: `${pct}%`, color: atRisk ? "text-red-200" : "text-emerald-200" },
+              { label: "Aulas", value: totalSessions, color: isStellar ? "text-white" : "text-slate-950" },
+              { label: "Presente", value: presentes, color: isStellar ? "text-white" : "text-emerald-800" },
+              { label: "Ausente", value: ausentes, color: isStellar ? "text-white" : "text-red-700" },
+              {
+                label: "Taxa",
+                value: `${pct}%`,
+                color: isStellar ? "text-white" : atRisk ? "text-red-700" : "text-emerald-800",
+              },
             ].map((kpi) => (
               <div
                 key={kpi.label}
                 className={`flex flex-col items-center rounded-2xl py-3 px-2 border ${
-                  kpi.label === "Taxa" && atRisk
-                    ? "bg-red-500/25 border-red-300/30"
-                    : "bg-white/15 border-white/20"
+                  isStellar
+                    ? "bg-white/15 border-white/25"
+                    : kpi.label === "Taxa" && atRisk
+                      ? "bg-red-50/80 border-red-700/40"
+                      : "bg-white/60 border-slate-950/15"
                 }`}
               >
-                <span className={`text-xl font-black leading-none ${kpi.color}`}>{kpi.value}</span>
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider mt-1">{kpi.label}</span>
+                <span className={`u-num text-xl leading-none ${kpi.color}`}>{kpi.value}</span>
+                <span className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${isStellar ? "text-white/80" : "text-slate-800"}`}>
+                  {kpi.label}
+                </span>
               </div>
             ))}
           </div>
 
           {/* Progress bar */}
           <div className="mt-4 space-y-1.5">
-            <div className="flex justify-between text-[9px] font-black text-white/70 uppercase">
+            <div className={`flex justify-between text-[9px] font-black uppercase ${isStellar ? "text-white/80" : "text-slate-800"}`}>
               <span>Frequência geral</span>
-              <span className={atRisk ? "text-red-200" : "text-emerald-200"}>{pct}%</span>
+              <span className={isStellar ? "text-white" : atRisk ? "text-red-700" : "text-slate-950"}>{pct}%</span>
             </div>
-            <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+            <div className={`h-1.5 w-full rounded-full overflow-hidden ${isStellar ? "bg-white/25" : "bg-slate-950/15"}`}>
               <div
-                className={`h-full rounded-full transition-all duration-1000 ${atRisk ? "bg-red-300" : "bg-white"}`}
+                className={`h-full rounded-full transition-all duration-1000 ${
+                  isStellar ? "bg-white" : atRisk ? "bg-red-700" : "bg-slate-950"
+                }`}
                 style={{ width: `${pct}%` }}
               />
             </div>

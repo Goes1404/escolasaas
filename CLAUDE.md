@@ -241,6 +241,16 @@ manchete de jornal: expressiva no topo, corpo sóbrio embaixo.
   contraste que o modo de alto contraste espera e exigia remendo de margem
   negativa para o itálico não ser cortado. As classes continuam existindo para
   não quebrar as telas que as usam.
+- **Movimento em CSS puro** (`globals.css`): `.anim-rise` (entrada, escalonada
+  por `style={{ "--i": n }}`), `.anim-pop` e `.anim-grow` (só nível alto),
+  `.lift` (hover) e `.press` (toque). A transição entre telas é o
+  `dashboard/template.tsx` + `.route-enter`, sem JS. **Nunca** ponha `anim-*` no
+  mesmo elemento que `lift`/`press`/`hover:translate`: a animação terminada
+  segura `transform: none` e anula o hover — anime o wrapper. Também não em
+  elemento sticky ou ancestral dele. Framer Motion saiu da home (−39 KB); não
+  traga de volta para entrada simples.
+- **`scrollbar-hide`** e `hide-scrollbar` são sinônimos (o primeiro não existia
+  e 17 telas o usavam). No celular, `backdrop-blur` é desligado globalmente.
 - **Celebração**: `celebrate()` / `celebrateOnce(chave)` / `haptic()` em
   `src/lib/celebrate.ts` — confete na paleta do produto, com guarda de
   `prefers-reduced-motion` e canvas próprio. Use `celebrateOnce` em tela que

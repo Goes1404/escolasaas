@@ -344,7 +344,7 @@ export default function FlashcardsPage() {
         <div className="relative overflow-hidden rounded-card aurora-dark border-2 border-foreground shadow-hard p-8 text-white">
           <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="relative z-10 text-center space-y-4">
-            <div className="text-6xl">🎉</div>
+            <CheckCircle2 className="h-14 w-14 mx-auto" aria-hidden />
             <h1 className="u-page-title text-3xl leading-[1.15]">Sessão concluída</h1>
             <p className="text-white/60 text-sm">
               {session.reviewed === 0 ? 'Nenhum card disponível para hoje.' : `${session.reviewed} cards revisados em ~${elapsed} min`}
@@ -386,7 +386,7 @@ export default function FlashcardsPage() {
             </span>
             <h1 className="u-page-title text-2xl leading-[1.15]">
               Revisão<br />
-              <span className="text-white/60">Espaçada 🧠</span>
+              <span className="text-white/60">Espaçada</span>
             </h1>
           </div>
           <div className="text-right shrink-0">

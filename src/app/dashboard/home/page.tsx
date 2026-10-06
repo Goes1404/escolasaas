@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DashboardLoader } from "@/components/DashboardLoader";
-import { motion, useMotionValue, useTransform, useSpring, AnimatePresence, MotionConfig } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -101,47 +100,91 @@ function getSafeImageUrl(url: string | null | undefined, index: number) {
   return url;
 }
 
-// 3D Tilt Card component
+// Índice de escalonamento das classes `anim-rise`/`anim-pop` de globals.css.
+const stagger = (i: number) => ({ "--i": i } as React.CSSProperties);
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+// Inclinação 3D no ponteiro. Escreve o transform direto no DOM dentro de um
+// rAF: passar o ângulo por estado custaria um render por movimento do mouse.
+// Só mouse — no toque não existe hover, e lá vale o `press` do CSS.
 function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-0.5, 0.5], [8, -8]);
-  const rotateY = useTransform(x, [-0.5, 0.5], [-8, 8]);
-  const springX = useSpring(rotateX, { stiffness: 300, damping: 30 });
-  const springY = useSpring(rotateY, { stiffness: 300, damping: 30 });
+  const ref = useRef<HTMLDivElement>(null);
+  const raf = useRef(0);
+  const tilt = useRef({ rx: 0, ry: 0, pressed: false });
+
+  const write = () => {
+    cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(() => {
+      const el = ref.current;
+      if (!el) return;
+      const { rx, ry, pressed } = tilt.current;
+      el.style.transform = rx || ry || pressed
+        ? `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)${pressed ? " scale(0.97)" : ""}`
+        : "";
+    });
+  };
+
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   return (
-    <motion.div
-      style={{ rotateX: springX, rotateY: springY, transformStyle: "preserve-3d" }}
-      onMouseMove={(e) => {
+    <div
+      ref={ref}
+      className={`press ${className ?? ""}`}
+      style={{ transformStyle: "preserve-3d", transition: "transform 220ms ease-out" }}
+      onPointerMove={(e) => {
+        if (e.pointerType !== "mouse" || prefersReducedMotion()) return;
         const rect = e.currentTarget.getBoundingClientRect();
-        x.set((e.clientX - rect.left) / rect.width - 0.5);
-        y.set((e.clientY - rect.top) / rect.height - 0.5);
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        tilt.current.rx = -y * 12;
+        tilt.current.ry = x * 12;
+        write();
       }}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-      whileTap={{ scale: 0.97 }}
-      className={className}
+      onPointerDown={(e) => { if (e.pointerType === "mouse") { tilt.current.pressed = true; write(); } }}
+      onPointerUp={() => { if (tilt.current.pressed) { tilt.current.pressed = false; write(); } }}
+      onPointerLeave={() => { tilt.current = { rx: 0, ry: 0, pressed: false }; write(); }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
-// Contador animado — número sobe com easing até o valor real
+// Contador animado — número sobe com easing até o valor real. O texto é
+// escrito no DOM por ref: um render por quadro, vezes quatro contadores no
+// hero, era o que mais pesava na entrada da home.
 function CountUp({ value, suffix = "", duration = 1400 }: { value: number; suffix?: string; duration?: number }) {
-  const [n, setN] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const current = useRef(0);
+  // Texto inicial fixo: o React nunca o atualiza, então trocar o textContent
+  // por fora não briga com a reconciliação.
+  const [initial] = useState(() => `0${suffix}`);
+
   useEffect(() => {
-    let raf: number;
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReducedMotion()) {
+      current.current = value;
+      el.textContent = `${value}${suffix}`;
+      return;
+    }
+    const from = current.current;
+    let raf = 0;
     const start = performance.now();
     const step = (t: number) => {
       const p = Math.min(1, (t - start) / duration);
-      setN(Math.round(value * (1 - Math.pow(1 - p, 3))));
+      const n = Math.round(from + (value - from) * (1 - Math.pow(1 - p, 3)));
+      current.current = n;
+      el.textContent = `${n}${suffix}`;
       if (p < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [value, duration]);
-  return <>{n}{suffix}</>;
+  }, [value, suffix, duration]);
+
+  return <span ref={ref}>{initial}</span>;
 }
 
 // Header editorial numerado — dá ritmo de revista às seções da home
@@ -225,6 +268,12 @@ export default function DashboardHome() {
   } | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [simNoticeDismissed, setSimNoticeDismissed] = useState(true); // some hidden ate checar
+
+  // Anel de score e barras de trilha nascem vazios e preenchem por transição
+  // de CSS. O valor real só entra depois de um quadro pintado com o vazio —
+  // sem isso o navegador não tem de onde transicionar.
+  const [ringReady, setRingReady] = useState(false);
+  const [barsReady, setBarsReady] = useState(false);
 
   // Gabarito comentado (modal)
   const [gabaritoOpen, setGabaritoOpen] = useState(false);
@@ -509,6 +558,20 @@ export default function DashboardHome() {
     }
   }, [user, profile, userRole, fetchData, checkActiveSession]);
 
+  useEffect(() => {
+    if (isUserLoading) return;
+    let inner = 0;
+    const outer = requestAnimationFrame(() => { inner = requestAnimationFrame(() => setRingReady(true)); });
+    return () => { cancelAnimationFrame(outer); cancelAnimationFrame(inner); };
+  }, [isUserLoading]);
+
+  useEffect(() => {
+    if (isUserLoading || loadingData) return;
+    let inner = 0;
+    const outer = requestAnimationFrame(() => { inner = requestAnimationFrame(() => setBarsReady(true)); });
+    return () => { cancelAnimationFrame(outer); cancelAnimationFrame(inner); };
+  }, [isUserLoading, loadingData]);
+
   // Só o auth segura a tela cheia. Os dados chegam com a página já pintada:
   // cada widget tem skeleton próprio, então o herói (LCP) aparece no primeiro
   // paint em vez de esperar as 8 queries — antes o celular ficava 4-6s no loader.
@@ -588,28 +651,16 @@ export default function DashboardHome() {
     { icon: BarChart3,    label: "Meu desempenho",    desc: "estatísticas para o seu progresso", href: "/dashboard/student/performance",  tone: "bg-primary text-primary-foreground" },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
-  };
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } }
-  };
-
+  // A entrada em stagger é CSS puro (`anim-rise` + --i), sem biblioteca de
+  // animação: a tela mais usada do app carrega ~40 KB a menos de JS. O bloco global de
+  // prefers-reduced-motion em globals.css desliga tudo isto.
   return (
-    <MotionConfig reducedMotion="user">
-    <motion.div
-      className="space-y-4 md:space-y-6 pb-10"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
+    <div className="space-y-4 md:space-y-6 pb-10">
 
       {/* ── CARD DE TELEFONE PENDENTE ── */}
       {profile && !profile.phone && (
-        <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
+        <div style={stagger(0)}
+          className="anim-rise relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
@@ -630,13 +681,13 @@ export default function DashboardHome() {
               </Button>
             </form>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* ── CARD DE TURMA/EXAME PENDENTE ── */}
       {profile && userRole === 'student' && (!profile.sala || !profile.exam_target || !profile.turno) && (
-        <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
+        <div style={stagger(1)}
+          className="anim-rise relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-8 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col gap-4 relative z-10">
             <div className="flex items-center gap-3">
@@ -688,13 +739,13 @@ export default function DashboardHome() {
               </div>
             </form>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* ── AVISO DE SIMULADO ── */}
       {simuladoEspecial && !simNoticeDismissed && (
-        <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-6 text-foreground">
+        <div style={stagger(2)}
+          className="anim-rise relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-5 md:p-6 text-foreground">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <button
             onClick={dismissSimNotice}
@@ -724,13 +775,13 @@ export default function DashboardHome() {
               </Button>
             </Link>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* ── CHAMADA ATIVA ── */}
       {activeSession && (
-        <motion.div variants={itemVariants}
-          className="relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-6 md:p-8 text-foreground flex flex-col md:flex-row items-center justify-between gap-6">
+        <div style={stagger(3)}
+          className="anim-rise relative overflow-hidden rounded-card border-2 border-foreground bg-brand-yellow p-6 md:p-8 text-foreground flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none rounded-card" />
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 relative z-10 w-full md:w-auto">
             <div className="h-14 w-14 rounded-control bg-foreground flex items-center justify-center shrink-0">
@@ -748,7 +799,7 @@ export default function DashboardHome() {
             className="bg-foreground text-background hover:bg-foreground/90 font-black rounded-control border-none h-12 px-6 text-xs uppercase tracking-widest active:scale-[0.98] flex items-center gap-2 relative z-10 shrink-0">
             <KeyRound className="h-4 w-4" /> Responder Chamada
           </Button>
-        </motion.div>
+        </div>
       )}
 
       {/* ══════════════════════════════════════════════════
@@ -759,8 +810,8 @@ export default function DashboardHome() {
            movimento contínuo para as telas de segundos. Sobra a entrada em
            stagger, que já existia — e o celular do aluno agradece.
           ══════════════════════════════════════════════════ */}
-      <motion.section variants={itemVariants}
-        className="relative rounded-card overflow-hidden aurora-dark border-2 border-foreground shadow-hard">
+      <section style={stagger(4)}
+        className="anim-rise relative rounded-card overflow-hidden aurora-dark border-2 border-foreground shadow-hard">
 
         <div className="absolute inset-0 dot-grid opacity-[0.14] pointer-events-none" />
 
@@ -768,46 +819,39 @@ export default function DashboardHome() {
 
           {/* topo: status ao vivo + alvo do aluno */}
           <div className="flex items-center justify-between gap-3">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
-              className="flex items-center gap-2 bg-white/[0.06] backdrop-blur-md border border-white/10 rounded-full pl-2.5 pr-3.5 py-1.5">
+            <div style={stagger(3)}
+              className="anim-rise flex items-center gap-2 bg-white/[0.06] backdrop-blur-md border border-white/10 rounded-full pl-2.5 pr-3.5 py-1.5">
               <span className="inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
               <span className="u-label !text-white/80 whitespace-nowrap">Área do aluno</span>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-              className="flex items-center gap-1.5 bg-primary/15 backdrop-blur-md border border-primary/30 rounded-full px-3.5 py-1.5">
+            </div>
+            <div style={stagger(4)}
+              className="anim-rise flex items-center gap-1.5 bg-primary/15 backdrop-blur-md border border-primary/30 rounded-full px-3.5 py-1.5">
               <GraduationCap className="h-3 w-3 text-accent" />
               <span className="u-label !text-accent whitespace-nowrap">
                 Foco · {(profile?.exam_target || 'ENEM').toUpperCase()}
               </span>
-            </motion.div>
+            </div>
           </div>
 
           {/* headline editorial + ring de score */}
           <div className="flex items-end justify-between gap-5">
             <div className="min-w-0">
-              <motion.p
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                className="u-label !text-white/50">
+              <p style={stagger(5)} className="anim-rise u-label !text-white/50">
                 {greeting},
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="u-page-title text-[2.4rem] leading-[1.05] sm:text-6xl md:text-7xl text-white truncate">
+              </p>
+              <h1 style={stagger(7)}
+                className="anim-rise u-page-title text-[2.4rem] leading-[1.2] sm:text-6xl md:text-7xl text-white truncate">
                 {firstName}<span className="text-accent">.</span>
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-                className="mt-2 md:mt-3 text-sm md:text-base font-bold text-white/70">
+              </h1>
+              <p style={stagger(10)}
+                className="anim-rise mt-2 md:mt-3 text-sm md:text-base font-bold text-white/70">
                 Cada questão te deixa mais perto da <span className="u-display text-accent">aprovação</span>.
-              </motion.p>
+              </p>
             </div>
 
             {/* Score ring — ticks de relógio + arco com gradiente de fogo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45, type: "spring", stiffness: 200, damping: 18 }}
-              className="shrink-0 flex flex-col items-center gap-1.5">
+            <div style={stagger(5)}
+              className="anim-pop shrink-0 flex flex-col items-center gap-1.5">
               <div className="relative w-[88px] h-[88px] md:w-28 md:h-28">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
                   <defs>
@@ -824,15 +868,17 @@ export default function DashboardHome() {
                       transform={`rotate(${i * 7.5} 48 48)`} />
                   ))}
                   <circle cx="48" cy="48" r={ringR} stroke="rgba(255,255,255,0.08)" strokeWidth="5" fill="none" />
-                  <motion.circle
+                  {/* Preenchimento único por transição de CSS (ver ringReady). */}
+                  <circle
                     cx="48" cy="48" r={ringR}
                     stroke="url(#scoreGrad)"
                     strokeWidth="5" fill="none" strokeLinecap="round"
                     strokeDasharray={ringC}
-                    initial={{ strokeDashoffset: ringC }}
-                    animate={{ strokeDashoffset: ringC - (score / 100) * ringC }}
-                    transition={{ duration: 1.8, ease: "easeOut", delay: 0.7 }}
-                    style={{ filter: "drop-shadow(0 0 6px rgba(76,204,237,0.8))" }}
+                    strokeDashoffset={ringReady ? ringC - (score / 100) * ringC : ringC}
+                    style={{
+                      filter: "drop-shadow(0 0 6px rgba(76,204,237,0.8))",
+                      transition: "stroke-dashoffset 1.8s ease-out 0.7s",
+                    }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -840,7 +886,7 @@ export default function DashboardHome() {
                   <span className="text-[7px] md:text-[8px] text-accent font-black uppercase tracking-widest mt-0.5">% acertos</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Stats strip — contadores animados em vidro */}
@@ -850,9 +896,8 @@ export default function DashboardHome() {
               { label: "Redação", value: essayStats?.average || 0,     suffix: " pts", icon: FilePenLine  },
               { label: "Trilhas", value: recentProgress.length,        suffix: "",     icon: PlayCircle   },
             ].map((stat, i) => (
-              <motion.div key={stat.label}
-                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 + i * 0.08 }}
-                className="gradient-border flex items-center gap-2 md:gap-3 bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl px-2 py-2.5 md:px-3 md:py-3">
+              <div key={stat.label} style={stagger(10 + i * 2)}
+                className="anim-rise gradient-border flex items-center gap-2 md:gap-3 bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl px-2 py-2.5 md:px-3 md:py-3">
                 <div className="h-7 w-7 md:h-8 md:w-8 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
                   <stat.icon className="h-3.5 w-3.5 md:h-4 md:w-4 text-accent" />
                 </div>
@@ -860,7 +905,7 @@ export default function DashboardHome() {
                   <p className="font-black text-white text-sm md:text-lg leading-none tabular-nums whitespace-nowrap"><CountUp value={stat.value} suffix={stat.suffix} /></p>
                   <p className="text-[7px] md:text-[8px] text-white/50 font-black uppercase tracking-normal md:tracking-[0.25em] mt-1 leading-tight whitespace-nowrap">{stat.label}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -882,36 +927,38 @@ export default function DashboardHome() {
             ))}
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* ══════════════════════════════════
            QUICK ACTIONS — 3D tilt cards
           ══════════════════════════════════ */}
-      <motion.div variants={itemVariants} className="flex gap-3 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+      <div style={stagger(5)} className="anim-rise flex gap-3 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
         {quickActions.map((action, i) => (
-          <TiltCard key={action.label} className="shrink-0">
-            <Link href={action.href}>
-              <motion.div
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.06 }}
-                className="flex flex-col items-center justify-center gap-2 bg-card border-2 border-foreground rounded-card w-[84px] h-[84px] transition-all active:translate-x-[2px] active:translate-y-[2px] [touch-action:manipulation]"
-                style={{ transformStyle: "preserve-3d" }}>
-                <div style={{ transform: "translateZ(8px)" }}>
-                  <action.icon className={`h-5 w-5 ${action.tone}`} strokeWidth={2} />
+          // A entrada fica num invólucro próprio: animação com fill `both`
+          // segura o transform no fim e anularia a inclinação e o :active.
+          <div key={action.label} style={stagger(5 + i)} className="anim-rise shrink-0">
+            <TiltCard>
+              <Link href={action.href}>
+                <div
+                  className="flex flex-col items-center justify-center gap-2 bg-card border-2 border-foreground rounded-card w-[84px] h-[84px] transition-all active:translate-x-[2px] active:translate-y-[2px] [touch-action:manipulation]"
+                  style={{ transformStyle: "preserve-3d" }}>
+                  <div style={{ transform: "translateZ(8px)" }}>
+                    <action.icon className={`h-5 w-5 ${action.tone}`} strokeWidth={2} />
+                  </div>
+                  <p className="u-label !text-[9px] !tracking-[0.14em] !text-foreground font-bold text-center leading-tight px-1"
+                     style={{ transform: "translateZ(4px)" }}>
+                    {action.label}
+                  </p>
                 </div>
-                <p className="u-label !text-[8px] text-center leading-tight px-1"
-                   style={{ transform: "translateZ(4px)" }}>
-                  {action.label}
-                </p>
-              </motion.div>
-            </Link>
-          </TiltCard>
+              </Link>
+            </TiltCard>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* ── CARD DO SIMULADO DOS PROFESSORES (PEGANDO FOGO) ── */}
       {simuladoEspecial && (
-        <motion.div variants={itemVariants}>
+        <div style={stagger(6)} className="anim-rise">
           {simuladoEspecial.hasAttempt ? (
             // Card de resultado concluído com TRI
             <div className="w-full relative aurora-dark rounded-card border-2 border-foreground overflow-hidden p-6 text-white group">
@@ -972,14 +1019,14 @@ export default function DashboardHome() {
               </div>
             </Link>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* ══════════════════════════════════
            GABARITO COMENTADO — card fixo na home
            (toque abre o gabarito comentado do simulado)
           ══════════════════════════════════ */}
-      <motion.div variants={itemVariants}>
+      <div style={stagger(7)} className="anim-rise">
         <button
           onClick={() => { setExpandedQ(null); setOnlyErrors(false); setGabaritoOpen(true); }}
           className="w-full text-left relative bg-[#0d0d0f] rounded-card overflow-hidden p-5 group cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform [touch-action:manipulation]"
@@ -1015,7 +1062,7 @@ export default function DashboardHome() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/40 mb-0.5">Gabarito Comentado</p>
-              <p className="u-display text-sm text-white leading-tight truncate">{simuladoOficial?.title || SIMULADO_GABARITO_TITULO}</p>
+              <p className="u-display text-sm text-white leading-snug truncate">{simuladoOficial?.title || SIMULADO_GABARITO_TITULO}</p>
               {simuladoOficial ? (
                 <p className="text-xl font-black text-primary leading-none mt-1 italic">
                   {simuladoOficial.score}<span className="text-sm text-white/40 font-bold">/{simuladoOficial.total} acertos</span>
@@ -1027,19 +1074,19 @@ export default function DashboardHome() {
             <ChevronRight className="h-5 w-5 text-white/20 group-hover:text-primary transition-colors shrink-0" />
           </div>
         </button>
-      </motion.div>
+      </div>
 
       {/* ══════════════════════════════════════════
            PLATFORM FEATURES — bento 3D cards
           ══════════════════════════════════════════ */}
-      <motion.section variants={itemVariants}>
+      <section style={stagger(8)} className="anim-rise">
         <SectionHeader index="01 · Plataforma" title="Tudo em Um Só Lugar" icon={Sparkles} iconClass="bg-primary/10 text-primary" />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {platformFeatures.map((feat, i) => (
-            <motion.div key={feat.label} className={feat.wide ? "sm:col-span-2" : ""}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
+            // Antes era whileInView (IntersectionObserver em JS). A entrada
+            // em stagger na montagem basta, e já vem pronta no CSS.
+            <div key={feat.label} style={stagger(8 + i)} className={`anim-rise ${feat.wide ? "sm:col-span-2" : ""}`}>
               <TiltCard>
                 <Link href={feat.href}>
                   {/* O ícone flutuava em loop infinito. Numa tela onde o aluno
@@ -1064,26 +1111,25 @@ export default function DashboardHome() {
                   </div>
                 </Link>
               </TiltCard>
-            </motion.div>
+            </div>
           ))}
         </div>
-      </motion.section>
+      </section>
 
       {/* ══════════════════════════════════════
            AURORA AI — full-width CTA banner
           ══════════════════════════════════════ */}
-      <motion.div variants={itemVariants}
-        className="relative overflow-hidden rounded-card border-2 border-foreground bg-card p-5 md:p-8 group">
+      <div style={stagger(9)}
+        className="anim-rise relative overflow-hidden rounded-card border-2 border-foreground bg-card p-5 md:p-8 group">
         <div className="absolute inset-0 dot-grid-dark opacity-40 pointer-events-none rounded-card" />
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 relative z-10">
           <div className="flex items-center gap-4 sm:gap-0">
-            <motion.div className="relative h-12 w-12 md:h-16 md:w-16 shrink-0"
-              whileHover={{ scale: 1.1, rotateY: 15 }} style={{ transformStyle: "preserve-3d" }}>
+            <div className="lift relative h-12 w-12 md:h-16 md:w-16 shrink-0">
               <div className="h-full w-full rounded-2xl bg-white shadow-xl flex items-center justify-center border border-accent/10">
-                <Bot className="h-6 w-6 md:h-8 md:w-8 text-accent" />
+                <Bot className="h-6 w-6 md:h-8 md:w-8 text-brand-pink" />
               </div>
               <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-green-500 rounded-full border-2 border-white animate-pulse" />
-            </motion.div>
+            </div>
             <div className="flex items-center gap-2 sm:hidden">
               <Sparkles className="h-3 w-3 text-accent" />
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Aurora IA</span>
@@ -1104,7 +1150,7 @@ export default function DashboardHome() {
             </Link>
           </Button>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── SUGESTÃO DE ESTUDO ── */}
       {user && <StudySuggestionWidget userId={user.id} />}
@@ -1113,7 +1159,7 @@ export default function DashboardHome() {
       {user && <WeeklySummaryWidget userId={user.id} />}
 
       {/* ── WIDGETS MÓVEL RÁPIDOS ── */}
-      <motion.div variants={itemVariants} className="lg:hidden grid grid-cols-2 gap-4">
+      <div style={stagger(10)} className="anim-rise lg:hidden grid grid-cols-2 gap-4">
         <div className="gradient-border bg-white rounded-card shadow-xl border border-muted/20 p-4 space-y-3 relative overflow-hidden">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-xl bg-violet-100 flex items-center justify-center">
@@ -1144,10 +1190,10 @@ export default function DashboardHome() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── MAIN CONTENT GRID ── */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div style={stagger(11)} className="anim-rise grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* LEFT — 2/3 */}
         <div className="lg:col-span-2 space-y-6">
@@ -1184,9 +1230,7 @@ export default function DashboardHome() {
                 {recentProgress.map((prog, i) => {
                   const trailData = prog.trail;
                   return (
-                    <motion.div key={prog.id}
-                      whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+                    <div key={prog.id} className="lift press">
                       <Link href={`/dashboard/classroom/${prog.trail_id}`}>
                         <div className="group overflow-hidden rounded-3xl shadow-xl bg-white hover:shadow-2xl transition-all duration-500 border border-muted/10">
                           <div className="relative aspect-[16/7] overflow-hidden bg-slate-100">
@@ -1209,15 +1253,20 @@ export default function DashboardHome() {
                                 <span className="text-[9px] font-black text-primary">{prog.percentage || 0}%</span>
                               </div>
                               <div className="h-1.5 w-full bg-muted/20 rounded-full overflow-hidden">
-                                <motion.div className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-                                  initial={{ width: 0 }} animate={{ width: `${prog.percentage || 0}%` }}
-                                  transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 + i * 0.1 }} />
+                                {/* Largura fixa no valor real; o crescimento é scaleX
+                                    (transform), que não refaz layout a cada quadro. */}
+                                <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full origin-left"
+                                  style={{
+                                    width: `${prog.percentage || 0}%`,
+                                    transform: barsReady ? "none" : "scaleX(0)",
+                                    transition: `transform 1.2s ease-out ${0.3 + i * 0.1}s`,
+                                  }} />
                               </div>
                             </div>
                           </div>
                         </div>
                       </Link>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -1234,8 +1283,8 @@ export default function DashboardHome() {
                     const styles = priorityStyles[ann.priority as keyof typeof priorityStyles] || priorityStyles.low;
                     const Icon = styles.icon;
                     return (
-                      <motion.div key={ann.id} whileHover={{ x: 2 }} transition={{ type: "spring", stiffness: 400 }}
-                        className={`p-4 rounded-2xl flex items-start gap-4 ${styles.bgColor} border ${styles.border} shadow-sm hover:shadow-md transition-all group relative overflow-hidden cursor-pointer`}>
+                      <div key={ann.id}
+                        className={`p-4 rounded-2xl flex items-start gap-4 ${styles.bgColor} border ${styles.border} shadow-sm hover:shadow-md hover:translate-x-0.5 transition-all group relative overflow-hidden cursor-pointer`}>
                         {ann.priority === 'high' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />}
                         <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-white shadow-sm border border-gray-100">
                           <Icon className={`h-5 w-5 ${styles.color}`} />
@@ -1248,11 +1297,25 @@ export default function DashboardHome() {
                           <p className="font-black text-sm text-slate-900 truncate">{fixEncoding(ann.title)}</p>
                           <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed font-medium mt-0.5 pr-1">{fixEncoding(ann.message)}</p>
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Rotina do dia. Moravam todos na coluna da direita, que ficava com
+              onze cartões enquanto a do meio acabava nas trilhas e deixava um
+              vão em branco do tamanho da tela. */}
+          {user && (
+            <div className="xl:columns-2 gap-5 [&>*]:mb-5 [&>*]:break-inside-avoid">
+              {profile && <DailyQuestionCard userId={user.id} profile={profile} />}
+              <WeeklyMissionsWidget userId={user.id} examTarget={profile?.exam_target} />
+              <GoalsWidget userId={user.id} />
+              <JournalWidget userId={user.id} />
+              <GamificationWidget userId={user.id} />
+              <UpcomingEventsWidget />
             </div>
           )}
         </div>
@@ -1358,16 +1421,10 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {user && <WeeklyMissionsWidget userId={user.id} examTarget={profile?.exam_target} />}
           {user && <WeeklyRankingWidget userId={user.id} examTarget={profile?.exam_target} />}
-          {user && profile && <DailyQuestionCard userId={user.id} profile={profile} />}
           {user && <BichinhoWidget />}
-          {user && <GoalsWidget userId={user.id} />}
-          {user && <JournalWidget userId={user.id} />}
-          {user && <GamificationWidget userId={user.id} />}
-          <UpcomingEventsWidget />
         </div>
-      </motion.div>
+      </div>
 
       {/* FOOTER */}
       <footer className="mt-12 py-8 border-t border-slate-100">
@@ -1558,7 +1615,6 @@ export default function DashboardHome() {
           </div>
         </DialogContent>
       </Dialog>
-    </motion.div>
-    </MotionConfig>
+    </div>
   );
 }

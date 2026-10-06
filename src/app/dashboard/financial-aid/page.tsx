@@ -241,10 +241,10 @@ export default function FinancialAidPage() {
           </Card>
 
           <Card className="border-none shadow-md bg-white rounded-2xl p-5 md:p-7 space-y-3">
-            <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
               <HelpCircle className="h-3.5 w-3.5 text-accent" /> Dica da Aurora
             </h3>
-            <p className="text-xs font-medium italic text-primary/70 leading-relaxed">
+            <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Muitos alunos perdem a isenção porque esquecem de incluir moradores sem renda no cálculo. Deixe o campo de renda vazio para esses integrantes!"
             </p>
           </Card>
@@ -275,7 +275,7 @@ export default function FinancialAidPage() {
                   {members.map((member, index) => (
                     <div key={member.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl bg-muted/20 border border-transparent hover:border-accent/20 transition-all animate-in slide-in-from-left-2">
                       <div className="flex-1 space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-primary/40 ml-2">Integrante / Parentesco</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Integrante / Parentesco</Label>
                         <Input 
                           placeholder={index === 0 ? "Você" : "Ex: Mãe, Pai, Irmão..."} 
                           value={member.label} 
@@ -284,7 +284,7 @@ export default function FinancialAidPage() {
                         />
                       </div>
                       <div className="w-full sm:w-48 space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-primary/40 ml-2">Renda Bruta (R$)</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Renda Bruta (R$)</Label>
                         <Input 
                           type="text" 
                           placeholder="0,00" 
@@ -324,7 +324,7 @@ export default function FinancialAidPage() {
                     className="flex-1 bg-primary hover:bg-primary/95 text-white h-14 rounded-2xl font-black text-lg shadow-xl"
                   >
                     {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <TrendingUp className="h-5 w-5 mr-2" />}
-                    {loading ? "Analizando..." : "Verificar Elegibilidade"}
+                    {loading ? "Analisando..." : "Verificar Elegibilidade"}
                   </Button>
                 </div>
               </form>
@@ -338,12 +338,12 @@ export default function FinancialAidPage() {
                   <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center shrink-0 shadow-xl">
                     {result.eligible ? <CheckCircle2 className="h-7 w-7" /> : <FileWarning className="h-7 w-7" />}
                   </div>
-                  <div className="space-y-0.5">
-                    <h3 className="text-xl md:text-2xl font-black italic tracking-tighter leading-tight">
-                      {result.eligible ? "Elegível para Isenção" : "Fora do Critério de Isenção"}
+                  <div className="space-y-1.5">
+                    <h3 className="text-xl md:text-2xl font-extrabold tracking-tight leading-snug">
+                      {result.eligible ? "Elegível para isenção" : "Fora do critério de isenção"}
                     </h3>
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-80">
-                      {result.familySize} pessoas · R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
+                      {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} · R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
                     </p>
                   </div>
                 </div>

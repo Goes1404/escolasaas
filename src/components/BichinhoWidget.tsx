@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Flame, Shield, Trophy, Loader2, ChevronRight } from 'lucide-react';
+import { Flame, Shield, Trophy, Loader2, ChevronRight, PawPrint } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { estadoOfensiva } from '@/lib/streak';
 import {
@@ -47,7 +47,7 @@ export function BichinhoWidget() {
     try {
       setBicho(await adotarBichinho(especie, escolhido));
       toast({
-        title: `${escolhido} é seu! ${arquetipo(especie).emoji}`,
+        title: `${escolhido} é seu!`,
         description: 'Ele cresce a cada dia que você estuda.',
       });
     } catch (e) {
@@ -65,7 +65,7 @@ export function BichinhoWidget() {
     setSalvando(true);
     try {
       setBicho(await comprarProtecao());
-      toast({ title: 'Proteção comprada 🛡️', description: 'Ela segura sua ofensiva num dia que você faltar.' });
+      toast({ title: 'Proteção comprada', description: 'Ela segura sua ofensiva num dia que você faltar.' });
     } catch (e) {
       toast({
         title: 'Não foi possível comprar',
@@ -91,7 +91,7 @@ export function BichinhoWidget() {
         href="/dashboard/student/bichinho"
         className="block rounded-card bg-slate-100 border border-slate-200 p-6 text-center active:scale-[0.99] transition-transform"
       >
-        <p className="text-3xl mb-1" aria-hidden>🐾</p>
+        <PawPrint className="h-7 w-7 mx-auto mb-1 text-slate-500" aria-hidden />
         <p className="text-sm font-black italic text-slate-700">Seu bichinho</p>
         <p className="text-[11px] font-medium text-slate-500 mt-0.5">
           Não carregou agora — toque para abrir.
@@ -223,9 +223,12 @@ export function BichinhoWidget() {
             <p className={`text-[10px] font-black uppercase tracking-widest ${tinta.fraca}`}>
               Nível {bicho.nivel} · {nomeDoNivel(bicho.nivel)} · CP {calcularCP(bicho)}
             </p>
-            <p className="u-display text-xl leading-tight truncate">{apelido}</p>
+            {/* A Boldonse desenha a última letra além da própria largura, e o
+                `truncate` corta o que passa da caixa: o respiro à direita
+                devolve o glifo sem desligar as reticências. */}
+            <p className="u-display text-xl leading-tight truncate pr-[0.12em]">{apelido}</p>
             <p className={`text-[11px] font-bold leading-tight mt-1 ${tinta.media}`}>
-              {humor.emoji} {humor.fala(apelido)}
+              {humor.fala(apelido)}
             </p>
           </div>
           {/* O cartão precisa levar a algum lugar: sem isto o aluno adotava o

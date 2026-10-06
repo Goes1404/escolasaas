@@ -96,7 +96,7 @@ export function ArenaMascote({ bicho, tamanho = 'pagina', controles = false, cla
         {/* Cabeçalho, no lugar exato onde a referência põe o nome. */}
         <div className="absolute top-5 inset-x-0 text-center px-6 z-20 pointer-events-none">
           <p
-            className="text-2xl md:text-3xl font-black italic tracking-tight text-white leading-none truncate"
+            className="text-2xl md:text-3xl font-black italic tracking-tight text-white leading-tight truncate px-[0.15em]"
             style={{ textShadow: '0 2px 10px rgba(0,0,0,.45)' }}
           >
             {nome.toUpperCase()}

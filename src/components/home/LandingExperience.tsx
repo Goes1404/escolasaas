@@ -272,6 +272,9 @@ export default function LandingExperience() {
               duration: 0.9,
               stagger: { each: 0.018, from: "start" },
               ease: "back.out(1.6)",
+              /* A máscara só serve à entrada. Mantida, ela recorta topo e base
+                 da Boldonse, cujo desenho passa da altura de linha. */
+              onComplete: () => split.revert(),
             },
             reduced ? 0 : "-=0.3"
           )
@@ -577,16 +580,6 @@ export default function LandingExperience() {
             <LogoDali className="inline-block h-4 w-4 mr-1.5 align-[-3px] text-[var(--pink-text)]" />Dalí
           </span>
           <nav className="flex items-center gap-6">
-            <a
-              href="#l-modules"
-              className="l-underline l-label hidden md:inline-block cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById("l-modules")?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Módulos
-            </a>
             <button
               type="button"
               onClick={toggleTheme}
@@ -607,7 +600,6 @@ export default function LandingExperience() {
         <section className="l-dots relative z-10 px-5 md:px-12 pt-8 md:pt-16 pb-20 md:pb-28 max-w-[1500px] mx-auto">
           {/* formas da paleta */}
           <span className="l-shape l-shape-ring w-14 h-14 top-[8%] right-[6%]" />
-          <span className="l-shape l-shape-dot w-4 h-4 top-[30%] left-[3%]" />
           <span className="l-shape l-shape-cross w-8 h-8 bottom-[6%] left-[44%] hidden md:block" />
 
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-16 items-center">
@@ -615,9 +607,13 @@ export default function LandingExperience() {
               <p className="l-label mb-5 l-hero-fade">
                 Ensino e gestão escolar · ENEM · ETEC
               </p>
-              <h1 className="l-hero-title l-display text-[clamp(2.1rem,8.5vw,5rem)]">
-                Estudar virou <span className="text-[var(--yellow-text)]">jogo</span>. Gerir virou{" "}
-                <span className="text-[var(--cyan-text)]">simples</span>.
+              {/* Duas linhas fixas, cada uma sem quebra: a manchete não pode
+                  crescer para quatro linhas conforme a largura da coluna. */}
+              <h1 className="l-hero-title l-display text-[clamp(2.4rem,7vw,4.5rem)]">
+                <span className="block whitespace-nowrap">Estudo que</span>
+                <span className="block whitespace-nowrap">
+                  <span className="text-[var(--yellow-text)]">aprova</span>.
+                </span>
               </h1>
 
               <div className="flex flex-wrap gap-3 mt-8 l-hero-fade">

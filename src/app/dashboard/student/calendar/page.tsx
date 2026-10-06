@@ -143,7 +143,9 @@ export default function StudentCalendarPage() {
                   Próximo evento
                 </p>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="u-num text-[4.5rem] sm:text-[6rem] leading-[0.9] text-white">
+                  {/* Boldonse passa da caixa da linha: a 6rem com leading 0.9 o
+                      número subia por cima do rótulo "Próximo evento". */}
+                  <span className="u-num text-5xl sm:text-6xl leading-[1.15] text-white">
                     {nextDays}
                   </span>
                   <span className="u-num text-xl text-white/80">
@@ -184,13 +186,19 @@ export default function StudentCalendarPage() {
             </p>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-            {upcomingUrgent.map((ev) => {
+            {upcomingUrgent.map((ev, ui) => {
               const meta = getMeta(ev.event_type);
               const days = daysBetween(ev.event_date);
               const u = urgencyTone(days);
+              // Entrada em CSS puro (anim-rise) no invólucro: no botão, o fill
+              // da animação anularia o active:scale do toque.
               return (
-                <button
+                <div
                   key={ev.id}
+                  className="anim-rise shrink-0"
+                  style={{ '--i': Math.min(ui, 10) } as React.CSSProperties}
+                >
+                <button
                   onClick={() => setSelectedDate(new Date(ev.event_date + "T12:00:00"))}
                   className="shrink-0 w-[200px] text-left bg-white border border-red-100 rounded-2xl p-3.5 hover:border-red-300 hover:shadow-md transition-all active:scale-95 touch-manipulation shadow-sm"
                 >
@@ -207,6 +215,7 @@ export default function StudentCalendarPage() {
                     {meta.label}
                   </Badge>
                 </button>
+                </div>
               );
             })}
           </div>
@@ -272,7 +281,7 @@ export default function StudentCalendarPage() {
                   <div className="h-px bg-gradient-to-r from-slate-200 to-transparent" />
 
                   <div className="space-y-2">
-                    {monthEvents.map((ev) => {
+                    {monthEvents.map((ev, ei) => {
                       const meta = getMeta(ev.event_type);
                       const days = daysBetween(ev.event_date);
                       const u = urgencyTone(days);
@@ -281,8 +290,12 @@ export default function StudentCalendarPage() {
                       const weekday = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
 
                       return (
-                        <button
+                        <div
                           key={ev.id}
+                          className="anim-rise"
+                          style={{ '--i': Math.min(ei, 10) } as React.CSSProperties}
+                        >
+                        <button
                           onClick={() => setSelectedDate(d)}
                           className="w-full text-left bg-white border border-slate-100 hover:border-slate-200 hover:shadow-md rounded-2xl p-3.5 transition-all active:scale-[0.99] touch-manipulation group shadow-sm"
                         >
@@ -331,6 +344,7 @@ export default function StudentCalendarPage() {
                             <ChevronRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
                           </div>
                         </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -375,12 +389,13 @@ export default function StudentCalendarPage() {
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground px-1">
                 {selectedDate?.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
               </p>
-              {eventsOnSelected.map((ev) => {
+              {eventsOnSelected.map((ev, si) => {
                 const meta = getMeta(ev.event_type);
                 return (
                   <div
                     key={ev.id}
-                    className="flex gap-3 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm"
+                    className="anim-rise flex gap-3 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm"
+                    style={{ '--i': Math.min(si, 10) } as React.CSSProperties}
                   >
                     <div className={`w-1 rounded-full shrink-0 ${meta.dot}`} />
                     <div className="flex-1 min-w-0">

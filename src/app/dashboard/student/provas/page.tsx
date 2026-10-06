@@ -680,12 +680,14 @@ export default function ProvasCompletasPage() {
               Treine resistência e gestão de tempo com provas anteriores sob simulado real.
             </p>
 
+            {/* O número fica na mesma fonte e tamanho do rótulo, só em negrito:
+                em u-num (Boldonse) ele estourava a altura do chip. */}
             <div className="flex items-center gap-2 mt-4">
               <Badge className="u-label bg-transparent border-2 border-foreground px-2 h-5 rounded-control">
-                <span className="u-num mr-1.5">{exams.length}</span>provas
+                <span className="font-bold text-foreground mr-1">{exams.length}</span>provas
               </Badge>
               <Badge className="u-label bg-transparent border-2 border-foreground px-2 h-5 rounded-control">
-                <span className="u-num mr-1.5">{exams.filter((e) => e.question_count > 0).length}</span>c/ questões
+                <span className="font-bold text-foreground mr-1">{exams.filter((e) => e.question_count > 0).length}</span>c/ questões
               </Badge>
             </div>
           </div>
@@ -742,7 +744,7 @@ export default function ProvasCompletasPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {visibleGroups.map((group) => {
+            {visibleGroups.map((group, gi) => {
               const selectedId = selectedVariants[group.key] || group.variants[0]?.id;
               const selectedExam = group.variants.find((v) => v.id === selectedId) || group.variants[0];
               if (!selectedExam) return null;
@@ -756,10 +758,16 @@ export default function ProvasCompletasPage() {
                 : "relative bg-white border border-slate-100 hover:border-slate-200 shadow-sm rounded-card overflow-hidden transition-all group flex flex-col justify-between";
 
               return (
+                // Só a lista anima (anim-rise, CSS puro): a prova em andamento
+                // é tela de horas e fica parada. Invólucro próprio porque o
+                // card especial já tem `animation` (card-on-fire) e as duas
+                // se anulariam no mesmo elemento.
                 <div
                   key={group.key}
-                  className={cardBgClass}
+                  className="anim-rise"
+                  style={{ '--i': Math.min(gi, 10) } as React.CSSProperties}
                 >
+                <div className={`h-full ${cardBgClass}`}>
                   {isSpecial && <FlameEmberCanvas className="absolute inset-0 h-full w-full pointer-events-none z-0 opacity-45" />}
                   <div>
                     <div className={`h-1.5 w-full ${s.accent}`} />
@@ -916,6 +924,7 @@ export default function ProvasCompletasPage() {
                       )}
                     </div>
                   </div>
+                </div>
                 </div>
               );
             })}
