@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Virtuoso } from 'react-virtuoso';
 import { usePathname } from "next/navigation";
 import { AuroraAvatar } from "@/components/AuroraAvatar";
+import { useFloatingDodge, TUCKED_CLASSES } from "@/hooks/use-floating-dodge";
 
 interface Message {
   role: "assistant" | "user";
@@ -26,6 +27,7 @@ export function AccessibilityWidget() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const pathname = usePathname();
+  const dodge = useFloatingDodge<HTMLDivElement>();
 
   const isInputHeavyPage = 
     pathname.includes('/chat/') || 
@@ -96,8 +98,12 @@ export function AccessibilityWidget() {
   );
   
   return (
-    <div 
-      className={`fixed ${isInputHeavyPage ? 'bottom-28 lg:bottom-10' : 'bottom-24 lg:bottom-6'} right-6 z-40 flex flex-col gap-3 items-end transition-all duration-500`}
+    <div
+      ref={dodge.ref}
+      data-floating
+      onPointerDownCapture={dodge.onPointerDownCapture}
+      onClickCapture={dodge.onClickCapture}
+      className={`fixed ${isInputHeavyPage ? 'bottom-28 lg:bottom-10' : 'bottom-24 lg:bottom-6'} right-4 sm:right-6 z-40 flex flex-col gap-3 items-end transition-[transform,opacity] duration-300 ease-out ${dodge.tucked && !isOpen ? TUCKED_CLASSES : ''}`}
     >
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>

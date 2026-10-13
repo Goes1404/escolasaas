@@ -536,8 +536,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
         )}
 
-        <main className={`flex-1 flex flex-col min-h-0 overflow-y-auto ${isFullBleedPage ? 'p-0' : 'p-4 md:p-8'} ${!isFullBleedPage ? 'pb-20 lg:pb-8' : ''}`}>
-          <div className={isFullBleedPage ? 'flex-1 flex flex-col min-h-0' : 'max-w-7xl mx-auto w-full'}>
+        <main className={`flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-x-none ${isFullBleedPage ? 'p-0' : 'p-4 md:p-8'} ${!isFullBleedPage ? 'pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-8' : ''}`}>
+          <div className={isFullBleedPage ? 'flex-1 flex flex-col min-h-0 min-w-0' : 'max-w-7xl mx-auto w-full min-w-0'}>
             <Suspense fallback={<div className="p-8 opacity-20 animate-pulse"><Sparkles className="h-10 w-10 text-accent" /></div>}>
               {children}
             </Suspense>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useFloatingDodge, TUCKED_CLASSES } from '@/hooks/use-floating-dodge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquarePlus, Star, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useAuth } from '@/lib/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 
 export function FeedbackWidget() {
+  const dodge = useFloatingDodge<HTMLDivElement>();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -77,6 +79,15 @@ export function FeedbackWidget() {
 
   return (
     <>
+      {/* Invólucro fixo recebe o recolhimento (transform); o motion.button
+          dentro cuida do próprio scale de toque sem brigar com ele. */}
+      <div
+        ref={dodge.ref}
+        data-floating
+        onPointerDownCapture={dodge.onPointerDownCapture}
+        onClickCapture={dodge.onClickCapture}
+        className={`fixed bottom-[164px] right-[22px] sm:right-[30px] lg:bottom-[92px] lg:right-[30px] z-[90] transition-[transform,opacity] duration-300 ease-out ${dodge.tucked && !isOpen ? TUCKED_CLASSES : ''}`}
+      >
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -86,7 +97,7 @@ export function FeedbackWidget() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[164px] right-[30px] lg:bottom-[92px] lg:right-[30px] z-[90] h-11 w-11 bg-primary text-white rounded-full shadow-[0_10px_25px_-5px_rgba(76,204,237,0.5)] flex items-center justify-center border-2 border-white/20 glow-orange group overflow-hidden"
+            className="relative h-11 w-11 bg-primary text-white rounded-full shadow-[0_10px_25px_-5px_rgba(76,204,237,0.5)] flex items-center justify-center border-2 border-white/20 glow-orange group overflow-hidden"
             aria-label="Deixe seu feedback"
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -94,6 +105,7 @@ export function FeedbackWidget() {
           </motion.button>
         )}
       </AnimatePresence>
+      </div>
 
       <AnimatePresence>
         {isOpen && (

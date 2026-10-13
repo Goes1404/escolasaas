@@ -241,7 +241,7 @@ export default function ForumPage() {
                             <div className={`h-12 w-12 rounded-2xl ${styles.bg} ${styles.text} flex items-center justify-center ${styles.hoverBg} ${styles.hoverText} transition-all shadow-inner`}>{getCategoryIcon(forum.category)}</div>
                             <Badge className={`${styles.bg} ${styles.text} border-none font-black text-[8px] uppercase px-3 py-1`}>{forum.category}</Badge>
                         </div>
-                        <CardTitle className="pt-6 u-display text-xl text-primary leading-tight group-hover:text-accent transition-colors line-clamp-2 min-h-[3rem]">{forum.name}</CardTitle>
+                        <CardTitle className="pt-6 text-base sm:text-lg font-black text-primary leading-snug group-hover:text-accent transition-colors line-clamp-2 min-h-[2.75rem]">{forum.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 pt-0 flex-grow">
                         <p className="text-xs md:text-sm text-muted-foreground font-medium italic line-clamp-2 opacity-80">"{forum.description}"</p>

@@ -270,7 +270,7 @@ export default function AdminChecklistAuditPage() {
           </div>
         </div>
 
-        <div className="flex items-end gap-3">
+        <div className="grid grid-cols-1 sm:flex sm:items-end gap-3 [&_button]:w-full sm:[&_button]:w-auto">
           <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
             <DialogTrigger asChild>
               <Button disabled={filtered.length === 0} className="h-12 bg-primary text-white font-black text-[10px] uppercase px-6 rounded-xl shadow-xl hover:scale-105 active:scale-95 transition-all gap-2">

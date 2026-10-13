@@ -743,7 +743,7 @@ export default function QuestionBankPage() {
                         <div className="mt-12 pt-12 border-t border-dashed space-y-6 animate-in slide-in-from-bottom-8">
 
                             {/* Curation controls (STICKY) */}
-                            <div className="sticky top-4 z-40 bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-muted/20 shadow-xl space-y-4 mb-8">
+                            <div className="md:sticky md:top-4 z-40 bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-muted/20 shadow-xl space-y-4 mb-8">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div>
                                         <h3 className="text-xl font-black text-primary italic flex items-center gap-2">

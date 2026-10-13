@@ -1154,6 +1154,29 @@ input:-webkit-autofill:active {
     padding-block: 0.12em;
   }
 
+  /* Palavra em fonte de display nunca é cortada no meio ("PERFORMANC/E").
+     Se não couber, o FitTextEngine reduz a fonte daquele título até caber.
+     `text-wrap: balance` evita a última linha com uma palavra sobrando. */
+  .u-page-title,
+  .u-display,
+  .font-display,
+  [data-fit],
+  [data-fit-short] {
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: manual;
+    text-wrap-style: balance; /* só o estilo: `text-wrap` inteiro desligaria o whitespace-nowrap */
+  }
+
+  /* Boldonse tem acento alto e descendente fundo: com `leading-tight` e
+     `line-clamp`, uma linha invadia a outra e o corte comia o til/acento. */
+  .u-display[class*="line-clamp"],
+  .u-page-title[class*="line-clamp"],
+  .font-display[class*="line-clamp"] {
+    line-height: 1.42 !important;
+    padding-block: 0.08em;
+  }
+
   /* Superfície padrão. Substitui o par shadow-2xl + rounded-[2.5rem] que era
      repetido à mão em ~300 lugares. */
   .u-surface {
@@ -1161,4 +1184,27 @@ input:-webkit-autofill:active {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
   }
+}
+
+/* Fora de @layer: classe usada só em src/hooks (fora do content do
+   Tailwind), então dentro da camada ela seria descartada no build. */
+/* Botão flutuante recolhido (useFloatingDodge): vira uma aba na borda
+   direita, translúcida, para não cobrir o conteúdo embaixo dele. */
+.floating-tucked {
+  transform: translateX(62%) scale(0.88);
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-tucked { transition: none !important; }
+}
+
+/* Celular: respiros de desktop (p-8 a p-16) dentro do p-4 do <main> deixavam
+   ~200px úteis num card de 360px — era o que mais espremia título e número.
+   Só abaixo de 640px e só para os espaçamentos grandes; p-4/p-6 ficam. */
+@media (max-width: 639px) {
+  .p-8, .p-10, .p-12, .p-14, .p-16 { padding: 1.25rem; }
+  .px-8, .px-10, .px-12, .px-14, .px-16 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .py-10, .py-12, .py-14, .py-16 { padding-top: 1.75rem; padding-bottom: 1.75rem; }
+  .gap-10, .gap-12 { gap: 1.5rem; }
+  .rounded-\[3rem\], .rounded-\[2\.5rem\] { border-radius: var(--radius-card, 14px); }
 }

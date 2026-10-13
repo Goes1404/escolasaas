@@ -295,11 +295,11 @@ export default function StudentPerformancePage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/60">
-                    <th className="text-left px-4 md:px-6 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Data</th>
-                    <th className="text-left px-2 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Matéria</th>
+                    <th className="text-left pl-4 pr-2 md:px-6 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Data</th>
+                    <th className="hidden sm:table-cell text-left px-2 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Matéria</th>
                     <th className="text-center px-2 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Acertos</th>
                     <th className="text-center px-2 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">%</th>
-                    <th className="text-right px-4 md:px-6 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Tempo</th>
+                    <th className="text-right pl-2 pr-4 md:px-6 py-3 font-black uppercase text-[9px] tracking-widest text-slate-400">Tempo</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -307,13 +307,16 @@ export default function StudentPerformancePage() {
                     const pct = a.total_questions > 0 ? Math.round((a.score / a.total_questions) * 100) : 0;
                     return (
                       <tr key={a.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                        <td className="px-4 md:px-6 py-3 font-bold text-slate-600 whitespace-nowrap">
-                          {format(new Date(a.created_at), "dd/MM/yy", { locale: ptBR })}
+                        <td className="pl-4 pr-2 md:px-6 py-3 font-bold text-slate-600">
+                          <span className="whitespace-nowrap">{format(new Date(a.created_at), "dd/MM/yy", { locale: ptBR })}</span>
+                          {/* No celular a matéria vem embaixo da data: cinco colunas
+                              não cabiam e a tabela rolava para o lado. */}
+                          <span className="sm:hidden block text-[11px] font-semibold text-slate-400 leading-tight mt-0.5">{a.subjects?.name || "Geral / Misto"}</span>
                         </td>
-                        <td className="px-2 py-3 font-semibold text-slate-500">
+                        <td className="hidden sm:table-cell px-2 py-3 font-semibold text-slate-500">
                           {a.subjects?.name || "Geral / Misto"}
                         </td>
-                        <td className="px-2 py-3 text-center font-black text-slate-800 tabular-nums">
+                        <td className="px-2 py-3 text-center font-black text-slate-800 tabular-nums whitespace-nowrap">
                           {a.score}<span className="text-slate-300">/{a.total_questions}</span>
                         </td>
                         <td className="px-2 py-3 text-center">
@@ -321,7 +324,7 @@ export default function StudentPerformancePage() {
                             {pct}%
                           </span>
                         </td>
-                        <td className="px-4 md:px-6 py-3 text-right u-num text-foreground tabular-nums whitespace-nowrap">
+                        <td className="pl-2 pr-4 md:px-6 py-3 text-right u-num text-foreground tabular-nums whitespace-nowrap">
                           {fmtClock(a.duration_seconds)}
                         </td>
                       </tr>

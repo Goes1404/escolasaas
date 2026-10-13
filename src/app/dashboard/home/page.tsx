@@ -897,13 +897,16 @@ export default function DashboardHome() {
               { label: "Trilhas", value: recentProgress.length,        suffix: "",     icon: PlayCircle   },
             ].map((stat, i) => (
               <div key={stat.label} style={stagger(10 + i * 2)}
-                className="anim-rise gradient-border flex items-center gap-2 md:gap-3 bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl px-2 py-2.5 md:px-3 md:py-3">
-                <div className="h-7 w-7 md:h-8 md:w-8 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
-                  <stat.icon className="h-3.5 w-3.5 md:h-4 md:w-4 text-accent" />
+                className="anim-rise gradient-border min-w-0 flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2 md:gap-3 bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl px-2.5 py-2.5 md:px-3 md:py-3">
+                {/* No celular o ícone vai para cima do número: lado a lado, três
+                    colunas em 360px deixavam ~50px para "347 pts" e o número
+                    saía do card. */}
+                <div className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 rounded-lg sm:rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+                  <stat.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-accent" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-black text-white text-sm md:text-lg leading-none tabular-nums whitespace-nowrap"><CountUp value={stat.value} suffix={stat.suffix} /></p>
-                  <p className="text-[7px] md:text-[8px] text-white/50 font-black uppercase tracking-normal md:tracking-[0.25em] mt-1 leading-tight whitespace-nowrap">{stat.label}</p>
+                <div className="min-w-0 w-full sm:flex-1">
+                  <p className="font-black text-white text-base md:text-lg leading-none tabular-nums whitespace-nowrap"><CountUp value={stat.value} suffix={stat.suffix} /></p>
+                  <p className="text-[8px] text-white/50 font-black uppercase tracking-wider md:tracking-[0.25em] mt-1 leading-tight truncate">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -1168,7 +1171,7 @@ export default function DashboardHome() {
             <span className="font-black text-xs text-primary italic">Acertos</span>
           </div>
           <div className="text-center">
-            <p className="text-4xl font-black text-primary">{examStats?.averageScore || 0}<span className="text-lg text-muted-foreground">%</span></p>
+            <p className="text-4xl font-black text-primary tabular-nums whitespace-nowrap">{examStats?.averageScore || 0}<span className="text-lg text-muted-foreground">%</span></p>
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">{examStats?.totalAssessed || 0} avaliações</p>
           </div>
         </div>
@@ -1179,14 +1182,16 @@ export default function DashboardHome() {
             </div>
             <span className="font-black text-xs text-primary italic">Redações</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-slate-50 rounded-xl p-2.5 text-center">
-              <span className="text-2xl font-black text-primary">{essayStats?.count || 0}</span>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Envios</p>
+          {/* Uma linha por número: lado a lado, em meia coluna de 360px,
+              "2604" virava "26/04" e "ENVIOS" virava "ENVIO/S". */}
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between gap-2 bg-slate-50 rounded-xl px-3 py-2 min-w-0">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Envios</p>
+              <span className="text-xl font-black text-primary tabular-nums whitespace-nowrap">{essayStats?.count || 0}</span>
             </div>
-            <div className="bg-accent/5 rounded-xl p-2.5 text-center">
-              <span className="text-2xl font-black text-accent">{essayStats?.average || 0}</span>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Média</p>
+            <div className="flex items-baseline justify-between gap-2 bg-accent/5 rounded-xl px-3 py-2 min-w-0">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Média</p>
+              <span className="text-xl font-black text-accent tabular-nums whitespace-nowrap">{essayStats?.average || 0}</span>
             </div>
           </div>
         </div>

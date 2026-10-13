@@ -146,7 +146,37 @@ export default function StudentFinancePage() {
 
       <Card className="shadow-2xl rounded-card overflow-hidden">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Celular: uma fatura por cartão. A tabela de cinco colunas não
+              cabia em 360px e precisava rolar para o lado. */}
+          <ul className="sm:hidden divide-y">
+            {invoices.length === 0 && (
+              <li className="p-6 text-center text-sm text-muted-foreground">Nenhuma mensalidade registrada ainda.</li>
+            )}
+            {invoices.map((inv) => {
+              const ds = displayStatus(inv);
+              return (
+                <li key={inv.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="u-label">{format(new Date(inv.competence + "T12:00:00"), "MM/yyyy")}</span>
+                    <Badge className={`${STATUS_STYLE[ds]} font-black shrink-0`}>{STATUS_LABEL[ds]}</Badge>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="u-num text-lg tabular-nums whitespace-nowrap">{brl(inv.final_amount)}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">vence {format(new Date(inv.due_date + "T12:00:00"), "dd/MM/yyyy")}</span>
+                  </div>
+                  {Number(inv.discount_amount) > 0 && (
+                    <p className="text-xs text-emerald-600">Desconto de {brl(inv.discount_amount)}</p>
+                  )}
+                  {inv.status === "paga" && inv.paid_at && (
+                    <p className="text-xs text-muted-foreground">
+                      Pago{inv.payment_method ? ` via ${METODO_LABEL[inv.payment_method]}` : ""} em {format(new Date(inv.paid_at), "dd/MM/yyyy")}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40 text-left">

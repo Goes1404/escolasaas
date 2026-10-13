@@ -168,12 +168,11 @@ export default function LibraryPage() {
       </section>
 
       <Tabs defaultValue="Todos" className="w-full space-y-6">
-        {/* Barra fixa no topo do <main>, com fundo opaco e margem negativa até a
-            borda dele (p-4/p-8 do layout) para os cards não aparecerem por trás.
+        {/* Barra de filtros no lugar dela — não acompanha a rolagem.
             O TabsList do shadcn vem com justify-center: quando as abas não
             cabem, o excesso transborda para os dois lados e o início ("Todos")
             fica fora do alcance da rolagem — por isso o justify-start. */}
-        <div className="sticky top-0 z-30 -mx-4 px-4 md:-mx-8 md:px-8 py-3 bg-background flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 min-w-0">
           <TabsList className="bg-white p-1.5 h-14 rounded-2xl border-none shadow-sm flex justify-start items-center gap-1 overflow-x-auto overflow-y-hidden min-w-0 max-w-full hide-scrollbar">
             {categories.map(cat => (
               <TabsTrigger 

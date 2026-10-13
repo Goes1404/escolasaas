@@ -158,7 +158,7 @@ export default function StudentDocumentsUploadPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulário de Upload */}
         <div className="lg:col-span-1">
-          <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden sticky top-4">
+          <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden lg:sticky lg:top-4">
             <CardHeader className="bg-primary p-8">
               <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-white" />

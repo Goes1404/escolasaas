@@ -11,6 +11,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { celebrateOnce } from '@/lib/celebrate';
 
+/** XP de 5+ dígitos em forma curta ("128,5 mil"): em 360px o número inteiro em
+ *  Boldonse comia a linha e o nome do aluno virava "A…". */
+function xpCurto(n: number | null | undefined) {
+  const v = Number(n) || 0;
+  if (Math.abs(v) < 10000) return v.toLocaleString('pt-BR');
+  return v.toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+}
+
 type RankEntry = {
   student_id:  string;
   full_name:   string;
@@ -105,7 +113,7 @@ function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
         </p>
         <div className="flex items-center gap-1 border-2 border-foreground bg-card rounded-control px-2 py-0.5">
           <Zap className="h-3 w-3 text-accent-foreground fill-accent" />
-          <span className="u-num text-[11px]">{entry.weekly_xp}</span>
+          <span className="u-num text-[11px]">{xpCurto(entry.weekly_xp)}</span>
           <span className="u-label !text-[8px] !tracking-[0.2em]">XP</span>
         </div>
       </div>
@@ -263,13 +271,13 @@ export default function RankingPage() {
             <Avatar name={myEntry.full_name} url={myEntry.avatar_url} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold leading-normal truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
-              <p className="u-label !text-white/50 !text-[9px] mt-1">
-                <span className="u-num">{myEntry.weekly_xp}</span> XP na semana
+              <p className="u-label !text-white/50 !text-[9px] mt-1 whitespace-nowrap">
+                <span className="u-num">{xpCurto(myEntry.weekly_xp)}</span> XP na semana
               </p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <Flame className="h-4 w-4 text-accent" />
-              <span className="u-num text-sm">{myEntry.total_xp}</span>
+              <span className="u-num text-xs sm:text-sm whitespace-nowrap">{xpCurto(myEntry.total_xp)}</span>
               <span className="u-label !text-white/50 !text-[8px]">total</span>
             </div>
           </div>
@@ -303,7 +311,7 @@ export default function RankingPage() {
                 <div
                   key={w.student_id}
                   style={{ '--i': Math.min(wIdx, 10) } as React.CSSProperties}
-                  className={`anim-rise flex items-center gap-3 rounded-control border-2 px-4 py-2.5 ${
+                  className={`anim-rise flex items-center gap-2 sm:gap-3 rounded-control border-2 px-3 sm:px-4 py-2.5 ${
                     isMe ? 'border-foreground shadow-hard' : 'border-border bg-card'
                   }`}
                 >
@@ -317,7 +325,7 @@ export default function RankingPage() {
                   </p>
                   <div className="flex items-center gap-1 shrink-0">
                     <Zap className="h-3.5 w-3.5 text-accent-foreground fill-accent" />
-                    <span className="u-num text-sm">{w.xp}</span>
+                    <span className="u-num text-xs sm:text-sm whitespace-nowrap">{xpCurto(w.xp)}</span>
                     <span className="u-label !text-[8px]">XP</span>
                   </div>
                 </div>
@@ -409,13 +417,13 @@ export default function RankingPage() {
                         {isMe && <span className="u-label !text-[8px] ml-1.5 text-primary">(você)</span>}
                       </p>
                       <p className="u-label !text-[9px] mt-0.5">
-                        <span className="u-num">{entry.total_xp}</span> XP total
+                        <span className="u-num">{xpCurto(entry.total_xp)}</span> XP total
                       </p>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <Zap className="h-3.5 w-3.5 text-accent-foreground fill-accent" />
-                      <span className="u-num text-sm">{entry.weekly_xp}</span>
+                      <span className="u-num text-xs sm:text-sm whitespace-nowrap">{xpCurto(entry.weekly_xp)}</span>
                       <span className="u-label !text-[8px]">XP</span>
                     </div>
                   </div>

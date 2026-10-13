@@ -346,13 +346,15 @@ export default function LearningTrailsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1 md:px-4">
       {/* Hero Banner */}
-      <section className="aurora-dark relative overflow-hidden rounded-card p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
+      <section className="aurora-dark relative overflow-hidden rounded-card px-5 py-8 sm:p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
         <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-card" />
         <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
           <Badge className="bg-primary/10 text-primary border border-primary/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider shadow-xl">PLATAFORMA EAD</Badge>
           {/* A Boldonse é larga e em caixa alta encosta palavra em palavra e
               linha em linha; o respiro extra devolve a leitura. */}
-          <h1 className="u-page-title text-3xl sm:text-4xl md:text-6xl leading-[1.5] md:leading-[1.5] [word-spacing:0.15em] break-words px-2">
+          {/* Tamanho fluido: "PERFORMANCE" inteira numa linha mesmo em 320px.
+              Antes o break-words partia a palavra e o "E" caía sozinho. */}
+          <h1 className="u-page-title text-[clamp(1.35rem,7.4vw,2.25rem)] md:text-6xl leading-[1.35] md:leading-[1.4] [word-spacing:0.12em]">
             Sua rota de <br /><span className="text-accent">alta performance</span>
           </h1>
           <p className="text-sm md:text-xl text-gray-400 font-medium italic leading-relaxed max-w-xl mx-auto">
@@ -361,11 +363,10 @@ export default function LearningTrailsPage() {
         </div>
       </section>
 
-      {/* Barra de Filtros Unificada — busca e matérias num bloco só, fixo no
-          topo do <main>. Fundo opaco e margem negativa até a borda do <main>
-          (p-4/p-8 do layout + px-1/px-4 da página): sem isso os cards
-          aparecem por trás e entre a barra e o topo ao rolar. */}
-      <div className="sticky top-0 z-30 -mx-5 px-5 md:-mx-12 md:px-12 py-3 bg-background space-y-3">
+      {/* Barra de Filtros Unificada — busca e matérias num bloco só. Fica no
+          lugar dela (não acompanha a rolagem): no celular, uma barra fixa
+          comia um terço da tela e cobria os cards. */}
+      <div className="space-y-3 min-w-0">
         <div className="flex flex-col sm:flex-row gap-3 bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
           {/* Busca */}
           <div className="relative flex-1 group">
@@ -609,8 +610,7 @@ export default function LearningTrailsPage() {
 
               // Nível médio: entrada única em CSS puro (anim-rise) no invólucro e
               // hover (lift) no card — no mesmo elemento, o fill da animação
-              // prenderia o transform e o hover não andaria. Nada perto da
-              // barra sticky, que fica fora desta grade.
+              // prenderia o transform e o hover não andaria.
               return (
                 <div
                   key={trail.id}
