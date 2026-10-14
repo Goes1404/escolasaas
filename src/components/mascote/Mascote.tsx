@@ -39,7 +39,7 @@ export interface MascoteProps {
 
 export function Mascote(props: MascoteProps) {
   const imagem = useImagemDoMascote(props.especie);
-  // A sondagem já provou que a imagem carrega, mas entre a prova e o `<img loading="lazy" decoding="async">` o
+  // A sondagem já provou que a imagem carrega, mas entre a prova e o `<img>` o
   // cache pode ter sido despejado. Sem esta saída, o que sobraria na tela seria
   // o ícone de imagem quebrada.
   const [falhou, setFalhou] = useState(false);
