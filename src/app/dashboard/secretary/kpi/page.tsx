@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Users,
   Loader2,
-  Activity,
+  RefreshCw,
   BarChart3,
   TrendingUp,
   CheckCircle2,
@@ -20,6 +20,8 @@ import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useRouter } from "next/navigation";
 import { LineChartPremium, BarChartPremium } from "@/components/charts/premium";
+import { EmptyState } from "@/components/EmptyState";
+import { pct as pctOf, txt } from "@/lib/format";
 
 /* ── types ────────────────────────────────────────────────────── */
 
@@ -246,122 +248,138 @@ export default function SecretaryKPIPage() {
     return (
       <div className="h-96 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-          Carregando KPIs...
-        </p>
+        <p className="u-label">Carregando indicadores…</p>
       </div>
     );
   }
 
+  // Cor só como sinal: verde/vermelho quando o número diz "bom"/"ruim";
+  // o resto fica neutro (acento só no ícone).
   const statCards = [
     {
-      label: "Total de Alunos",
-      value: kpi.totalStudents,
+      label: "Total de alunos",
+      value: String(kpi.totalStudents),
       sub: `${kpi.activeStudents} ativos`,
       icon: Users,
-      color: "bg-blue-50 text-blue-600",
+      tone: "",
     },
     {
-      label: "Taxa de Presença",
+      label: "Presença",
       value: `${kpi.attendancePct}%`,
       sub: kpi.attendancePct >= 75 ? "Dentro da meta" : "Abaixo de 75%",
       icon: CheckCircle2,
-      color: kpi.attendancePct >= 75 ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600",
+      tone: kpi.attendancePct >= 75 ? "text-emerald-600" : "text-red-600",
     },
     {
-      label: "Docs Aprovados",
+      label: "Docs aprovados",
       value: `${kpi.docsApprovedPct}%`,
       sub: `${kpi.docsByStatus.pendente} pendentes`,
       icon: FileCheck,
-      color: "bg-purple-50 text-purple-600",
+      tone: "",
     },
     {
-      label: "Checklist Médio",
+      label: "Checklist médio",
       value: `${kpi.checklistAvgPct}%`,
       sub: "Documentação por aluno",
       icon: ClipboardCheck,
-      color: "bg-indigo-50 text-indigo-600",
+      tone: "",
     },
     {
-      label: "Renda Excedida",
-      value: kpi.incomeExceeded,
+      label: "Acima do limite de renda",
+      value: String(kpi.incomeExceeded),
       sub: `${kpi.incomePending} sem dados`,
       icon: DollarSign,
-      color: kpi.incomeExceeded > 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600",
+      tone: kpi.incomeExceeded > 0 ? "text-red-600" : "",
     },
   ];
 
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 px-1">
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl md:text-4xl font-black text-primary italic leading-none uppercase tracking-tighter">
-              Painel de KPIs
-            </h1>
-            <Badge className="bg-primary text-white border-none font-black text-[10px] px-4 py-1.5 shadow-xl uppercase tracking-widest">
-              Secretaria
-            </Badge>
+  const docsTotal = kpi.docsByStatus.pendente + kpi.docsByStatus.aprovado + kpi.docsByStatus.rejeitado;
+  const incomeOk = Math.max(0, kpi.totalStudents - kpi.incomeExceeded - kpi.incomePending);
+
+  const DistRow = ({ label, desc, value, total, bar, text, unit }: {
+    label: string; desc?: string; value: number; total: number; bar: string; text: string; unit: string;
+  }) => {
+    const p = pctOf(value, total);
+    return (
+      <div className="p-4 rounded-control border border-border">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="min-w-0">
+            <span className={`u-label ${text}`}>{label}</span>
+            {desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}
           </div>
-          <p className="text-muted-foreground font-medium text-sm italic">
-            Indicadores de frequência, documentação, turmas e renda em tempo real.
+          <span className={`u-num text-2xl shrink-0 ${text.replace("!", "")}`}>{value}</span>
+        </div>
+        <div className="w-full bg-muted rounded-full h-2">
+          <div className={`${bar} h-2 rounded-full`} style={{ width: `${p}%` }} />
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{p}% {unit}</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6 pb-20">
+      {/* Cabeçalho */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="u-label flex items-center gap-2"><BarChart3 className="h-3.5 w-3.5" /> Secretaria · indicadores</p>
+          <h1 className="u-page-title text-3xl mt-1">Indicadores</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            Frequência, documentação, turmas e renda, atualizados a cada carregamento.
           </p>
         </div>
         <Button
           onClick={fetchKpi}
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="rounded-2xl h-12 w-12 bg-white shadow-xl shrink-0"
+          className="rounded-control h-10 w-10 shrink-0"
+          title="Atualizar dados"
+          aria-label="Atualizar dados"
         >
-          <Activity className="h-5 w-5 text-primary" />
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* Totais */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {statCards.map((s) => (
-          <Card key={s.label} className="border-none shadow-xl rounded-3xl bg-white">
-            <CardContent className="p-6">
-              <div
-                className={`h-9 w-9 rounded-xl ${s.color} flex items-center justify-center shrink-0 mb-4`}
-              >
-                <s.icon className="h-4 w-4" />
-              </div>
+          <Card key={s.label} className="rounded-card shadow-none">
+            <CardContent className="p-4 sm:p-5">
+              <p className="u-label flex items-center gap-2"><s.icon className="h-3.5 w-3.5 shrink-0 text-primary" /> <span className="truncate">{s.label}</span></p>
               {loading ? (
-                <div className="h-8 w-14 rounded-lg bg-slate-100 animate-pulse" />
+                <div className="h-8 w-14 rounded-control bg-muted animate-pulse mt-2" />
               ) : (
-                <p className="text-3xl font-black text-primary leading-none italic">{s.value}</p>
+                <p className={`u-num text-2xl sm:text-3xl leading-none mt-2 ${s.tone}`}>{s.value}</p>
               )}
-              <p className="text-[10px] text-primary/70 font-black uppercase tracking-wider mt-2">
-                {s.label}
-              </p>
-              <p className="text-[9px] text-muted-foreground font-medium mt-0.5">{loading ? '' : s.sub}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">{loading ? '' : s.sub}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Attendance trend */}
-        <Card className="lg:col-span-3 border-none shadow-2xl rounded-card bg-white">
-          <CardHeader className="p-6 pb-2">
-            <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-emerald-500" />
-              Frequência Semanal
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <Card className="lg:col-span-3 rounded-card shadow-none min-w-0">
+          <CardHeader className="p-5 sm:p-6 pb-2">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              Frequência semanal
             </CardTitle>
-            <CardDescription className="text-xs font-semibold">
-              % de presença por semana — últimas 8 semanas. Linha amarela = meta 75%.
+            <CardDescription className="text-xs">
+              % de presença por semana nas últimas 8 semanas. A linha de referência marca a meta de 75%.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent className="p-5 sm:p-6 pt-0">
             {loading ? (
-              <div className="h-52 rounded-2xl bg-slate-50 animate-pulse" />
+              <div className="h-52 rounded-control bg-muted animate-pulse" />
             ) : kpi.attendanceTrend.length === 0 ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm italic opacity-50">
-                Sem dados de frequência ainda.
-              </div>
+              <EmptyState
+                compact
+                icon={TrendingUp}
+                title="Sem chamadas nas últimas 8 semanas"
+                description="A curva aparece quando houver frequência lançada no período."
+                action={{ label: "Lançar frequência", href: "/dashboard/secretary/attendance" }}
+              />
             ) : (
               <div className="h-52">
                 <LineChartPremium
@@ -378,24 +396,26 @@ export default function SecretaryKPIPage() {
           </CardContent>
         </Card>
 
-        {/* Students by class */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-card bg-white">
-          <CardHeader className="p-6 pb-2">
-            <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
-              Alunos por Turma
+        <Card className="lg:col-span-2 rounded-card shadow-none min-w-0">
+          <CardHeader className="p-5 sm:p-6 pb-2">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              Alunos por turma
             </CardTitle>
-            <CardDescription className="text-xs font-semibold">
-              Distribuição de alunos cadastrados por turma/curso.
+            <CardDescription className="text-xs">
+              Distribuição dos alunos cadastrados por turma/curso.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent className="p-5 sm:p-6 pt-0">
             {loading ? (
-              <div className="h-52 rounded-2xl bg-slate-50 animate-pulse" />
+              <div className="h-52 rounded-control bg-muted animate-pulse" />
             ) : kpi.byClass.length === 0 ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm italic opacity-50">
-                Nenhuma turma encontrada.
-              </div>
+              <EmptyState
+                compact
+                icon={Users}
+                title="Nenhuma turma encontrada"
+                description="As turmas aparecem quando houver alunos cadastrados."
+              />
             ) : (
               <div className="h-52">
                 <BarChartPremium
@@ -411,179 +431,82 @@ export default function SecretaryKPIPage() {
         </Card>
       </div>
 
-      {/* Docs + Income row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Document status */}
-        <Card className="border-none shadow-2xl rounded-card bg-white">
-          <CardHeader className="p-6 pb-4">
-            <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
-              <FileCheck className="h-5 w-5 text-purple-500" />
-              Status de Documentos
+      {/* Documentos + renda */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="rounded-card shadow-none">
+          <CardHeader className="p-5 sm:p-6 pb-4">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-muted-foreground" />
+              Situação dos documentos
             </CardTitle>
-            <CardDescription className="text-xs font-semibold">
-              Documentos enviados pelos alunos via upload.
+            <CardDescription className="text-xs">
+              Documentos enviados pelos alunos pela plataforma.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0 space-y-4">
-            {[
-              {
-                label: "Pendentes",
-                value: kpi.docsByStatus.pendente,
-                bar: "bg-amber-400",
-                text: "text-amber-700",
-                bg: "bg-amber-50",
-              },
-              {
-                label: "Aprovados",
-                value: kpi.docsByStatus.aprovado,
-                bar: "bg-emerald-400",
-                text: "text-emerald-700",
-                bg: "bg-emerald-50",
-              },
-              {
-                label: "Rejeitados",
-                value: kpi.docsByStatus.rejeitado,
-                bar: "bg-red-400",
-                text: "text-red-700",
-                bg: "bg-red-50",
-              },
-            ].map((item) => {
-              const total =
-                kpi.docsByStatus.pendente +
-                kpi.docsByStatus.aprovado +
-                kpi.docsByStatus.rejeitado;
-              const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
-              return (
-                <div key={item.label} className={`p-4 rounded-2xl ${item.bg}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`text-xs font-black uppercase tracking-wider ${item.text}`}>
-                      {item.label}
-                    </span>
-                    <span className={`text-2xl font-black italic ${item.text}`}>{item.value}</span>
-                  </div>
-                  <div className="w-full bg-white/60 rounded-full h-2">
-                    <div
-                      className={`${item.bar} h-2 rounded-full transition-all duration-700`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className={`text-[10px] font-bold mt-1 ${item.text} opacity-70`}>{pct}% do total</p>
-                </div>
-              );
-            })}
+          <CardContent className="p-5 sm:p-6 pt-0 space-y-3">
+            <DistRow label="Pendentes" value={kpi.docsByStatus.pendente} total={docsTotal} bar="bg-muted-foreground/50" text="" unit="do total" />
+            <DistRow label="Aprovados" value={kpi.docsByStatus.aprovado} total={docsTotal} bar="bg-emerald-500" text="!text-emerald-600" unit="do total" />
+            <DistRow label="Rejeitados" value={kpi.docsByStatus.rejeitado} total={docsTotal} bar="bg-red-500" text="!text-red-600" unit="do total" />
           </CardContent>
         </Card>
 
-        {/* Income distribution */}
-        <Card className="border-none shadow-2xl rounded-card bg-white">
-          <CardHeader className="p-6 pb-4">
-            <CardTitle className="text-lg font-black text-primary italic flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-teal-500" />
-              Distribuição de Renda
+        <Card className="rounded-card shadow-none">
+          <CardHeader className="p-5 sm:p-6 pb-4">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-muted-foreground" />
+              Distribuição de renda
             </CardTitle>
-            <CardDescription className="text-xs font-semibold">
-              Renda per capita vs limite de R$ {INCOME_THRESHOLD.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (1,5 sal. mín.).
+            <CardDescription className="text-xs">
+              Renda per capita comparada ao limite de R$ {INCOME_THRESHOLD.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (1,5 salário mínimo).
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0 space-y-4">
-            {[
-              {
-                label: "Dentro do Limite",
-                value:
-                  kpi.totalStudents -
-                  kpi.incomeExceeded -
-                  kpi.incomePending,
-                bar: "bg-emerald-400",
-                text: "text-emerald-700",
-                bg: "bg-emerald-50",
-                desc: "Renda per capita ≤ limite",
-              },
-              {
-                label: "Excedeu Limite",
-                value: kpi.incomeExceeded,
-                bar: "bg-red-400",
-                text: "text-red-700",
-                bg: "bg-red-50",
-                desc: "Renda per capita > limite",
-              },
-              {
-                label: "Sem Dados",
-                value: kpi.incomePending,
-                bar: "bg-slate-300",
-                text: "text-slate-600",
-                bg: "bg-slate-50",
-                desc: "Renda não informada",
-              },
-            ].map((item) => {
-              const pct =
-                kpi.totalStudents > 0
-                  ? Math.round((item.value / kpi.totalStudents) * 100)
-                  : 0;
-              return (
-                <div key={item.label} className={`p-4 rounded-2xl ${item.bg}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <span className={`text-xs font-black uppercase tracking-wider ${item.text}`}>
-                        {item.label}
-                      </span>
-                      <p className={`text-[10px] font-medium ${item.text} opacity-60 mt-0.5`}>
-                        {item.desc}
-                      </p>
-                    </div>
-                    <span className={`text-2xl font-black italic ${item.text}`}>{item.value}</span>
-                  </div>
-                  <div className="w-full bg-white/60 rounded-full h-2">
-                    <div
-                      className={`${item.bar} h-2 rounded-full transition-all duration-700`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className={`text-[10px] font-bold mt-1 ${item.text} opacity-70`}>
-                    {pct}% dos alunos
-                  </p>
-                </div>
-              );
-            })}
+          <CardContent className="p-5 sm:p-6 pt-0 space-y-3">
+            <DistRow label="Dentro do limite" desc="Renda per capita até o limite" value={incomeOk} total={kpi.totalStudents} bar="bg-emerald-500" text="!text-emerald-600" unit="dos alunos" />
+            <DistRow label="Acima do limite" desc="Renda per capita maior que o limite" value={kpi.incomeExceeded} total={kpi.totalStudents} bar="bg-red-500" text="!text-red-600" unit="dos alunos" />
+            <DistRow label="Sem dados" desc="Renda não informada" value={kpi.incomePending} total={kpi.totalStudents} bar="bg-muted-foreground/50" text="" unit="dos alunos" />
           </CardContent>
         </Card>
       </div>
 
-      {/* Top absentees */}
-      <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden border-l-[12px] border-amber-500">
-        <CardHeader className="p-6 md:p-8 pb-0">
-          <CardTitle className="text-xl font-black text-primary italic flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            Top Faltantes
-          </CardTitle>
-          <CardDescription className="text-xs font-semibold">
-            Alunos com mais faltas nas últimas 8 semanas. Risco de evasão.
+      {/* Mais faltas */}
+      <Card className="rounded-card shadow-none overflow-hidden">
+        <CardHeader className="p-5 sm:p-6 pb-0">
+          <p className="u-label flex items-center gap-2"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Últimas 8 semanas</p>
+          <CardTitle className="text-base font-bold mt-1">Alunos com mais faltas</CardTitle>
+          <CardDescription className="text-xs">
+            Quem mais faltou no período. É o primeiro sinal de risco de evasão.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6 md:p-8 pt-4">
-          {kpi.topAbsentees.length === 0 ? (
-            <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-card text-slate-500">
-              Nenhum faltante detectado no período.
-            </div>
-          ) : (
+        <CardContent className="p-5 sm:p-6 pt-4">
+          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Array(4).fill(0).map((_, i) => <div key={i} className="h-[60px] rounded-control bg-muted animate-pulse" />)}
+            </div>
+          ) : kpi.topAbsentees.length === 0 ? (
+            <EmptyState
+              compact
+              icon={CheckCircle2}
+              title="Nenhuma falta no período"
+              description="Os alunos com mais faltas nas últimas 8 semanas aparecem aqui."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {kpi.topAbsentees.map((student, idx) => (
                 <div
                   key={student.id}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-amber-50/50 border border-amber-100 hover:shadow-md transition-all"
+                  className="flex items-center justify-between gap-3 p-3 rounded-control border border-border"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm italic shrink-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-control bg-muted flex items-center justify-center u-num text-sm shrink-0">
                       {idx + 1}
                     </div>
-                    <div>
-                      <p className="font-bold text-sm text-slate-800 leading-none">{student.name}</p>
-                      <p className="text-[9px] font-black uppercase text-slate-400 mt-1 tracking-wider">
-                        {student.course}
-                      </p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm leading-tight truncate">{txt(student.name, "Aluno")}</p>
+                      <p className="u-label mt-1 truncate">{txt(student.course, "Sem turma")}</p>
                     </div>
                   </div>
-                  <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] px-3 shrink-0">
-                    {student.absences} faltas
+                  <Badge variant="outline" className="border-amber-300 text-amber-700 font-bold shrink-0">
+                    <span className="u-num mr-1">{student.absences}</span> {student.absences === 1 ? "falta" : "faltas"}
                   </Badge>
                 </div>
               ))}

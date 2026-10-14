@@ -37,6 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Link from "next/link";
+import { fmtDate } from '@/lib/format';
 
 export default function ForumDetailPage() {
   const params = useParams();
@@ -312,7 +313,7 @@ export default function ForumDetailPage() {
                             <div className="flex items-center gap-2 mb-1 px-2">
                               <span className="text-[8px] font-black uppercase text-primary/40">{post.author_name}</span>
                               <span className="text-[7px] font-bold text-muted-foreground italic">
-                                {format(new Date(post.created_at), "HH:mm")}
+                                {fmtDate(post.created_at, "HH:mm")}
                               </span>
                             </div>
                             <div className={`px-5 py-3.5 rounded-card shadow-sm max-w-[90%] md:max-w-[75%] text-sm font-medium leading-relaxed ${

@@ -47,6 +47,7 @@ import {
 import { useAuth } from '@/lib/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { EDUCATIONAL_CATEGORIES } from '@/lib/constants';
+import { EmptyState } from '@/components/EmptyState';
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,18 @@ import Link from 'next/link';
 import { supabase } from '@/app/lib/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import YouTubeUploadModal from '@/components/teacher/YouTubeUploadModal';
+
+// O valor gravado continua em inglês; só o rótulo na tela é traduzido.
+const TIPO_CONTEUDO: Record<string, string> = {
+  video: 'Videoaula',
+  quiz: 'Quiz',
+  pdf: 'PDF',
+  text: 'Texto',
+  file: 'Anexo',
+  link: 'Link',
+  book: 'Livro',
+};
+const tipoConteudo = (t?: string | null) => (t ? TIPO_CONTEUDO[t] ?? t : 'Material');
 
 export default function TrailManagementPage() {
   const params = useParams();
@@ -181,7 +194,7 @@ export default function TrailManagementPage() {
     const params = new URLSearchParams(window.location.search);
     const yt = params.get('youtube');
     if (yt === 'connected') {
-      toast({ title: 'YouTube conectado!', description: 'Seu canal foi vinculado. Agora você pode publicar vídeos diretamente.' });
+      toast({ title: 'YouTube conectado', description: 'Seu canal foi vinculado. Agora você pode publicar vídeos diretamente.' });
       window.history.replaceState({}, '', window.location.pathname);
     } else if (yt === 'error') {
       toast({ title: 'Erro ao conectar YouTube', description: 'Verifique as credenciais e tente novamente.', variant: 'destructive' });
@@ -266,7 +279,7 @@ export default function TrailManagementPage() {
       if (error) throw error;
       
       setTrail((prev: any) => ({ ...prev, ...editTrailForm, image_url: finalImageUrl }));
-      toast({ title: 'Detalhes Atualizados!' });
+      toast({ title: 'Detalhes atualizados' });
       setIsEditTrailDialogOpen(false);
       router.refresh();
     } catch (e: any) {
@@ -284,7 +297,7 @@ export default function TrailManagementPage() {
         toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
         setIsSubmitting(false);
       } else {
-        toast({ title: 'Trilha Excluída', description: 'Todo o conteúdo foi apagado permanentemente.' });
+        toast({ title: 'Trilha excluída', description: 'Todo o conteúdo foi apagado.' });
         router.refresh();
         router.push('/dashboard/teacher/trails');
       }
@@ -308,7 +321,7 @@ export default function TrailManagementPage() {
     if (!error) {
       setModules((prev) => [...prev, data]);
       setContents((prev) => ({ ...prev, [data.id]: [] }));
-      toast({ title: 'Módulo Criado!' });
+      toast({ title: 'Capítulo criado' });
       router.refresh();
       
       setTimeout(() => {
@@ -336,7 +349,7 @@ export default function TrailManagementPage() {
 
   const addToQueue = async () => {
     if (!contentForm.title.trim()) {
-      toast({ title: 'Título Obrigatório', variant: 'destructive' });
+      toast({ title: 'Informe o título', variant: 'destructive' });
       return;
     }
 
@@ -401,7 +414,7 @@ export default function TrailManagementPage() {
 
         if (error) throw error;
 
-        toast({ title: 'Aula Atualizada!' });
+        toast({ title: 'Aula atualizada' });
         router.refresh();
         
         setTimeout(() => {
@@ -495,7 +508,7 @@ export default function TrailManagementPage() {
     const { error } = await supabase.from('modules').delete().eq('id', id);
     if (!error) {
       setModules((prev) => prev.filter((m) => m.id !== id));
-      toast({ title: 'Capítulo removido.' });
+      toast({ title: 'Capítulo removido' });
       router.refresh();
     }
     setDeletingId(null);
@@ -578,7 +591,7 @@ export default function TrailManagementPage() {
       if (error) throw error;
 
       setModules(prev => prev.map(m => m.id === editingModule.id ? { ...m, title: editModuleTitle.trim() } : m));
-      toast({ title: 'Capítulo Atualizado!' });
+      toast({ title: 'Capítulo atualizado' });
       setIsEditModuleDialogOpen(false);
       setEditingModule(null);
     } catch (e: any) {
@@ -603,7 +616,7 @@ export default function TrailManagementPage() {
         }
         return newContents;
       });
-      toast({ title: 'Item removido.' });
+      toast({ title: 'Item removido' });
       router.refresh();
     }
     setDeletingId(null);
@@ -611,138 +624,139 @@ export default function TrailManagementPage() {
 
   if (loading) {
     return (
-      <div className='flex flex-col h-screen items-center justify-center gap-4 bg-background'>
-        <Loader2 className='animate-spin h-14 w-14 text-accent' />
-        <p className='text-[10px] font-black uppercase tracking-[0.3em] text-primary animate-pulse'>
-          Sintonizando Estúdio...
-        </p>
+      <div className='flex flex-col h-96 items-center justify-center gap-4'>
+        <Loader2 className='animate-spin h-8 w-8 text-muted-foreground' />
+        <p className='u-label'>Carregando…</p>
       </div>
     );
   }
 
+  const isPublished = trail?.status === 'active';
+
   return (
-    <div className='max-w-6xl mx-auto w-full space-y-8 animate-in fade-in duration-700 pb-24 px-1'>
-      <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-card shadow-xl border border-muted/10'>
-        <div className='flex items-center gap-6'>
+    <div className='max-w-6xl mx-auto w-full space-y-6 pb-24 px-1'>
+      {/* Cabeçalho */}
+      <div className='flex flex-col lg:flex-row lg:items-end justify-between gap-4'>
+        <div className='flex items-start gap-3 min-w-0'>
           <Button
             variant='ghost'
             size='icon'
             onClick={() => router.back()}
-            className='rounded-full h-12 w-12 bg-muted/30 hover:bg-primary/5 transition-all'
+            aria-label='Voltar'
+            className='rounded-control h-10 w-10 shrink-0'
           >
-            <ChevronLeft className='h-6 w-6 text-primary' />
+            <ChevronLeft className='h-5 w-5' />
           </Button>
-          <div>
-            <h1 className='text-xl md:text-3xl font-black text-primary italic leading-none truncate max-w-[250px] md:max-w-md'>
-              {trail?.title}
+          <div className='min-w-0'>
+            <p className='u-label'>Professor · trilhas</p>
+            <h1 className='u-page-title text-2xl md:text-3xl mt-1 line-clamp-2'>
+              {trail?.title || 'Trilha'}
             </h1>
-            <div className='flex items-center gap-2 mt-1.5'>
+            <div className='flex flex-wrap items-center gap-2 mt-2'>
               <Badge
-                variant={trail?.status === 'active' ? 'default' : 'outline'}
-                className={`text-[8px] font-black uppercase px-2.5 h-5 flex items-center ${
-                  trail?.status === 'active'
-                    ? 'bg-green-600 border-none text-white'
-                    : 'text-orange-500 border-orange-500'
+                variant='outline'
+                className={`text-[11px] font-bold px-2 h-5 ${
+                  isPublished
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'text-muted-foreground'
                 }`}
               >
-                {trail?.status === 'active' ? 'PÚBLICA' : 'RASCUNHO'}
+                {isPublished ? 'Publicada' : 'Rascunho'}
               </Badge>
-              <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:inline'>
-                Painel de Autor
-              </span>
+              <Badge variant='outline' className='text-[11px] font-bold px-2 h-5 text-muted-foreground'>
+                {trail?.trail_type === 'serie' ? 'Série' : 'Aula avulsa'}
+              </Badge>
             </div>
           </div>
         </div>
-        <div className='flex items-center gap-3'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <Button
+            variant='outline'
+            onClick={openEditTrailDialog}
+            className='rounded-control h-11 font-bold px-4'
+          >
+            <Pencil className='h-4 w-4 mr-2' /> Detalhes
+          </Button>
+          <Button
+            variant='outline'
+            className='rounded-control h-11 font-bold px-4'
+            asChild
+          >
+            <Link href={`/dashboard/classroom/${trailId}`}>
+              <Eye className='h-4 w-4 mr-2' /> Ver como aluno
+            </Link>
+          </Button>
           <Button
             variant='ghost'
             size='icon'
             onClick={handleDeleteTrail}
-            title='Excluir Trilha Definitivamente'
-            className='rounded-xl h-12 w-12 text-red-500 hover:bg-red-50 hover:text-red-700 transition-all hidden sm:flex shrink-0'
+            title='Excluir trilha definitivamente'
+            aria-label='Excluir trilha'
+            className='rounded-control h-11 w-11 text-muted-foreground hover:bg-red-50 hover:text-red-600 shrink-0'
           >
             <Trash2 className='h-5 w-5' />
           </Button>
           <Button
-            variant='outline'
-            onClick={openEditTrailDialog}
-            className='rounded-xl h-12 border-primary/20 text-primary font-black px-6 shadow-sm hover:bg-primary/5 transition-all hidden sm:flex'
-          >
-            <Pencil className='h-5 w-5 mr-2 text-primary/50' /> Detalhes
-          </Button>
-          <Button
-            variant='outline'
-            className='rounded-xl h-12 border-primary/20 text-primary font-black px-6 shadow-sm hover:bg-primary/5 transition-all hidden sm:flex'
-            asChild
-          >
-            <Link href={`/dashboard/classroom/${trailId}`}>
-              <Eye className='h-5 w-5 mr-2 text-accent' /> Prévia
-            </Link>
-          </Button>
-          <Button
+            variant='arcade'
             onClick={() => setIsModuleDialogOpen(true)}
-            className='bg-primary text-white font-black rounded-xl shadow-lg h-12 px-8 hover:scale-105 transition-all'
+            className='rounded-control h-11 px-5 font-bold w-full sm:w-auto'
           >
-            <Plus className='h-5 w-5 mr-2 text-accent' /> Novo Capítulo
+            <Plus className='h-4 w-4 mr-2' /> Novo capítulo
           </Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
-        <div className='lg:col-span-8 space-y-6'>
+      <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+        <div className='lg:col-span-8 space-y-4'>
           {modules.length === 0 ? (
-            <Card className='border-4 border-dashed border-muted/20 bg-muted/5 rounded-[3rem] p-20 text-center flex flex-col items-center gap-4'>
-              <ListPlus className='h-16 w-16 text-muted-foreground/30' />
-              <h3 className='text-xl font-black text-primary italic'>
-                Inicie sua Jornada
-              </h3>
-              <Button
-                onClick={() => setIsModuleDialogOpen(true)}
-                className='bg-accent text-accent-foreground font-black px-10 h-14 rounded-2xl shadow-xl'
-              >
-                Criar Primeiro Capítulo
-              </Button>
-            </Card>
+            <EmptyState
+              icon={ListPlus}
+              title='Esta trilha ainda não tem capítulos'
+              description='Crie o primeiro capítulo e depois adicione as aulas e materiais dele.'
+              action={{ label: 'Criar primeiro capítulo', icon: Plus, onClick: () => setIsModuleDialogOpen(true) }}
+            />
           ) : (
             modules.map((mod, idx) => (
               <Card
                 key={mod.id}
-                className='border-none shadow-2xl bg-white overflow-hidden rounded-card group transition-all hover:shadow-primary/5'
+                className='overflow-hidden rounded-card'
               >
-                <CardHeader className='bg-muted/10 p-6 flex flex-row items-center justify-between border-b border-muted/20'>
-                  <div className='flex items-center gap-4'>
-                    <div className='h-12 w-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black italic shadow-lg rotate-3 group-hover:rotate-0 transition-transform'>
-                      {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                <CardHeader className='p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0 border-b border-border'>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <div className='h-11 w-11 rounded-control border border-border flex items-center justify-center shrink-0'>
+                      <span className='u-num text-base'>{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <CardTitle className='text-lg font-black text-primary italic leading-none'>
+                    <div className='min-w-0'>
+                      <div className="flex items-center gap-1.5">
+                        <CardTitle className='text-base font-bold text-foreground leading-tight truncate'>
                           {mod.title}
                         </CardTitle>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => startEditModule(mod)}
-                          className="h-6 w-6 rounded-full hover:bg-primary/10 text-primary/50 hover:text-primary transition-colors shrink-0"
+                          className="h-7 w-7 rounded-control text-muted-foreground hover:text-foreground shrink-0"
                           title="Editar título do capítulo"
+                          aria-label="Editar título do capítulo"
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                      <p className='text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-1.5'>
-                        {contents[mod.id]?.length || 0} Materiais vinculados
+                      <p className='u-label !tracking-[0.16em] mt-1'>
+                        {contents[mod.id]?.length || 0} {(contents[mod.id]?.length || 0) === 1 ? 'material' : 'materiais'}
                       </p>
                     </div>
                   </div>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center gap-1.5 self-end sm:self-auto'>
                     {trail?.trail_type === 'serie' && (
                       <Button
                         variant='ghost'
                         size='icon'
-                        title='Tornar aula independente'
+                        title='Tornar aula avulsa'
+                        aria-label='Tornar aula avulsa'
                         onClick={() => handleDetachModule(mod)}
                         disabled={!!detachingId}
-                        className='text-muted-foreground hover:text-indigo-600 rounded-full h-10 w-10 hover:bg-indigo-50'
+                        className='text-muted-foreground hover:text-foreground rounded-control h-9 w-9'
                       >
                         {detachingId === mod.id ? (
                           <Loader2 className='h-4 w-4 animate-spin' />
@@ -756,7 +770,8 @@ export default function TrailManagementPage() {
                       size='icon'
                       onClick={() => handleDeleteModule(mod.id)}
                       disabled={deletingId === mod.id}
-                      className='text-muted-foreground hover:text-red-600 rounded-full h-10 w-10 hover:bg-red-50'
+                      aria-label='Excluir capítulo'
+                      className='text-muted-foreground hover:text-red-600 rounded-control h-9 w-9 hover:bg-red-50'
                     >
                       {deletingId === mod.id ? (
                         <Loader2 className='h-4 w-4 animate-spin' />
@@ -765,6 +780,7 @@ export default function TrailManagementPage() {
                       )}
                     </Button>
                     <Button
+                      variant='outline'
                       onClick={() => {
                         activeModuleRef.current = mod.id;
                         setActiveModuleId(mod.id);
@@ -773,27 +789,20 @@ export default function TrailManagementPage() {
                         setContentForm({ title: '', type: 'video', url: '', description: '', workbook_id: '' });
                         setIsContentDialogOpen(true);
                       }}
-                      className='bg-accent text-accent-foreground font-black text-[9px] uppercase rounded-xl h-10 px-5 shadow-md hover:scale-105 active:scale-95 transition-all'
+                      className='font-bold text-sm rounded-control h-9 px-3'
                     >
-                      <Plus className='h-4 w-4 mr-1.5' /> Adicionar Aula
+                      <Plus className='h-4 w-4 mr-1.5' /> Adicionar aula
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className='p-6 space-y-3'>
+                <CardContent className='p-4 md:p-5 space-y-2'>
                   {(contents[mod.id] || []).map((content) => (
                     <div
                       key={content.id}
-                      className='flex items-center justify-between p-4 rounded-2xl bg-slate-50 border-2 border-transparent hover:border-accent/30 hover:bg-white hover:shadow-xl transition-all group/item'
+                      className='flex items-center justify-between gap-3 p-3 rounded-control border border-border hover:bg-muted/40 transition-colors group/item'
                     >
-                      <div className='flex items-center gap-4 overflow-hidden'>
-                        <div
-                          className={`h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${
-                            content.type === 'video'
-                              ? 'bg-red-50 text-red-600'
-                              : content.type === 'quiz'
-                              ? 'bg-orange-50 text-orange-600'
-                              : 'bg-blue-50 text-blue-600'
-                          }`}>
+                      <div className='flex items-center gap-3 overflow-hidden'>
+                        <div className='h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center shrink-0'>
                           {content.type === 'video' ? (
                             <Youtube className='h-5 w-5' />
                           ) : content.type === 'quiz' ? (
@@ -803,36 +812,38 @@ export default function TrailManagementPage() {
                           )}
                         </div>
                         <div className='min-w-0'>
-                          <div className='flex items-center gap-2'>
-                            <p className='font-black text-xs md:text-sm text-primary truncate leading-none'>
+                          <div className='flex items-center gap-2 min-w-0'>
+                            <p className='font-semibold text-sm text-foreground truncate leading-tight'>
                               {content.title}
                             </p>
                             {content.workbook_id && (
-                              <Badge className='bg-accent/10 text-accent border-none text-[7px] font-black h-4 px-1.5 flex items-center gap-1'>
-                                <BookOpen className='h-2 w-2' /> APOSTILA
+                              <Badge variant='outline' className='text-[10px] font-bold h-5 px-1.5 flex items-center gap-1 shrink-0 text-muted-foreground'>
+                                <BookOpen className='h-3 w-3' /> Apostila
                               </Badge>
                             )}
                           </div>
-                          <p className='text-[8px] font-bold text-muted-foreground uppercase mt-1 opacity-60'>
-                            {content.type}
+                          <p className='u-label !tracking-[0.16em] mt-1'>
+                            {tipoConteudo(content.type)}
                           </p>
                         </div>
                       </div>
-                      <div className='flex items-center gap-2 opacity-0 group-hover/item:opacity-100 transition-all'>
+                      <div className='flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover/item:opacity-100 md:focus-within:opacity-100 transition-opacity'>
                         <Button
                           variant='ghost'
                           size='icon'
-                          className='h-9 w-9 rounded-full hover:bg-primary/10 text-primary'
+                          className='h-9 w-9 rounded-control text-muted-foreground hover:text-foreground'
                           onClick={() => startEditContent(content)}
+                          aria-label='Editar material'
                         >
                           <Pencil className='h-4 w-4' />
                         </Button>
                         <Button
                           variant='ghost'
                           size='icon'
-                          className='h-9 w-9 rounded-full hover:bg-red-500 hover:text-white'
+                          className='h-9 w-9 rounded-control text-muted-foreground hover:bg-red-50 hover:text-red-600'
                           onClick={() => handleDeleteContent(content.id)}
                           disabled={deletingId === content.id}
+                          aria-label='Remover material'
                         >
                           {deletingId === content.id ? (
                             <Loader2 className='h-4 w-4 animate-spin' />
@@ -844,11 +855,24 @@ export default function TrailManagementPage() {
                     </div>
                   ))}
                   {(!contents[mod.id] || contents[mod.id].length === 0) && (
-                    <div className='text-center py-10 border-2 border-dashed border-muted/30 rounded-2xl bg-muted/5'>
-                      <p className='text-[9px] font-black text-muted-foreground uppercase tracking-widest italic opacity-40'>
-                        Este capítulo ainda está sem materiais didáticos.
-                      </p>
-                    </div>
+                    <EmptyState
+                      compact
+                      icon={FileText}
+                      title='Capítulo sem materiais'
+                      description='Adicione uma videoaula, PDF ou quiz a este capítulo.'
+                      action={{
+                        label: 'Adicionar aula',
+                        icon: Plus,
+                        onClick: () => {
+                          activeModuleRef.current = mod.id;
+                          setActiveModuleId(mod.id);
+                          setEditingContentId(null);
+                          setPendingItems([]);
+                          setContentForm({ title: '', type: 'video', url: '', description: '', workbook_id: '' });
+                          setIsContentDialogOpen(true);
+                        },
+                      }}
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -856,65 +880,55 @@ export default function TrailManagementPage() {
           )}
         </div>
 
-        <div className='lg:col-span-4 space-y-6'>
-          <Card className='border-none shadow-2xl bg-primary text-white rounded-card p-8 overflow-hidden relative group'>
-            <div className='absolute top-[-10%] right-[-10%] w-32 h-32 bg-accent/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000' />
-            <div className='relative z-10 space-y-6'>
-              <div className='flex items-center gap-4'>
-                <div className='h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shadow-xl'>
-                  {trail?.status === 'active' ? (
-                    <Globe className='h-8 w-8 text-green-400 animate-pulse' />
+        <div className='lg:col-span-4 space-y-4'>
+          <Card className='rounded-card p-5 md:p-6'>
+            <div className='space-y-4'>
+              <div className='flex items-center gap-3'>
+                <div className={`h-11 w-11 rounded-control flex items-center justify-center shrink-0 ${isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground'}`}>
+                  {isPublished ? (
+                    <Globe className='h-5 w-5' />
                   ) : (
-                    <Settings2 className='h-8 w-8 text-accent' />
+                    <Settings2 className='h-5 w-5' />
                   )}
                 </div>
                 <div>
-                  <p className='text-[9px] font-black uppercase tracking-widest opacity-60'>
-                    Status de Rede
-                  </p>
-                  <p className='text-2xl font-black italic uppercase'>
-                    {trail?.status === 'active' ? 'Publicada' : 'Em Rascunho'}
+                  <p className='u-label'>Situação</p>
+                  <p className={`text-lg font-bold ${isPublished ? 'text-emerald-700' : 'text-foreground'}`}>
+                    {isPublished ? 'Publicada' : 'Rascunho'}
                   </p>
                 </div>
               </div>
 
-              <div className='p-5 rounded-2xl bg-white/5 border border-white/10'>
-                <p className='text-xs font-medium italic opacity-80 leading-relaxed'>
-                  {trail?.status === 'active'
-                    ? 'O material está sintonizado para todos os alunos autenticados.'
-                    : 'Apenas você e a coordenação podem ver este capítulo.'}
-                </p>
-              </div>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
+                {isPublished
+                  ? 'Todos os alunos com acesso já podem ver esta trilha.'
+                  : 'Só você e a coordenação veem esta trilha por enquanto.'}
+              </p>
 
               <Button
                 onClick={handlePublish}
                 disabled={isPublishing || !trail}
-                className={`w-full font-black h-16 rounded-2xl shadow-xl transition-all border-none text-sm uppercase ${
-                  trail?.status === 'active'
-                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                    : 'bg-accent text-accent-foreground hover:bg-accent/90'
-                }`}>
+                variant={isPublished ? 'outline' : 'default'}
+                className='w-full font-bold h-11 rounded-control text-sm'>
                 {isPublishing ? (
-                  <Loader2 className='animate-spin h-6 w-6 mr-2' />
+                  <Loader2 className='animate-spin h-4 w-4 mr-2' />
                 ) : (
-                  <CheckCircle2 className='h-6 w-6 mr-2' />
+                  <CheckCircle2 className='h-4 w-4 mr-2' />
                 )}
-                {trail?.status === 'active'
-                  ? 'Retirar de Exibição'
-                  : 'Liberar na Rede'}
+                {isPublished
+                  ? 'Voltar para rascunho'
+                  : 'Publicar para os alunos'}
               </Button>
             </div>
           </Card>
 
-          <Card className='bg-white border-none shadow-xl rounded-card p-8 space-y-6'>
-            <div className="flex items-center gap-3">
-              <Sparkles className='h-5 w-5 text-accent' />
-              <h3 className='text-[10px] font-black text-primary uppercase tracking-widest'>
-                Mentoria da Plataforma
-              </h3>
+          <Card className='rounded-card p-5 md:p-6 space-y-3'>
+            <div className="flex items-center gap-2">
+              <Sparkles className='h-4 w-4 text-primary' />
+              <h3 className='u-label'>Dica</h3>
             </div>
-            <p className='text-sm font-medium italic text-primary/70 leading-relaxed border-l-4 border-accent/30 pl-4'>
-              "Organize suas aulas em blocos de até 15 minutos para maximizar o foco dos seus estudantes."
+            <p className='text-sm text-muted-foreground leading-relaxed'>
+              Organize as aulas em blocos de até 15 minutos para ajudar os alunos a manter o foco.
             </p>
           </Card>
         </div>
@@ -931,22 +945,22 @@ export default function TrailManagementPage() {
 
       {/* DIÁLOGO EDITAR TRILHA */}
       <Dialog open={isEditTrailDialogOpen} onOpenChange={setIsEditTrailDialogOpen}>
-        <DialogContent className='rounded-2xl md:rounded-3xl p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg border-none shadow-xl max-h-[90vh] overflow-y-auto'>
+        <DialogContent className='rounded-card p-5 md:p-6 w-[95vw] sm:w-full max-w-lg max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle className='text-base md:text-xl font-black italic text-primary'>Editar Rótulo</DialogTitle>
+            <DialogTitle className='text-lg font-bold text-foreground'>Editar detalhes da trilha</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Título Principal</Label>
-              <Input placeholder="Ex: Fundamentos de Redação" className="h-10 rounded-xl bg-muted/30 border-none font-bold" value={editTrailForm.title} onChange={(e) => setEditTrailForm({ ...editTrailForm, title: e.target.value })} disabled={isSubmitting} />
+              <Label className="u-label">Título</Label>
+              <Input placeholder="Ex.: Fundamentos de redação" className="h-10 rounded-control font-medium" value={editTrailForm.title} onChange={(e) => setEditTrailForm({ ...editTrailForm, title: e.target.value })} disabled={isSubmitting} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Matéria Central</Label>
+              <Label className="u-label">Matéria</Label>
               <Select value={editTrailForm.category} onValueChange={(v) => setEditTrailForm({ ...editTrailForm, category: v })} disabled={isSubmitting}>
-                <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold">
-                  <SelectValue placeholder="Selecione a disciplina" />
+                <SelectTrigger className="h-10 rounded-control font-medium">
+                  <SelectValue placeholder="Selecione a matéria" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-xl max-h-60">
+                <SelectContent className="rounded-control max-h-60">
                     {EDUCATIONAL_CATEGORIES.map(category => (
                       <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
@@ -954,29 +968,29 @@ export default function TrailManagementPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Capa da Trilha (Arquivo ou URL)</Label>
+              <Label className="u-label">Capa da trilha (arquivo ou link)</Label>
               <div className="flex flex-col gap-2">
                 <Input 
                   type="file" 
                   accept="image/*"
                   onChange={e => setEditCoverFile(e.target.files?.[0] || null)} 
-                  className="h-10 rounded-xl bg-muted/30 border-2 border-dashed border-primary/20 cursor-pointer hover:border-accent p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white"
+                  className="h-10 rounded-control border-2 border-dashed border-border cursor-pointer hover:border-primary/40 p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-control file:border-0 file:text-xs file:font-bold file:bg-primary file:text-primary-foreground"
                   disabled={isSubmitting || uploading}
                 />
                 {!editCoverFile && (
-                  <Input placeholder="Ou URL da imagem..." className="h-10 rounded-xl bg-muted/30 border-none font-bold" value={editTrailForm.image_url} onChange={(e) => setEditTrailForm({ ...editTrailForm, image_url: e.target.value })} disabled={isSubmitting || uploading} />
+                  <Input placeholder="Ou cole o link da imagem..." className="h-10 rounded-control font-medium" value={editTrailForm.image_url} onChange={(e) => setEditTrailForm({ ...editTrailForm, image_url: e.target.value })} disabled={isSubmitting || uploading} />
                 )}
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Breve Descrição</Label>
-              <Textarea placeholder="Qual o propósito deste conjunto de módulos?" className="min-h-[60px] md:min-h-[60px] rounded-xl bg-muted/30 border-none font-medium resize-none" value={editTrailForm.description} onChange={(e) => setEditTrailForm({ ...editTrailForm, description: e.target.value })} disabled={isSubmitting || uploading} />
+              <Label className="u-label">Descrição</Label>
+              <Textarea placeholder="Qual o propósito deste conjunto de módulos?" className="min-h-[60px] rounded-control resize-none" value={editTrailForm.description} onChange={(e) => setEditTrailForm({ ...editTrailForm, description: e.target.value })} disabled={isSubmitting || uploading} />
             </div>
           </div>
           <DialogFooter className="mt-2 text-center items-center justify-center">
-            <Button onClick={handleUpdateTrail} disabled={isSubmitting || !editTrailForm.title} className="w-full h-10 md:h-12 bg-primary text-white font-black text-sm md:text-base rounded-xl shadow-lg">
+            <Button onClick={handleUpdateTrail} disabled={isSubmitting || !editTrailForm.title} className="w-full h-11 font-bold text-sm rounded-control">
               {isSubmitting ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              Salvar Alterações
+              Salvar alterações
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -984,16 +998,16 @@ export default function TrailManagementPage() {
 
       {/* DIÁLOGO EDITAR CAPÍTULO */}
       <Dialog open={isEditModuleDialogOpen} onOpenChange={setIsEditModuleDialogOpen}>
-        <DialogContent className='rounded-2xl md:rounded-3xl p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg border-none shadow-xl'>
+        <DialogContent className='rounded-card p-5 md:p-6 w-[95vw] sm:w-full max-w-lg'>
           <DialogHeader>
-            <DialogTitle className='text-base md:text-xl font-black italic text-primary'>Editar Título do Capítulo</DialogTitle>
+            <DialogTitle className='text-lg font-bold text-foreground'>Editar título do capítulo</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Título do Capítulo</Label>
+              <Label className="u-label">Título do capítulo</Label>
               <Input
-                placeholder="Ex: Introdução às Funções"
-                className="h-10 rounded-xl bg-muted/30 border-none font-bold"
+                placeholder="Ex.: Introdução às funções"
+                className="h-10 rounded-control font-medium"
                 value={editModuleTitle}
                 onChange={(e) => setEditModuleTitle(e.target.value)}
                 disabled={isSubmitting}
@@ -1002,13 +1016,13 @@ export default function TrailManagementPage() {
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditModuleDialogOpen(false)} className="flex-1 h-11 rounded-xl font-black">
+            <Button variant="outline" onClick={() => setIsEditModuleDialogOpen(false)} className="flex-1 h-11 rounded-control font-bold">
               Cancelar
             </Button>
             <Button
               onClick={handleUpdateModule}
               disabled={isSubmitting || !editModuleTitle.trim()}
-              className="flex-1 h-11 rounded-xl bg-primary text-white font-black shadow-xl"
+              className="flex-1 h-11 rounded-control font-bold"
             >
               {isSubmitting ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
               Salvar
@@ -1019,34 +1033,34 @@ export default function TrailManagementPage() {
 
       {/* DIÁLOGO MÓDULO */}
       <Dialog open={isModuleDialogOpen} onOpenChange={setIsModuleDialogOpen}>
-        <DialogContent className='rounded-2xl md:rounded-3xl p-5 md:p-6 bg-white border-none shadow-xl w-[95vw] sm:w-full max-w-sm mx-auto'>
+        <DialogContent className='rounded-card p-5 md:p-6 w-[95vw] sm:w-full max-w-sm mx-auto'>
           <DialogHeader>
-            <DialogTitle className='text-lg md:text-xl font-black italic text-primary'>
-              Novo Capítulo
+            <DialogTitle className='text-lg font-bold text-foreground'>
+              Novo capítulo
             </DialogTitle>
           </DialogHeader>
           <div className='py-2 space-y-2'>
-            <Label className='text-[10px] font-black uppercase tracking-widest opacity-40 ml-2'>
-              Título da Unidade Didática
+            <Label className='u-label'>
+              Título do capítulo
             </Label>
             <Input
-              placeholder='Ex: Introdução à Matéria'
+              placeholder='Ex.: Introdução à matéria'
               value={moduleForm.title}
               onChange={(e) => setModuleForm({ title: e.target.value || '' })}
               disabled={isSubmitting}
-              className='h-10 rounded-xl bg-muted/30 border-none font-bold italic text-sm focus:ring-accent'
+              className='h-10 rounded-control font-medium text-sm'
             />
           </div>
           <DialogFooter className="mt-2">
             <Button
               onClick={handleAddModule}
               disabled={isSubmitting || !moduleForm.title}
-              className='w-full h-10 bg-primary text-white font-black rounded-xl shadow-lg text-sm'
+              className='w-full h-11 font-bold rounded-control text-sm'
             >
               {isSubmitting ? (
                 <Loader2 className='h-4 w-4 animate-spin mr-2' />
               ) : (
-                'Criar Unidade'
+                'Criar capítulo'
               )}
             </Button>
           </DialogFooter>
@@ -1063,19 +1077,19 @@ export default function TrailManagementPage() {
           setIsContentDialogOpen(true);
         }
       }}>
-        <DialogContent className='rounded-2xl max-h-[95vh] md:rounded-3xl p-0 w-[95vw] sm:w-full max-w-4xl bg-white border-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden mx-auto flex flex-col'>
+        <DialogContent className='rounded-card max-h-[95vh] p-0 w-[95vw] sm:w-full max-w-4xl overflow-hidden mx-auto flex flex-col'>
           <div className="flex flex-col h-full max-h-[90vh]">
-            <DialogHeader className="p-6 md:p-8 bg-primary text-white shrink-0">
+            <DialogHeader className="p-5 md:p-6 border-b border-border shrink-0 text-left">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 md:h-10 md:w-10 rounded-xl bg-accent text-accent-foreground flex items-center justify-center shadow-lg shrink-0">
+                <div className="h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   {editingContentId ? <Pencil className="h-5 w-5 md:h-5 md:w-5" /> : <PlusCircle className="h-5 w-5 md:h-5 md:w-5" />}
                 </div>
                 <div>
-                  <DialogTitle className='text-lg md:text-2xl font-black italic tracking-tighter uppercase leading-none'>
-                    {editingContentId ? 'Ajustar Material' : 'Anexar Materiais'}
+                  <DialogTitle className='text-lg font-bold text-foreground leading-tight'>
+                    {editingContentId ? 'Editar material' : 'Adicionar materiais'}
                   </DialogTitle>
-                  <p className='text-white/60 text-xs md:text-sm font-medium italic mt-1.5'>
-                    {editingContentId ? 'Altere as propriedades do material pedagógico.' : 'Construa a sequência didática para este capítulo antes de publicar.'}
+                  <p className='text-muted-foreground text-sm mt-1'>
+                    {editingContentId ? 'Altere os dados deste material.' : 'Monte a lista de materiais do capítulo e depois publique.'}
                   </p>
                 </div>
               </div>
@@ -1083,12 +1097,12 @@ export default function TrailManagementPage() {
 
             <ScrollArea className="flex-1 overflow-auto">
               <div className={`grid grid-cols-1 ${editingContentId ? '' : 'lg:grid-cols-2'} gap-0 h-full`}>
-                <div className={`p-4 md:p-6 space-y-4 ${editingContentId ? '' : 'border-r border-dashed border-muted/20'} bg-slate-50/50`}>
+                <div className={`p-4 md:p-6 space-y-4 ${editingContentId ? '' : 'lg:border-r border-dashed border-border'} bg-muted/30`}>
                   <div className='space-y-3'>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                       <div className='space-y-1.5'>
-                        <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2'>
-                          Categoria
+                        <Label className='u-label'>
+                          Tipo
                         </Label>
                         <Select
                           value={contentForm.type}
@@ -1097,10 +1111,10 @@ export default function TrailManagementPage() {
                           }
                           disabled={isSubmitting || uploading}
                         >
-                          <SelectTrigger className='h-10 rounded-xl bg-white border-none shadow-sm font-bold italic text-primary text-xs'>
+                          <SelectTrigger className='h-10 rounded-control bg-background font-medium text-sm'>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className='rounded-xl border-none shadow-xl p-2'>
+                          <SelectContent className='rounded-control p-1'>
                             <SelectItem value='video' className='py-2 font-bold'>🎞️ Videoaula</SelectItem>
                             <SelectItem value='quiz' className='py-2 font-bold'>🧠 Quiz</SelectItem>
                             <SelectItem value='pdf' className='py-2 font-bold'>📄 PDF</SelectItem>
@@ -1110,7 +1124,7 @@ export default function TrailManagementPage() {
                         </Select>
                       </div>
                       <div className='space-y-1.5'>
-                        <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2 flex items-center gap-2'>
+                        <Label className='u-label flex items-center gap-2'>
                           Apostila
                         </Label>
                         <Select
@@ -1120,16 +1134,16 @@ export default function TrailManagementPage() {
                           }
                           disabled={isSubmitting || uploading}
                         >
-                          <SelectTrigger className='h-10 rounded-xl bg-white border-none shadow-sm font-bold italic text-primary text-xs'>
+                          <SelectTrigger className='h-10 rounded-control bg-background font-medium text-sm'>
                             <SelectValue placeholder="Nenhuma" />
                           </SelectTrigger>
-                          <SelectContent className='rounded-xl border-none shadow-xl p-2 max-h-40'>
-                            <SelectItem value="none" className='py-2 font-bold'>Sem Apostila</SelectItem>
+                          <SelectContent className='rounded-control p-1 max-h-40'>
+                            <SelectItem value="none" className='py-2 font-bold'>Sem apostila</SelectItem>
                             {libraryResources.map(res => {
                               const isBook = res.category?.startsWith('LIVRO|');
                               return (
                                 <SelectItem key={res.id} value={res.id} className='py-2 font-bold'>
-                                  {isBook ? '📖 [LIVRO] ' : '📚 '} {res.title}
+                                  {isBook ? '📖 Livro: ' : '📚 '}{res.title}
                                 </SelectItem>
                               );
                             })}
@@ -1139,24 +1153,24 @@ export default function TrailManagementPage() {
                     </div>
 
                     <div className='space-y-1.5'>
-                      <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2'>
-                        Título do Conteúdo
+                      <Label className='u-label'>
+                        Título do material
                       </Label>
                       <Input
-                        placeholder='Ex: Aula 01 - Conceitos Base'
+                        placeholder='Ex.: Aula 01 — Conceitos básicos'
                         value={contentForm.title}
                         onChange={(e) =>
                           setContentForm((prev) => ({ ...prev, title: e.target.value || '' }))
                         }
                         disabled={isSubmitting || uploading}
-                        className='h-10 rounded-xl bg-white border-none shadow-sm font-bold italic text-primary text-sm'
+                        className='h-10 rounded-control bg-background font-medium text-sm'
                       />
                     </div>
 
                     {contentForm.type === 'file' || contentForm.type === 'pdf' ? (
                       <div className='space-y-1.5'>
-                        <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2'>
-                          Upload {editingContentId && '(Vazio = Manter)'}
+                        <Label className='u-label'>
+                          Arquivo {editingContentId && '(vazio = manter o atual)'}
                         </Label>
                         <div className="relative group">
                           <Input
@@ -1165,15 +1179,15 @@ export default function TrailManagementPage() {
                             accept={contentForm.type === 'pdf' ? '.pdf' : '*'}
                             onChange={(e) => setFile(e.target.files?.[0] || null)}
                             disabled={isSubmitting || uploading}
-                            className='h-10 rounded-xl bg-white border-2 border-dashed border-muted/30 p-1.5 cursor-pointer transition-all hover:border-accent file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white text-[10px]'
+                            className='h-10 rounded-control bg-background border-2 border-dashed border-border p-1.5 cursor-pointer transition-colors hover:border-primary/40 file:mr-2 file:py-1 file:px-3 file:rounded-control file:border-0 file:text-xs file:font-bold file:bg-primary file:text-primary-foreground text-xs'
                           />
                           <FileUp className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
                     ) : (
                       <div className='space-y-1.5'>
-                        <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2'>
-                          Link Externo (URL)
+                        <Label className='u-label'>
+                          Link externo
                         </Label>
                         <div className="relative">
                           <Input
@@ -1183,15 +1197,15 @@ export default function TrailManagementPage() {
                               setContentForm((prev) => ({ ...prev, url: e.target.value || '' }))
                             }
                             disabled={isSubmitting || uploading}
-                            className='h-10 rounded-xl bg-white border-none shadow-sm font-medium italic text-primary pl-10 text-sm'
+                            className='h-10 rounded-control bg-background font-medium pl-10 text-sm'
                           />
-                          <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-accent opacity-40" />
+                          <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         </div>
                         {contentForm.type === 'video' && (
                           <button
                             type="button"
                             onClick={() => setYtModalOpen(true)}
-                            className="flex items-center gap-1.5 text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-wider mt-1 ml-1 transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground mt-1 ml-1 transition-colors"
                           >
                             <Youtube className="h-3.5 w-3.5" />
                             Ou publicar diretamente no YouTube
@@ -1201,8 +1215,8 @@ export default function TrailManagementPage() {
                     )}
 
                     <div className='space-y-1.5'>
-                      <Label className='text-[10px] font-black uppercase tracking-widest text-primary/40 px-2'>
-                        Notas do Mentor (Opcional)
+                      <Label className='u-label'>
+                        Orientação para o aluno (opcional)
                       </Label>
                       <Textarea
                         placeholder='Oriente o aluno sobre como usar este material...'
@@ -1214,7 +1228,7 @@ export default function TrailManagementPage() {
                           }))
                         }
                         disabled={isSubmitting || uploading}
-                        className='min-h-[50px] md:min-h-[50px] rounded-xl bg-white border-none shadow-sm font-medium italic resize-none text-xs p-3'
+                        className='min-h-[50px] rounded-control bg-background resize-none text-sm p-3'
                       />
                     </div>
 
@@ -1222,53 +1236,49 @@ export default function TrailManagementPage() {
                       <Button
                         onClick={addToQueue}
                         disabled={isSubmitting || uploading || !contentForm.title || ((contentForm.type === 'file' || contentForm.type === 'pdf') && !file)}
-                        className='w-full h-10 rounded-xl bg-accent text-accent-foreground font-black uppercase text-[10px] tracking-widest gap-2 shadow-md hover:scale-105 active:scale-95 transition-all mt-2'
+                        variant='outline'
+                        className='w-full h-11 rounded-control font-bold text-sm gap-2 mt-2'
                       >
                         {uploading ? (
                           <Loader2 className='h-4 w-4 animate-spin' />
                         ) : (
                           <PlusCircle className='h-4 w-4' />
                         )}
-                        {uploading ? 'Enviando...' : 'Adicionar à Fila'}
+                        {uploading ? 'Enviando...' : 'Adicionar à lista'}
                       </Button>
                     )}
                   </div>
                 </div>
 
                 {!editingContentId && (
-                  <div className='p-4 md:p-6 space-y-4 bg-white'>
+                  <div className='p-4 md:p-6 space-y-4 bg-card'>
                     <div className="flex items-center justify-between">
-                      <h3 className='text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 flex items-center gap-2'>
-                        <Layers className='h-4 w-4 text-accent' /> 
-                        Fila
+                      <h3 className='u-label flex items-center gap-2'>
+                        <Layers className='h-4 w-4 text-primary' /> 
+                        Lista para publicar
                       </h3>
-                      <Badge className="bg-primary/5 text-primary border-none font-bold text-[10px] px-2">
+                      <Badge variant="outline" className="font-bold text-[11px] px-2 tabular-nums">
                         {pendingItems.length}
                       </Badge>
                     </div>
 
                     <div className='space-y-2 min-h-[150px]'>
                       {pendingItems.length === 0 ? (
-                        <div className='h-full min-h-[200px] flex flex-col items-center justify-center text-center opacity-30 border-2 border-dashed rounded-3xl bg-muted/5 gap-3'>
-                          <Layout className='h-12 w-12 text-primary' />
-                          <div className="space-y-1">
-                            <p className='text-[10px] font-black uppercase tracking-widest'>Estúdio Vazio</p>
-                            <p className="text-[9px] font-medium italic">Adicione materiais para ver a fila.</p>
-                          </div>
-                        </div>
+                        <EmptyState
+                          compact
+                          icon={Layout}
+                          title='Nenhum material na lista'
+                          description='Preencha o formulário e toque em "Adicionar à lista". Os itens aparecem aqui antes de publicar.'
+                        />
                       ) : (
                         pendingItems.map((item) => (
                           <div
                             key={item.id}
-                            className='flex items-center justify-between p-3 rounded-xl bg-slate-50 shadow-sm border border-slate-100 animate-in slide-in-from-right-4 duration-500 hover:shadow-md transition-all group'
+                            className='flex items-center justify-between gap-2 p-3 rounded-control border border-border group'
                           >
                             <div className='flex items-center gap-3 overflow-hidden'>
                               <div
-                                className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 shadow-inner ${
-                                  item.type === 'video'
-                                    ? 'bg-red-50 text-red-600'
-                                    : 'bg-primary/5 text-primary'
-                                }`}>
+                                className='h-10 w-10 rounded-control flex items-center justify-center shrink-0 bg-primary/10 text-primary'>
                                 {item.type === 'video' ? (
                                   <Video className='h-4 w-4' />
                                 ) : (
@@ -1276,17 +1286,18 @@ export default function TrailManagementPage() {
                                 )}
                               </div>
                               <div className="min-w-0 pr-2">
-                                <p className='font-bold text-xs text-primary truncate max-w-[180px] italic'>
+                                <p className='font-semibold text-sm text-foreground truncate max-w-[180px]'>
                                   {item.title}
                                 </p>
-                                <Badge variant="outline" className="text-[7px] font-bold h-4 border-muted/30 uppercase mt-0.5 opacity-60">
-                                  {item.type}
+                                <Badge variant="outline" className="text-[10px] font-bold h-5 mt-1 text-muted-foreground">
+                                  {tipoConteudo(item.type)}
                                 </Badge>
                               </div>
                             </div>
                             <button
                               onClick={() => removeFromQueue(item.id)}
-                              className='h-8 w-8 rounded-full bg-white text-muted-foreground hover:text-red-600 hover:bg-red-50 shadow-sm transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 shrink-0'
+                              aria-label='Tirar da lista'
+                              className='h-8 w-8 rounded-control text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 shrink-0'
                             >
                               <X className='h-3 w-3' />
                             </button>
@@ -1299,12 +1310,12 @@ export default function TrailManagementPage() {
               </div>
             </ScrollArea>
 
-            <DialogFooter className='p-6 bg-slate-50 border-t shrink-0 flex flex-col md:flex-row md:justify-between items-center gap-4'> 
+            <DialogFooter className='p-4 md:p-5 bg-muted/30 border-t border-border shrink-0 flex flex-col md:flex-row md:justify-between items-center gap-3'> 
               {/* Alerta de Item Não Salvo */}
               <div className="flex-1 w-full text-left">
                 {!editingContentId && contentForm.title.trim() && (
-                  <p className="text-[10px] font-bold text-orange-500 animate-pulse bg-orange-50 p-2 rounded-lg border border-orange-100">
-                    ⚠️ Você começou a preencher um item, mas não clicou em "Adicionar à Fila".
+                  <p className="text-xs font-semibold text-foreground bg-brand-yellow/30 p-2 rounded-control border border-foreground/15">
+                    Você começou a preencher um item, mas ainda não tocou em "Adicionar à lista".
                   </p>
                 )}
               </div>
@@ -1312,23 +1323,23 @@ export default function TrailManagementPage() {
               <Button
                 onClick={() => {
                   if (!editingContentId && contentForm.title.trim()) {
-                     toast({ title: 'Adicione o item à fila primeiro!', variant: 'destructive', description: 'Clique no botão Adicionar à Fila antes de publicar.' });
+                     toast({ title: 'Adicione o item à lista primeiro', variant: 'destructive', description: 'Toque em "Adicionar à lista" antes de publicar.' });
                      return;
                   }
                   editingContentId ? addToQueue() : handleBatchSaveContent(activeModuleId);
                 }}
                 disabled={isSubmitting || (!editingContentId && pendingItems.length === 0)}
-                className='w-full md:w-auto h-12 bg-primary text-white font-black text-xs rounded-xl shadow-[0_10px_30px_-10px_rgba(26,44,75,0.4)] transition-all hover:scale-[1.02] active:scale-95 border-none px-8 uppercase tracking-widest'
+                className='w-full md:w-auto h-11 font-bold text-sm rounded-control px-6'
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className='animate-spin h-4 w-4' /> 
-                    <span>Sincronizando...</span>
+                    <span>Salvando...</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className='h-4 w-4 text-accent' /> 
-                    <span>{editingContentId ? 'Salvar Edição' : 'Publicar Capítulo'}</span>
+                    <CheckCircle2 className='h-4 w-4' /> 
+                    <span>{editingContentId ? 'Salvar alterações' : 'Publicar no capítulo'}</span>
                   </div>
                 )}
               </Button>

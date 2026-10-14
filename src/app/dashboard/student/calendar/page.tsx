@@ -5,7 +5,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import {
   CalendarDays,
-  Loader2,
   ShieldCheck,
   Flame,
   ChevronRight,
@@ -14,6 +13,9 @@ import {
   Clock3,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { fmtLocale, toDate, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type AcademicEvent = {
   id: string;
@@ -43,8 +45,13 @@ const getMeta = (type: string) => EVENT_TYPE_META[type] ?? EVENT_TYPE_META.outro
 const MONTHS_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const MONTHS_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
+/** Data do evento ao meio-dia local. Só é chamada com eventos já filtrados por `toDate`. */
+function eventDay(target: string): Date {
+  return toDate(target) ?? new Date();
+}
+
 function daysBetween(target: string) {
-  const targetDate = new Date(target + "T12:00:00");
+  const targetDate = eventDay(target);
   return Math.ceil((targetDate.getTime() - Date.now()) / 86400000);
 }
 
@@ -52,9 +59,9 @@ function urgencyTone(days: number) {
   if (days < 0)   return { label: "Passou",   color: "text-slate-400",  bg: "bg-slate-100",  emoji: "✓" };
   if (days === 0) return { label: "Hoje",     color: "text-red-600",    bg: "bg-red-100",    emoji: "•" };
   if (days === 1) return { label: "Amanhã",   color: "text-orange-600", bg: "bg-orange-100", emoji: "→" };
-  if (days <= 7)  return { label: `${days}d`, color: "text-amber-600",  bg: "bg-amber-100",  emoji: "→" };
-  if (days <= 30) return { label: `${days}d`, color: "text-yellow-600", bg: "bg-yellow-100", emoji: "→" };
-  return           { label: `${days}d`,        color: "text-slate-500",  bg: "bg-slate-100",  emoji: "→" };
+  if (days <= 7)  return { label: `${days} dias`, color: "text-amber-600",  bg: "bg-amber-100",  emoji: "→" };
+  if (days <= 30) return { label: `${days} dias`, color: "text-yellow-600", bg: "bg-yellow-100", emoji: "→" };
+  return           { label: `${days} dias`,        color: "text-slate-500",  bg: "bg-slate-100",  emoji: "→" };
 }
 
 export default function StudentCalendarPage() {
@@ -77,7 +84,11 @@ export default function StudentCalendarPage() {
   const today = new Date().toISOString().split("T")[0];
 
   const upcoming = useMemo(
-    () => events.filter((e) => e.event_date >= today).sort((a, b) => a.event_date.localeCompare(b.event_date)),
+    // Evento sem data válida fica de fora da linha do tempo: senão a contagem
+    // de dias e o cabeçalho do mês viravam "NaN".
+    () => events
+      .filter((e) => typeof e.event_date === "string" && toDate(e.event_date) && e.event_date >= today)
+      .sort((a, b) => a.event_date.localeCompare(b.event_date)),
     [events, today]
   );
 
@@ -95,7 +106,7 @@ export default function StudentCalendarPage() {
   const groupedByMonth = useMemo(() => {
     const groups: Record<string, AcademicEvent[]> = {};
     upcoming.forEach((ev) => {
-      const d = new Date(ev.event_date + "T12:00:00");
+      const d = eventDay(ev.event_date);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
       if (!groups[key]) groups[key] = [];
       groups[key].push(ev);
@@ -105,11 +116,10 @@ export default function StudentCalendarPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-9 w-9 animate-spin text-orange-500" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-          Carregando calendário acadêmico...
-        </p>
+      <div className="max-w-3xl mx-auto px-2 md:px-4 pb-24 space-y-5" aria-label="Carregando…">
+        <Skeleton className="h-52 w-full rounded-card" />
+        <Skeleton className="h-11 w-full rounded-xl" />
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px] w-full rounded-2xl" />)}
       </div>
     );
   }
@@ -159,10 +169,10 @@ export default function StudentCalendarPage() {
                   {nextMeta.label}
                 </Badge>
                 <p className="u-display text-sm text-white leading-snug line-clamp-2">
-                  {nextEvent.title}
+                  {txt(nextEvent.title, "Evento")}
                 </p>
                 <p className="text-[10px] font-bold text-white/75 mt-1 uppercase tracking-wider">
-                  {new Date(nextEvent.event_date + "T12:00:00").toLocaleDateString("pt-BR", {
+                  {fmtLocale(nextEvent.event_date, 'date', "pt-BR", {
                     weekday: "long", day: "2-digit", month: "long",
                   })}
                 </p>
@@ -171,7 +181,9 @@ export default function StudentCalendarPage() {
           )}
 
           {!nextEvent && (
-            <p className="mt-4 text-sm font-bold text-white/70 italic">Nenhum evento futuro cadastrado.</p>
+            <p className="mt-4 text-sm font-bold text-white/80">
+              Ainda não há eventos marcados. Quando a escola agendar provas e prazos, eles aparecem aqui.
+            </p>
           )}
         </div>
       </div>
@@ -199,7 +211,7 @@ export default function StudentCalendarPage() {
                   style={{ '--i': Math.min(ui, 10) } as React.CSSProperties}
                 >
                 <button
-                  onClick={() => setSelectedDate(new Date(ev.event_date + "T12:00:00"))}
+                  onClick={() => setSelectedDate(eventDay(ev.event_date))}
                   className="shrink-0 w-[200px] text-left bg-white border border-red-100 rounded-2xl p-3.5 hover:border-red-300 hover:shadow-md transition-all active:scale-95 touch-manipulation shadow-sm"
                 >
                   <div className="flex items-center gap-2 mb-1.5">
@@ -209,7 +221,7 @@ export default function StudentCalendarPage() {
                     </span>
                   </div>
                   <p className="text-[11px] font-black text-primary italic leading-tight line-clamp-2 mb-1.5">
-                    {ev.title}
+                    {txt(ev.title, "Evento")}
                   </p>
                   <Badge className={`${meta.chip} border font-black text-[8px] uppercase px-1.5 h-4`}>
                     {meta.label}
@@ -252,12 +264,13 @@ export default function StudentCalendarPage() {
       {view === "timeline" ? (
         <div className="space-y-6">
           {groupedByMonth.length === 0 ? (
-            <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-card bg-slate-50">
-              <CalendarDays className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Nenhum evento agendado
-              </p>
-            </div>
+            <EmptyState
+              icon={CalendarDays}
+              title="Nenhum evento pela frente"
+              description="Vestibulares, inscrições e simulados marcados pela escola aparecem aqui, mês a mês."
+              action={events.length > 0 ? { label: "Ver calendário completo", onClick: () => setView("grid"), icon: Grid3x3 } : undefined}
+              compact
+            />
           ) : (
             groupedByMonth.map(([key, monthEvents]) => {
               const [yearStr, monthStr] = key.split("-");
@@ -285,7 +298,7 @@ export default function StudentCalendarPage() {
                       const meta = getMeta(ev.event_type);
                       const days = daysBetween(ev.event_date);
                       const u = urgencyTone(days);
-                      const d = new Date(ev.event_date + "T12:00:00");
+                      const d = eventDay(ev.event_date);
                       const dayNum = d.getDate();
                       const weekday = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
 
@@ -319,7 +332,7 @@ export default function StudentCalendarPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
                                 <p className="text-sm font-black text-primary italic leading-snug line-clamp-2">
-                                  {ev.title}
+                                  {txt(ev.title, "Evento")}
                                 </p>
                                 {ev.is_official && (
                                   <ShieldCheck className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
@@ -400,7 +413,7 @@ export default function StudentCalendarPage() {
                     <div className={`w-1 rounded-full shrink-0 ${meta.dot}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-black text-primary text-sm italic">{ev.title}</p>
+                        <p className="font-black text-primary text-sm italic">{txt(ev.title, "Evento")}</p>
                         {ev.is_official && (
                           <ShieldCheck className="h-3.5 w-3.5 text-yellow-500" />
                         )}
@@ -423,11 +436,12 @@ export default function StudentCalendarPage() {
           )}
 
           {eventsOnSelected.length === 0 && selectedDate && (
-            <div className="py-10 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Nenhum evento neste dia
-              </p>
-            </div>
+            <EmptyState
+              icon={CalendarDays}
+              title="Nada marcado neste dia"
+              description="Os dias com um pontinho laranja têm eventos. Toque em um deles para ver os detalhes."
+              compact
+            />
           )}
         </div>
       )}

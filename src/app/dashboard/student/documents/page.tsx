@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
+import { pct } from "@/lib/format";
 
 const DOCUMENT_GROUPS = [
   {
@@ -95,14 +96,14 @@ export default function StudentAdmissionCentral() {
         await supabase.from('student_checklists').insert({ user_id: user.id, item_id: itemId });
       }
     } catch (e) {
-      toast({ title: "Erro ao salvar", variant: "destructive" });
+      toast({ title: "Não deu para salvar essa marcação", description: "Confira sua internet e toque no item de novo.", variant: "destructive" });
     } finally {
       setSavingDoc(false);
     }
   };
 
   const totalDocs = DOCUMENT_GROUPS.reduce((acc, group) => acc + group.items.length, 0);
-  const progressPercent = Math.round((checkedItems.length / totalDocs) * 100);
+  const progressPercent = pct(checkedItems.length, totalDocs);
 
   // Hero + as 5 dicas fixas abaixo não dependem de dado nenhum — só os
   // checkboxes do checklist esperam a query. Gate cheio aqui prendia
@@ -115,12 +116,12 @@ export default function StudentAdmissionCentral() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <Badge className="bg-accent text-accent-foreground border-none font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2">Padrão SiSU/ProUni</Badge>
-              <h1 className="u-page-title text-3xl md:text-5xl leading-[1.4] md:leading-[1.4]">Checklist de <span className="text-white">Matrícula</span></h1>
-              <p className="text-sm md:text-lg text-white/90 font-medium italic">Gerencie seus dados e organize sua documentação oficial.</p>
+              <h1 className="u-page-title text-3xl md:text-5xl leading-[1.4] md:leading-[1.4]">Documentos da <span className="text-white">matrícula</span></h1>
+              <p className="text-sm md:text-lg text-white/90 font-medium italic">Marque o que você já tem e veja o que ainda falta separar.</p>
             </div>
             <div className="flex flex-col items-end gap-3 bg-white/10 p-6 rounded-card border border-white/10 backdrop-blur-md">
               <div className="flex justify-between w-40 text-[9px] font-black uppercase text-white tracking-widest">
-                <span>Prontidão Documental</span>
+                <span>Documentos prontos</span>
                 <span className="text-white">{progressPercent}%</span>
               </div>
               <div className="h-1.5 w-40 bg-white/10 rounded-full overflow-hidden border border-white/5">
@@ -176,7 +177,7 @@ export default function StudentAdmissionCentral() {
               <div className="space-y-4">
                 {[
                   { icon: MousePointer2, text: "Acesse drive.google.com" },
-                  { icon: FolderPlus, text: 'Crie a pasta "Ingresso 2024"' },
+                  { icon: FolderPlus, text: 'Crie a pasta "Documentos do vestibular"' },
                   { icon: Smartphone, text: 'Escaneie com a câmera do celular' }
                 ].map((step, i) => (
                   <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
@@ -186,14 +187,14 @@ export default function StudentAdmissionCentral() {
                 ))}
               </div>
               <Button asChild className="w-full h-14 bg-accent text-accent-foreground font-black text-xs uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">
-                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer">ABRIR MEU DRIVE <ExternalLink className="ml-2 h-4 w-4" /></a>
+                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer">ABRIR O GOOGLE DRIVE <ExternalLink className="ml-2 h-4 w-4" /></a>
               </Button>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-              <FileSearch className="h-3.5 w-3.5 text-accent" /> Qualidade da Imagem
+              <FileSearch className="h-3.5 w-3.5 text-accent" /> Qualidade da foto
             </h3>
             <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Evite fotos com sombras ou reflexos de luz. Se o texto não estiver legível, sua inscrição poderá ser indeferida pela universidade."
@@ -202,7 +203,7 @@ export default function StudentAdmissionCentral() {
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-accent" /> Validade dos Papéis
+              <Clock className="h-3.5 w-3.5 text-accent" /> Validade dos documentos
             </h3>
             <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
               "Comprovantes de residência devem ter no máximo 90 dias. Certidões não podem ter rasuras ou remendos."
@@ -211,10 +212,10 @@ export default function StudentAdmissionCentral() {
 
           <Card className="border-none shadow-xl bg-white rounded-card p-8 space-y-4">
             <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-              <LayoutList className="h-3.5 w-3.5 text-accent" /> Organização Maestro
+              <LayoutList className="h-3.5 w-3.5 text-accent" /> Nome dos arquivos
             </h3>
             <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
-              "Renomeie seus arquivos como 'RG_FRENTE.pdf' ou 'HISTORICO_MEDIO.pdf'. Isso agiliza a conferência do tutor e evita erros de envio."
+              "Renomeie seus arquivos como 'RG_FRENTE.pdf' ou 'HISTORICO_MEDIO.pdf'. Assim fica mais rápido para quem confere e você evita mandar o arquivo errado."
             </p>
           </Card>
 
@@ -223,7 +224,7 @@ export default function StudentAdmissionCentral() {
               <ShieldCheck className="h-3 w-3 text-accent" /> Dica de Segurança
             </h3>
             <p className="text-xs font-medium italic text-slate-800 leading-relaxed">
-              "Nunca envie documentos originais por chats informais. Mantenha seu rastro digital seguro em pastas oficiais."
+              "Nunca envie documentos originais por chats informais. Guarde tudo numa pasta só sua, como a do Drive."
             </p>
           </Card>
         </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { fmtNumber } from '@/lib/format';
 import {
   Download, Loader2, CheckCircle2, AlertCircle, BookOpen,
   Zap, ChevronRight, Database, RefreshCw
@@ -57,44 +58,39 @@ export default function TeacherEnemImportPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-700 pb-24">
-      <header className="flex items-center gap-4">
-        <div className="h-14 w-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl -rotate-3">
-          <Download className="h-7 w-7" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-black text-primary italic leading-none">Importar ENEM</h1>
-          <p className="text-muted-foreground font-medium italic">Importa questões oficiais da API pública enem.dev</p>
-        </div>
+    <div className="max-w-3xl space-y-6 pb-24">
+      <header>
+        <p className="u-label flex items-center gap-2"><Download className="h-3.5 w-3.5" /> Professor · banco de questões</p>
+        <h1 className="u-page-title text-3xl mt-1">Importar ENEM</h1>
+        <p className="text-muted-foreground text-sm mt-2">Traz as questões oficiais de um ano do ENEM pela API pública enem.dev.</p>
       </header>
 
-      <Card className="border-none shadow-lg rounded-card bg-blue-50 border-blue-100">
-        <CardContent className="p-6 space-y-3">
-          <div className="flex items-center gap-2 text-blue-700 font-black text-sm">
-            <Zap className="h-4 w-4" /> Como funciona
-          </div>
-          <ul className="space-y-1.5 text-xs text-blue-800 font-medium">
-            <li className="flex items-start gap-2"><ChevronRight className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Busca até 200 questões do ENEM do ano selecionado via API pública</li>
-            <li className="flex items-start gap-2"><ChevronRight className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Cria automaticamente a prova no sistema com as questões vinculadas</li>
-            <li className="flex items-start gap-2"><ChevronRight className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Questões marcadas com <Badge className="bg-blue-200 text-blue-800 border-none text-[9px] font-black">ENEM</Badge> para filtro separado</li>
-            <li className="flex items-start gap-2"><ChevronRight className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Seguro: re-importar o mesmo ano não cria duplicatas</li>
+      <Card className="rounded-card">
+        <CardContent className="p-5 space-y-3">
+          <p className="u-label flex items-center gap-1.5"><Zap className="h-3.5 w-3.5" /> Como funciona</p>
+          <ul className="space-y-1.5 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2"><ChevronRight className="h-4 w-4 mt-0.5 shrink-0" /> Busca até 200 questões do ENEM do ano escolhido.</li>
+            <li className="flex items-start gap-2"><ChevronRight className="h-4 w-4 mt-0.5 shrink-0" /> Cria a prova no sistema já com as questões vinculadas.</li>
+            <li className="flex items-start gap-2 flex-wrap"><ChevronRight className="h-4 w-4 mt-0.5 shrink-0" /> As questões ganham a marca <Badge variant="outline" className="text-[10px] font-semibold rounded-control">ENEM</Badge> para filtrar depois.</li>
+            <li className="flex items-start gap-2"><ChevronRight className="h-4 w-4 mt-0.5 shrink-0" /> Importar o mesmo ano de novo não cria questões repetidas.</li>
           </ul>
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-xl rounded-card bg-white">
-        <CardContent className="p-8 space-y-6">
+      <Card className="rounded-card">
+        <CardContent className="p-5 md:p-6 space-y-5">
           <div className="space-y-3">
-            <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">Selecione o ano</label>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <label className="u-label">Escolha o ano</label>
+            <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-6 gap-2">
               {AVAILABLE_YEARS.map(year => (
                 <button
                   key={year}
                   onClick={() => setSelectedYear(year)}
-                  className={`h-12 rounded-2xl font-black text-sm transition-all border-2
+                  aria-pressed={selectedYear === year}
+                  className={`h-11 rounded-control u-num text-sm transition-colors border
                     ${selectedYear === year
-                      ? 'bg-primary text-white border-primary shadow-lg scale-105'
-                      : 'bg-slate-50 text-slate-500 border-transparent hover:border-primary/20 hover:bg-slate-100'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                     }`}
                 >
                   {year}
@@ -106,61 +102,54 @@ export default function TeacherEnemImportPage() {
           <Button
             onClick={handleImport}
             disabled={importing}
-            className="w-full h-14 rounded-2xl bg-primary text-white font-black text-lg shadow-xl hover:scale-[1.01] transition-all"
+            variant="arcade"
+            className="w-full h-12 rounded-control font-bold"
           >
             {importing ? (
-              <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Importando ENEM {selectedYear}...</>
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Importando ENEM {selectedYear}…</>
             ) : (
-              <><Download className="h-5 w-5 mr-2" /> Importar ENEM {selectedYear}</>
+              <><Download className="h-4 w-4 mr-2" /> Importar ENEM {selectedYear}</>
             )}
           </Button>
 
           {importing && (
-            <div className="text-center space-y-2 py-4">
-              <div className="flex justify-center gap-1">
-                {[0, 1, 2].map(i => (
-                  <div key={i} className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground font-medium italic">Buscando questões na API do ENEM... pode levar alguns segundos.</p>
-            </div>
+            <p className="text-sm text-muted-foreground text-center">Buscando as questões… pode levar alguns segundos.</p>
           )}
         </CardContent>
       </Card>
 
       {result && (
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden animate-in fade-in duration-500">
-          <div className="h-2 bg-green-400" />
-          <CardContent className="p-8 space-y-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-8 w-8 text-green-500 shrink-0" />
+        <Card className="rounded-card overflow-hidden">
+          <CardContent className="p-5 md:p-6 space-y-5">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-6 w-6 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xl font-black text-primary italic">ENEM {result.year} importado com sucesso!</p>
-                <p className="text-xs text-muted-foreground font-medium">A prova já aparece na lista de Provas Completas</p>
+                <p className="text-base font-bold text-foreground">ENEM {result.year} importado.</p>
+                <p className="text-sm text-muted-foreground">A prova já aparece na lista de provas completas.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-slate-50 rounded-2xl p-4 text-center">
-                <p className="text-3xl font-black text-primary">{result.total}</p>
-                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mt-1">Questões na API</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+              <div className="border border-border rounded-control p-3 sm:p-4">
+                <p className="u-label">Na API</p>
+                <p className="u-num text-2xl mt-1.5">{fmtNumber(result.total)}</p>
               </div>
-              <div className="bg-green-50 rounded-2xl p-4 text-center">
-                <p className="text-3xl font-black text-green-600">{result.inserted}</p>
-                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mt-1">Inseridas</p>
+              <div className="border border-border rounded-control p-3 sm:p-4">
+                <p className="u-label !text-emerald-600">Inseridas</p>
+                <p className="u-num text-2xl mt-1.5 text-emerald-600">{fmtNumber(result.inserted)}</p>
               </div>
-              <div className="bg-amber-50 rounded-2xl p-4 text-center">
-                <p className="text-3xl font-black text-amber-600">{result.skipped}</p>
-                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mt-1">Ignoradas</p>
+              <div className="border border-border rounded-control p-3 sm:p-4">
+                <p className="u-label">Já existiam</p>
+                <p className="u-num text-2xl mt-1.5">{fmtNumber(result.skipped)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium bg-slate-50 rounded-xl p-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-control p-3 min-w-0">
               <Database className="h-4 w-4 shrink-0" />
-              ID da prova: <code className="font-mono text-primary">{result.examId}</code>
+              <span className="shrink-0">ID da prova:</span> <code className="font-mono text-foreground truncate">{result.examId}</code>
             </div>
             <Button
               variant="outline"
               onClick={() => setResult(null)}
-              className="w-full rounded-2xl font-black h-11"
+              className="w-full rounded-control font-semibold h-11"
             >
               <RefreshCw className="h-4 w-4 mr-2" /> Importar outro ano
             </Button>
@@ -169,27 +158,23 @@ export default function TeacherEnemImportPage() {
       )}
 
       {error && (
-        <Card className="border-none shadow-lg rounded-card bg-red-50">
-          <CardContent className="p-6 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-black text-red-700 text-sm">Erro na importação</p>
-              <p className="text-xs text-red-600 font-medium mt-1">{error}</p>
+        <Card className="rounded-card border-red-500/30">
+          <CardContent className="p-5 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="font-bold text-red-600 text-sm">Não foi possível importar</p>
+              <p className="text-sm text-muted-foreground mt-1 break-words">{error}</p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <Card className="border-none shadow-sm rounded-card bg-white/60">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground mb-3">
-            <BookOpen className="h-3.5 w-3.5" /> Anos disponíveis na API
-          </div>
-          <p className="text-xs text-muted-foreground font-medium">
-            A API enem.dev cobre de 2010 a {new Date().getFullYear() - 1}. Nem todos os anos têm gabarito oficial disponível.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="px-1">
+        <p className="u-label flex items-center gap-1.5 mb-1.5"><BookOpen className="h-3.5 w-3.5" /> Anos disponíveis</p>
+        <p className="text-sm text-muted-foreground">
+          A API enem.dev cobre de 2010 a {new Date().getFullYear() - 1}. Nem todos os anos têm gabarito oficial.
+        </p>
+      </div>
     </div>
   );
 }

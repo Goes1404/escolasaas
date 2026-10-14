@@ -20,6 +20,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
+import { ContentCover } from "@/components/ContentCover";
+import { EmptyState } from "@/components/EmptyState";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/AuthProvider";
 import { useTenant } from "@/components/TenantProvider";
@@ -84,21 +86,6 @@ function DashboardChart({ data }: { data: { name: string; score: number }[] }) {
   return <AreaChartPremium data={data} xKey="name" yKey="score" color="#7c3aed" showAxis={false} domainMax={100} />;
 }
 
-
-const localImagesFallback = [
-  "/images/capa1.jpeg",
-  "/images/carrosel1.jpeg",
-  "/images/carrosel2.jpeg",
-  "/images/carrosel3.jpeg",
-  "/images/carrosel4.jpeg"
-];
-
-function getSafeImageUrl(url: string | null | undefined, index: number) {
-  if (!url || url.includes("picsum.photos") || url.includes("pixabay.com")) {
-    return localImagesFallback[index % localImagesFallback.length];
-  }
-  return url;
-}
 
 // Índice de escalonamento das classes `anim-rise`/`anim-pop` de globals.css.
 const stagger = (i: number) => ({ "--i": i } as React.CSSProperties);
@@ -322,17 +309,17 @@ export default function DashboardHome() {
     if (!user) return;
     const digits = phoneValue.replace(/\D/g, "");
     if (digits.length < 10) {
-      toast({ title: "Telefone Inválido ⚠️", description: "Insira um número com DDD válido.", variant: "destructive" });
+      toast({ title: "Telefone incompleto ⚠️", description: "Digite o número com DDD, por exemplo (11) 91234-5678.", variant: "destructive" });
       return;
     }
     setSubmittingPhone(true);
     try {
       const { error } = await supabase.from("profiles").update({ phone: phoneValue }).eq("id", user.id);
       if (error) throw error;
-      toast({ title: "Telefone Salvo! 🎉", description: "Seu número foi registrado com sucesso." });
+      toast({ title: "Telefone salvo! 🎉", description: "Pronto, seu número está cadastrado." });
       if (refreshProfile) await refreshProfile();
     } catch (err: any) {
-      toast({ title: "Erro ao Salvar ❌", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para salvar ❌", description: "Confira sua internet e tente de novo.", variant: "destructive" });
     } finally {
       setSubmittingPhone(false);
     }
@@ -351,7 +338,7 @@ export default function DashboardHome() {
       toast({ title: "Perfil atualizado! 🎉", description: "Sala, foco e turno salvos com sucesso." });
       if (refreshProfile) await refreshProfile();
     } catch (err: any) {
-      toast({ title: "Erro ao Salvar ❌", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para salvar ❌", description: "Confira sua internet e tente de novo.", variant: "destructive" });
     } finally {
       setSubmittingClass(false);
     }
@@ -402,7 +389,7 @@ export default function DashboardHome() {
         fetchData(true);
       }
     } catch {
-      toast({ title: "Erro de conexão", variant: "destructive" });
+      toast({ title: "Sem conexão", description: "Não consegui registrar sua presença. Confira sua internet e tente de novo.", variant: "destructive" });
     } finally {
       setCheckingIn(false);
     }
@@ -646,7 +633,7 @@ export default function DashboardHome() {
   const platformFeatures = [
     { icon: BrainCircuit, label: "Banco de questões", desc: "novas questões semanais",           href: "/dashboard/student/simulados",    tone: "bg-primary text-primary-foreground" },
     { icon: FilePenLine,  label: "Sala de redação",   desc: "correções para o seu texto",        href: "/dashboard/student/essays",       tone: "bg-brand-pink text-white" },
-    { icon: Bot,          label: "Aurora AI",         desc: "mentora disponível 24h",            href: "/dashboard/support",              tone: "bg-brand-yellow text-foreground", wide: true },
+    { icon: Bot,          label: "Aurora IA",         desc: "mentora disponível 24h",            href: "/dashboard/support",              tone: "bg-brand-yellow text-foreground", wide: true },
     { icon: PlayCircle,   label: "Trilhas de vídeo",  desc: "aprenda no seu ritmo",              href: "/dashboard/trails",               tone: "bg-brand-slate text-white" },
     { icon: BarChart3,    label: "Meu desempenho",    desc: "estatísticas para o seu progresso", href: "/dashboard/student/performance",  tone: "bg-primary text-primary-foreground" },
   ];
@@ -1141,15 +1128,15 @@ export default function DashboardHome() {
           <div className="flex-1 min-w-0">
             <div className="hidden sm:flex items-center gap-2 mb-2">
               <Sparkles className="h-3.5 w-3.5 text-accent" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Aurora IA · Mentoria Estratégica</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Aurora IA · Dica do dia</span>
             </div>
             <p className="text-slate-700 font-semibold italic text-sm md:text-base leading-relaxed tracking-tight">
-              "A constância é a chave da aprovação! Revise os erros do último simulado antes de avançar. Estou disponível 24h para corrigir redações."
+              "Constância aprova! Revise os erros do último simulado antes de seguir. Estou aqui 24h para tirar dúvidas e dar dicas na sua redação."
             </p>
           </div>
           <Button asChild className="bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 border-none hover:scale-105 transition-all w-full sm:w-auto shrink-0 h-12 md:h-14 px-6 md:px-8 text-xs md:text-sm uppercase tracking-widest italic active:scale-95">
             <Link href="/dashboard/support" className="flex items-center justify-center gap-2">
-              Falar com Aurora <ArrowRight className="h-4 w-4" />
+              Falar com a Aurora <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -1218,18 +1205,13 @@ export default function DashboardHome() {
                 {Array(2).fill(0).map((_, i) => <div key={i} className="h-52 bg-muted/20 animate-pulse rounded-3xl" />)}
               </div>
             ) : recentProgress.length === 0 ? (
-              <div className="py-14 text-center border-2 border-dashed border-muted/20 rounded-3xl bg-muted/5 flex flex-col items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center">
-                  <PlayCircle className="h-6 w-6 text-primary/30" />
-                </div>
-                <div>
-                  <p className="u-display text-primary/60 text-sm">Nenhuma trilha iniciada</p>
-                  <p className="text-xs text-muted-foreground mt-1">Explore o catálogo e comece sua jornada.</p>
-                </div>
-                <Button asChild size="sm" className="mt-1 bg-primary text-white border-none rounded-xl font-black h-9 px-5 text-xs">
-                  <Link href="/dashboard/trails">Explorar Trilhas</Link>
-                </Button>
-              </div>
+              <EmptyState
+                compact
+                icon={PlayCircle}
+                title="Você ainda não começou nenhuma trilha"
+                description="Escolha uma matéria e assista à primeira aula. As trilhas que você começar aparecem aqui para continuar de onde parou."
+                action={{ label: "Explorar trilhas", href: "/dashboard/trails" }}
+              />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {recentProgress.map((prog, i) => {
@@ -1239,7 +1221,7 @@ export default function DashboardHome() {
                       <Link href={`/dashboard/classroom/${prog.trail_id}`}>
                         <div className="group overflow-hidden rounded-3xl shadow-xl bg-white hover:shadow-2xl transition-all duration-500 border border-muted/10">
                           <div className="relative aspect-[16/7] overflow-hidden bg-slate-100">
-                            <Image src={getSafeImageUrl(trailData?.image_url, i)} alt={trailData?.title || "Trilha"} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <ContentCover imageUrl={trailData?.image_url} subject={trailData?.category} title={trailData?.title} label=" " className="absolute inset-0" imgClassName="transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                             <div className="absolute top-3 left-3">
                               <Badge className="bg-primary/90 text-white border-none text-[9px] font-black uppercase px-2.5 h-5 backdrop-blur-sm">
@@ -1373,9 +1355,9 @@ export default function DashboardHome() {
                   <FileText className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-xs text-primary truncate italic">{essayStats.latest.theme}</p>
+                  <p className="font-bold text-xs text-primary truncate italic">{essayStats.latest.theme || "Redação sem tema"}</p>
                   <p className="text-[9px] font-black text-muted-foreground uppercase tracking-wider mt-0.5">
-                    {essayStats.latest.status === 'reviewed' ? '✅ Corrigida' : '⏳ Aguardando'}
+                    {essayStats.latest.status === 'reviewed' ? '✅ Corrigida' : '⏳ Aguardando correção'}
                   </p>
                 </div>
                 {essayStats.latest.score && (
@@ -1385,12 +1367,15 @@ export default function DashboardHome() {
                 )}
               </div>
             ) : (
-              <div className="py-6 text-center border-2 border-dashed rounded-2xl bg-slate-50 opacity-50">
-                <p className="text-xs font-medium italic text-slate-400">Comece a escrever hoje!</p>
-              </div>
+              <EmptyState
+                compact
+                icon={FileText}
+                title="Você ainda não enviou redações"
+                description="Escreva a primeira e receba a nota com comentários."
+              />
             )}
             <Button asChild className="w-full h-11 bg-primary text-white font-black rounded-2xl border-none shadow-lg text-xs uppercase tracking-wider hover:scale-[1.02] transition-transform">
-              <Link href="/dashboard/student/essays">Acessar Laboratório</Link>
+              <Link href="/dashboard/student/essays">Escrever redação</Link>
             </Button>
           </div>
 
@@ -1407,7 +1392,12 @@ export default function DashboardHome() {
             </div>
             <div className="space-y-2.5">
               {loadingData ? Array(3).fill(0).map((_, i) => <div key={i} className="h-12 bg-muted/20 animate-pulse rounded-2xl" />) : libraryResources.length === 0 ? (
-                <div className="py-8 text-center opacity-30 italic text-xs">Materiais em sincronização...</div>
+                <EmptyState
+                  compact
+                  icon={Library}
+                  title="Nenhum material publicado ainda"
+                  description="Apostilas e videoaulas novas aparecem aqui."
+                />
               ) : (
                 libraryResources.map((res) => (
                   <Link key={res.id} href="/dashboard/library">
@@ -1416,7 +1406,7 @@ export default function DashboardHome() {
                         {res.type === 'Video' ? <Video className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-xs text-primary truncate italic">{res.title}</h4>
+                        <h4 className="font-bold text-xs text-primary truncate italic">{res.title || "Material sem título"}</h4>
                       </div>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-accent transition-colors shrink-0" />
                     </div>

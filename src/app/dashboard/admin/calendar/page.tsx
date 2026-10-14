@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 import { useAuth } from '@/lib/AuthProvider';
+import { fmtDate, fmtLocale } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type AcademicEvent = {
   id: string;
@@ -96,7 +98,7 @@ export default function AdminCalendarPage() {
           })
           .eq('id', editId);
         if (error) throw error;
-        toast({ title: 'Evento atualizado!' });
+        toast({ title: 'Evento atualizado' });
       } else {
         const { error } = await supabase.from('academic_events').insert({
           title: form.title,
@@ -108,14 +110,14 @@ export default function AdminCalendarPage() {
           created_by: user.id,
         });
         if (error) throw error;
-        toast({ title: 'Evento criado!' });
+        toast({ title: 'Evento criado' });
       }
       setForm(blankForm);
       setShowForm(false);
       setEditId(null);
       fetchEvents();
     } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível salvar o evento', description: e.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -124,10 +126,10 @@ export default function AdminCalendarPage() {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('academic_events').delete().eq('id', id);
     if (error) {
-      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível excluir o evento', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Evento excluído.' });
+    toast({ title: 'Evento excluído' });
     setEvents(prev => prev.filter(e => e.id !== id));
   };
 
@@ -151,7 +153,7 @@ export default function AdminCalendarPage() {
   const filtered = events.filter(ev => {
     if (filterType !== 'all' && ev.event_type !== filterType) return false;
     if (filterGroup !== 'all' && ev.target_group !== filterGroup) return false;
-    if (search && !ev.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !(ev.title || '').toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -163,61 +165,58 @@ export default function AdminCalendarPage() {
   const teacherCount  = events.filter(e => !e.is_official).length;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700 pb-24">
+    <div className="max-w-5xl mx-auto space-y-6 pb-24">
       {/* Header */}
-      <header className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl rotate-3">
-            <CalendarDays className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-primary italic leading-none">Calendário Acadêmico</h1>
-            <p className="text-muted-foreground font-medium italic">
-              {officialCount} eventos oficiais · {teacherCount} criados por professores
-            </p>
-          </div>
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> Coordenação · calendário</p>
+          <h1 className="u-page-title text-3xl mt-1">Calendário acadêmico</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            <span className="tabular-nums">{officialCount}</span> eventos oficiais · <span className="tabular-nums">{teacherCount}</span> criados por professores
+          </p>
         </div>
         <Button
+          variant="arcade"
           onClick={() => { setShowForm(true); setEditId(null); setForm(blankForm); }}
-          className="h-12 px-6 rounded-2xl bg-primary text-white font-black shadow-xl"
+          className="h-11 px-5 rounded-control font-bold shrink-0"
         >
-          <PlusCircle className="h-5 w-5 mr-2" /> Novo Evento
+          <PlusCircle className="h-5 w-5 mr-2" /> Novo evento
         </Button>
       </header>
 
       {/* Formulário */}
       {showForm && (
-        <Card className="border-none shadow-2xl rounded-card animate-in slide-in-from-top-4 duration-300">
-          <CardContent className="p-8 space-y-5">
-            <h2 className="text-xl font-black text-primary italic">
-              {editId ? 'Editar Evento' : 'Criar Evento'}
+        <Card className="rounded-card">
+          <CardContent className="p-5 sm:p-8 space-y-5">
+            <h2 className="text-lg font-bold text-foreground">
+              {editId ? 'Editar evento' : 'Criar evento'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5 md:col-span-2">
-                <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Título</Label>
+                <Label className="u-label ml-1">Título</Label>
                 <Input
                   placeholder="Ex: ENEM 2026 — Prova Dia 1"
-                  className="h-11 rounded-2xl bg-muted/30 border-none font-bold"
+                  className="h-11 rounded-control bg-muted/30 border-none font-bold"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Data</Label>
+                <Label className="u-label ml-1">Data</Label>
                 <Input
                   type="date"
-                  className="h-11 rounded-2xl bg-muted/30 border-none font-bold"
+                  className="h-11 rounded-control bg-muted/30 border-none font-bold"
                   value={form.event_date}
                   onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Tipo</Label>
+                <Label className="u-label ml-1">Tipo</Label>
                 <Select value={form.event_type} onValueChange={val => setForm(f => ({ ...f, event_type: val }))}>
-                  <SelectTrigger className="h-11 rounded-2xl bg-muted/30 border-none font-bold">
+                  <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none font-bold">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl">
+                  <SelectContent className="rounded-control">
                     {EVENT_TYPES.map(t => (
                       <SelectItem key={t.value} value={t.value} className="font-bold">{t.label}</SelectItem>
                     ))}
@@ -225,12 +224,12 @@ export default function AdminCalendarPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Público Alvo</Label>
+                <Label className="u-label ml-1">Público</Label>
                 <Select value={form.target_group} onValueChange={val => setForm(f => ({ ...f, target_group: val }))}>
-                  <SelectTrigger className="h-11 rounded-2xl bg-muted/30 border-none font-bold">
+                  <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none font-bold">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl">
+                  <SelectContent className="rounded-control">
                     {TARGET_GROUPS.map(t => (
                       <SelectItem key={t.value} value={t.value} className="font-bold">{t.label}</SelectItem>
                     ))}
@@ -245,16 +244,16 @@ export default function AdminCalendarPage() {
                   onChange={e => setForm(f => ({ ...f, is_official: e.target.checked }))}
                   className="h-4 w-4 rounded accent-primary"
                 />
-                <Label htmlFor="is_official" className="text-sm font-black cursor-pointer flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-yellow-500" />
-                  Marcar como Evento Oficial
+                <Label htmlFor="is_official" className="text-sm font-semibold cursor-pointer flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-amber-600" />
+                  Marcar como evento oficial
                 </Label>
               </div>
               <div className="space-y-1.5 md:col-span-2">
-                <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Descrição (opcional)</Label>
+                <Label className="u-label ml-1">Descrição (opcional)</Label>
                 <Textarea
                   placeholder="Detalhes, link do edital, instruções..."
-                  className="rounded-2xl bg-muted/30 border-none font-medium"
+                  className="rounded-control bg-muted/30 border-none font-medium"
                   rows={3}
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -265,15 +264,15 @@ export default function AdminCalendarPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={saving || !form.title || !form.event_date}
-                className="flex-1 h-12 rounded-2xl bg-primary text-white font-black shadow-xl"
+                className="flex-1 h-11 rounded-control font-bold"
               >
                 {saving && <Loader2 className="h-5 w-5 animate-spin mr-2" />}
-                {editId ? 'Salvar Alterações' : 'Criar Evento'}
+                {editId ? 'Salvar alterações' : 'Criar evento'}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => { setShowForm(false); setEditId(null); }}
-                className="h-12 px-6 rounded-2xl font-black"
+                className="h-11 px-5 rounded-control font-bold"
               >
                 Cancelar
               </Button>
@@ -287,18 +286,18 @@ export default function AdminCalendarPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            className="pl-9 h-11 rounded-2xl bg-muted/30 border-none font-medium"
+            className="pl-9 h-11 rounded-control bg-muted/30 border-none font-medium"
             placeholder="Buscar evento..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
         <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="h-11 rounded-2xl bg-muted/30 border-none font-bold w-full sm:w-52">
+          <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none font-bold w-full sm:w-52">
             <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
             <SelectValue placeholder="Tipo" />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl border-none shadow-2xl">
+          <SelectContent className="rounded-control">
             <SelectItem value="all" className="font-bold">Todos os tipos</SelectItem>
             {EVENT_TYPES.map(t => (
               <SelectItem key={t.value} value={t.value} className="font-bold">{t.label}</SelectItem>
@@ -306,10 +305,10 @@ export default function AdminCalendarPage() {
           </SelectContent>
         </Select>
         <Select value={filterGroup} onValueChange={setFilterGroup}>
-          <SelectTrigger className="h-11 rounded-2xl bg-muted/30 border-none font-bold w-full sm:w-44">
+          <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none font-bold w-full sm:w-44">
             <SelectValue placeholder="Público" />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl border-none shadow-2xl">
+          <SelectContent className="rounded-control">
             <SelectItem value="all" className="font-bold">Todo público</SelectItem>
             {TARGET_GROUPS.map(t => (
               <SelectItem key={t.value} value={t.value} className="font-bold">{t.label}</SelectItem>
@@ -320,19 +319,27 @@ export default function AdminCalendarPage() {
 
       {/* Lista */}
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex flex-col items-center gap-3 py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="u-label">Carregando eventos…</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground font-medium">
-          Nenhum evento encontrado.
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title={events.length === 0 ? 'Nenhum evento no calendário' : 'Nenhum evento encontrado'}
+          description={events.length === 0
+            ? 'Crie o primeiro evento — simulado, vestibular, feriado — e ele aparece para os alunos.'
+            : 'Tente outra busca, outro tipo ou outro público.'}
+          action={events.length === 0
+            ? { label: 'Novo evento', icon: PlusCircle, onClick: () => { setShowForm(true); setEditId(null); setForm(blankForm); } }
+            : { label: 'Limpar filtros', onClick: () => { setSearch(''); setFilterType('all'); setFilterGroup('all'); } }}
+        />
       ) : (
         <div className="space-y-8">
           {upcoming.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-black text-primary italic uppercase tracking-wide">
-                Próximos Eventos ({upcoming.length})
+              <h2 className="u-label">
+                Próximos eventos (<span className="tabular-nums">{upcoming.length}</span>)
               </h2>
               {upcoming.map(ev => (
                 <AdminEventRow
@@ -346,8 +353,8 @@ export default function AdminCalendarPage() {
           )}
           {past.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-black text-muted-foreground italic uppercase tracking-wide">
-                Eventos Passados ({past.length})
+              <h2 className="u-label">
+                Eventos passados (<span className="tabular-nums">{past.length}</span>)
               </h2>
               {past.map(ev => (
                 <AdminEventRow
@@ -382,50 +389,51 @@ function AdminEventRow({
 
   return (
     <div
-      className={`flex items-center gap-4 bg-white rounded-2xl shadow-md p-4 group transition-all hover:shadow-lg ${past ? 'opacity-60' : ''}`}
+      className={`flex items-center gap-3 sm:gap-4 bg-card border rounded-card p-3 sm:p-4 group transition-colors hover:bg-muted/20 ${past ? 'opacity-60' : ''}`}
     >
-      <div className="text-center w-14 shrink-0">
-        <p className="text-xs font-black text-primary">
-          {new Date(ev.event_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+      <div className="text-center w-12 sm:w-14 shrink-0">
+        <p className="text-xs font-bold text-foreground">
+          {fmtLocale(ev.event_date + 'T00:00:00', 'date', 'pt-BR', { day: '2-digit', month: 'short' })}
         </p>
-        <p className="text-[10px] text-muted-foreground">
-          {new Date(ev.event_date + 'T00:00:00').getFullYear()}
+        <p className="text-[10px] text-muted-foreground tabular-nums">
+          {fmtDate(ev.event_date, 'yyyy', '')}
         </p>
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-black text-primary text-sm truncate">{ev.title}</p>
+          <p className="font-semibold text-foreground text-sm truncate">{ev.title}</p>
           {ev.is_official && (
-            <Badge className="text-[9px] font-black border-none bg-yellow-100 text-yellow-700 gap-1 shrink-0">
+            <Badge className="text-[10px] font-bold border-none bg-amber-100 text-amber-800 gap-1 shrink-0">
               <ShieldCheck className="h-2.5 w-2.5" />
               Oficial
             </Badge>
           )}
           {targetLabel && (
-            <Badge variant="outline" className="text-[9px] font-black shrink-0">{targetLabel}</Badge>
+            <Badge variant="outline" className="text-[10px] font-bold shrink-0">{targetLabel}</Badge>
           )}
+          <Badge className={`sm:hidden text-[10px] font-bold border-none shrink-0 ${meta.color}`}>{meta.label}</Badge>
         </div>
         {ev.description && (
-          <p className="text-xs text-muted-foreground font-medium truncate mt-0.5">{ev.description}</p>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{ev.description}</p>
         )}
       </div>
 
-      <Badge className={`text-[9px] font-black border-none shrink-0 ${meta.color}`}>{meta.label}</Badge>
+      <Badge className={`hidden sm:inline-flex text-[10px] font-bold border-none shrink-0 ${meta.color}`}>{meta.label}</Badge>
 
       {/* Ações — admin pode editar/excluir qualquer evento */}
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+      <div className="flex flex-col sm:flex-row gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(ev)}
-          className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-blue-50 text-blue-500 transition-all"
-          title="Editar"
+          className="h-9 w-9 rounded-control bg-muted/50 flex items-center justify-center hover:bg-muted text-foreground transition-colors"
+          title="Editar" aria-label="Editar evento"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={() => onDelete(ev.id)}
-          className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-red-50 text-red-400 transition-all"
-          title="Excluir"
+          className="h-9 w-9 rounded-control bg-muted/50 flex items-center justify-center hover:bg-red-50 text-red-500 transition-colors"
+          title="Excluir" aria-label="Excluir evento"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>

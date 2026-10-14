@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { fmtDate } from '@/lib/format';
 
 /* ── Tipos do payload de get_guardian_portal ─────────────────────────────── */
 interface PortalData {
@@ -48,7 +49,7 @@ interface ReenrollmentData {
 type LegacyEngagement = Record<string, unknown>;
 
 const brl = (v: number | string | null | undefined) =>
-  Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  { const n = Number(v ?? 0); return (Number.isFinite(n) ? n : 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
 
 const FIN_STATUS: Record<string, { label: string; cls: string }> = {
   aberta:    { label: "Aberta",    cls: "bg-blue-500/20 text-blue-300" },
@@ -257,7 +258,7 @@ export default function GuardianPage() {
                 </div>
                 {data.engajamento.ultima_atividade && (
                   <p className="text-xs text-gray-500 mt-4">
-                    Último dia de estudo: {format(new Date(data.engajamento.ultima_atividade + "T12:00:00"), "dd/MM/yyyy")}
+                    Último dia de estudo: {fmtDate(data.engajamento.ultima_atividade + "T12:00:00", "dd/MM/yyyy")}
                     {" · "}{data.engajamento.dias_estudo} dia(s) de estudo acumulados
                   </p>
                 )}
@@ -276,7 +277,7 @@ export default function GuardianPage() {
                     {data.frequencia.ultimas.map((r, i) => (
                       <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2 text-sm">
                         <span className="text-gray-300">
-                          {format(new Date(r.data + "T12:00:00"), "dd/MM")} — {r.titulo || "Aula"}
+                          {fmtDate(r.data + "T12:00:00", "dd/MM")} — {r.titulo || "Aula"}
                         </span>
                         {r.status === "present"
                           ? <Badge className="bg-emerald-500/20 text-emerald-300">Presente</Badge>
@@ -330,11 +331,11 @@ export default function GuardianPage() {
                     <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 text-sm">
                       <div>
                         <p className="text-gray-200 font-semibold">
-                          {format(new Date(f.competencia + "T12:00:00"), "MM/yyyy")} — {brl(f.valor)}
+                          {fmtDate(f.competencia + "T12:00:00", "MM/yyyy")} — {brl(f.valor)}
                         </p>
                         <p className="text-[11px] text-gray-500">
-                          Vencimento {format(new Date(f.vencimento + "T12:00:00"), "dd/MM/yyyy")}
-                          {f.pago_em ? ` · pago em ${format(new Date(f.pago_em), "dd/MM/yyyy")}` : ""}
+                          Vencimento {fmtDate(f.vencimento + "T12:00:00", "dd/MM/yyyy")}
+                          {f.pago_em ? ` · pago em ${fmtDate(f.pago_em, "dd/MM/yyyy")}` : ""}
                         </p>
                       </div>
                       <Badge className={st.cls}>{st.label}</Badge>
@@ -354,7 +355,7 @@ export default function GuardianPage() {
                       <div>
                         <p className="text-gray-100 font-bold">{c.titulo}</p>
                         <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">{c.mensagem}</p>
-                        <p className="text-[11px] text-gray-500 mt-2">{format(new Date(c.criado_em), "dd/MM/yyyy HH:mm")}</p>
+                        <p className="text-[11px] text-gray-500 mt-2">{fmtDate(c.criado_em, "dd/MM/yyyy HH:mm")}</p>
                       </div>
                       {c.lido ? (
                         <Badge className="bg-emerald-500/20 text-emerald-300 shrink-0">

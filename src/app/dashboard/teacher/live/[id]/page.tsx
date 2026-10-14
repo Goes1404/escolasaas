@@ -16,17 +16,16 @@ import {
   User,
   Users,
   ExternalLink,
-  Mic,
-  Video,
-  MonitorUp,
-  Settings
+  CalendarDays,
+  Radio,
 } from "lucide-react";
+import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
 
 /**
- * Studio Master - Visão do Mentor/Professor (Educori 360)
+ * Estúdio da aula ao vivo - visão do professor
  * Atualizado para Next.js 15.
  */
 export default function TeacherLiveStudioPage({ params }: { params: Promise<{ id: string }> }) {
@@ -91,7 +90,7 @@ export default function TeacherLiveStudioPage({ params }: { params: Promise<{ id
       .eq('id', liveId);
 
     if (!error) {
-      toast({ title: `Sinal: ${newStatus.toUpperCase()}` });
+      toast({ title: newStatus === 'live' ? "Sala aberta para os alunos" : "Sala fechada" });
     } else {
       toast({ title: "Erro ao mudar status", variant: "destructive" });
     }
@@ -99,89 +98,100 @@ export default function TeacherLiveStudioPage({ params }: { params: Promise<{ id
   };
 
   if (loading) return (
-    <div className="h-screen flex flex-col items-center justify-center bg-slate-950 gap-4">
-      <Loader2 className="animate-spin h-12 w-12 text-red-600" />
-      <p className="text-[10px] font-black text-white/65 uppercase tracking-[0.3em]">Sincronizando Studio Master...</p>
+    <div className="h-96 flex flex-col items-center justify-center gap-4">
+      <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
+      <p className="u-label">Carregando…</p>
     </div>
   );
 
+  const isLive = live?.status === 'live';
+
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] space-y-6 animate-in fade-in duration-700 overflow-hidden pb-4">
-      {/* Barra de Comando Industrial */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-slate-950 p-6 rounded-3xl text-white shadow-2xl border-b-4 border-red-600 gap-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-white hover:bg-white/10 rounded-full h-12 w-12">
-            <ChevronLeft className="h-6 w-6" />
+    <div className="space-y-5 pb-8">
+      {/* Cabeçalho */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Voltar" className="rounded-control h-10 w-10 shrink-0">
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase leading-none">{live?.title}</h1>
-            <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] mt-1 uppercase">CONSOLE DE TRANSMISSÃO</p>
+          <div className="min-w-0">
+            <p className="u-label flex items-center gap-2"><Radio className="h-3.5 w-3.5" /> Professor · estúdio</p>
+            <h1 className="u-page-title text-2xl md:text-3xl mt-1 line-clamp-2">{live?.title || "Aula ao vivo"}</h1>
           </div>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-4">
+
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5">
+          <Badge
+            variant="outline"
+            className={`h-11 px-4 rounded-control flex items-center justify-center gap-2 font-bold text-xs ${isLive ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-500/10 dark:border-red-500/30' : 'text-muted-foreground'}`}
+          >
+            <Signal className="h-4 w-4" /> {isLive ? 'Ao vivo' : 'Fora do ar'}
+          </Badge>
+
           {live?.meet_link && (
-            <Button asChild variant="outline" className="h-12 rounded-2xl border-white/20 hover:bg-white/10 text-white font-black px-6 gap-2">
+            <Button asChild variant="outline" className="h-11 rounded-control font-bold px-5 gap-2">
               <a href={live.meet_link} target="_blank" rel="noopener noreferrer">
-                ABRIR MEU GOOGLE MEET <ExternalLink className="h-4 w-4" />
+                Abrir o Google Meet <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
           )}
 
-          <Button 
-            onClick={toggleLiveStatus} 
-            disabled={isUpdating}
-            className={`${live?.status === 'live' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white font-black h-12 px-8 rounded-2xl gap-2 transition-all shadow-xl`}
-          >
-            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
-            {live?.status === 'live' ? 'FECHAR SALA' : 'ABRIR PARA ALUNOS'}
-          </Button>
-
-          <Badge className={`${live?.status === 'live' ? 'bg-red-600 animate-pulse' : 'bg-slate-700'} text-white font-black border-none px-6 h-12 rounded-2xl flex items-center gap-3`}>
-            <Signal className="h-4 w-4" /> {live?.status === 'live' ? 'AO VIVO' : 'OFFLINE'}
-          </Badge>
+          {isLive ? (
+            <Button
+              onClick={toggleLiveStatus}
+              disabled={isUpdating}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold h-11 px-6 rounded-control gap-2"
+            >
+              {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+              Fechar sala
+            </Button>
+          ) : (
+            <Button
+              variant="arcade"
+              onClick={toggleLiveStatus}
+              disabled={isUpdating}
+              className="font-bold h-11 px-6 rounded-control gap-2"
+            >
+              {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+              Abrir para os alunos
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col space-y-6 overflow-hidden">
-        {/* Painel Central */}
-        <Card className="flex-1 bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-slate-800 relative flex items-center justify-center">
-           <div className="w-full h-full relative flex flex-col items-center justify-center gap-8 bg-gradient-to-br from-slate-900 via-black to-slate-900">
-              <div className="absolute top-8 left-8 flex items-center gap-3">
-                 <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                 <span className="text-[10px] font-black uppercase text-white/60 tracking-[0.2em]">Sinal Monitorado</span>
-              </div>
-
-              <div className="h-48 w-48 rounded-card bg-accent/5 border-2 border-accent/20 flex items-center justify-center relative shadow-inner">
-                 <User className="h-24 w-24 text-accent/20" />
-              </div>
-
-              <div className="space-y-2 text-center px-6">
-                 <h3 className="text-xl font-black text-white/60 italic uppercase tracking-widest">Console de Gerenciamento</h3>
-                 <p className="text-[10px] font-bold text-slate-500 uppercase leading-relaxed max-w-md mx-auto">
-                   O chat foi desabilitado. Utilize este console para monitorar o status da sua transmissão externa.
-                 </p>
-              </div>
-
-              <div className="absolute bottom-10 flex items-center gap-4 bg-white/5 backdrop-blur-3xl p-6 rounded-card border border-white/10">
-                 <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-white"><Mic className="h-6 w-6" /></Button>
-                 <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-white"><Video className="h-6 w-6" /></Button>
-                 <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl bg-accent text-accent-foreground"><MonitorUp className="h-6 w-6" /></Button>
-                 <div className="w-px h-10 bg-white/10 mx-2" />
-                 <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-white"><Settings className="h-6 w-6" /></Button>
-              </div>
-           </div>
-        </Card>
-
-        <div className="flex justify-center pb-2">
-          <Card className="bg-white px-10 py-6 rounded-3xl shadow-xl flex flex-col items-center justify-center text-center">
-            <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
-              <Users className="h-5 w-5" />
-            </div>
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status da Rede</p>
-            <p className="text-lg font-black text-slate-900 italic">Sincronizada</p>
-          </Card>
+      {/* Painel */}
+      <Card className="rounded-card p-6 md:p-10 flex flex-col items-center justify-center text-center gap-5 min-h-[280px]">
+        <div className="h-20 w-20 rounded-card bg-muted flex items-center justify-center">
+          <User className="h-10 w-10 text-muted-foreground" />
         </div>
+        <div className="space-y-2 max-w-md">
+          <h2 className="text-lg font-bold text-foreground">Painel da transmissão</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            A aula acontece no Meet (ou YouTube). Use esta tela para abrir e fechar a sala para os alunos.
+            O chat desta aula está desativado.
+          </p>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className="rounded-card p-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <CalendarDays className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="u-label">Horário marcado</p>
+            <p className="text-sm font-semibold text-foreground mt-0.5">{fmtDate(live?.start_time, "dd/MM/yyyy 'às' HH:mm")}</p>
+          </div>
+        </Card>
+        <Card className="rounded-card p-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="u-label">Acesso dos alunos</p>
+            <p className={`text-sm font-semibold mt-0.5 ${isLive ? 'text-red-600' : 'text-foreground'}`}>{isLive ? 'Sala aberta' : 'Sala fechada'}</p>
+          </div>
+        </Card>
       </div>
     </div>
   );

@@ -12,6 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Target, Plus, Trash2, CheckCircle2, Loader2, TrendingUp, Calendar, Trophy } from 'lucide-react';
+import { pct as pctOf, VAZIO, fmtNumber, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type Goal = {
   id: string;
@@ -80,7 +82,7 @@ export default function GoalsPage() {
         .eq('student_id', userId);
       
       if (xpData) {
-        const total = xpData.reduce((acc, curr) => acc + curr.xp_earned, 0);
+        const total = xpData.reduce((acc, curr) => acc + (Number(curr.xp_earned) || 0), 0);
         setTotalXp(total);
         let calculatedLevel = 1;
         if (total >= 7000) calculatedLevel = 5;
@@ -123,7 +125,7 @@ export default function GoalsPage() {
     ctx.font = 'bold italic 40px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText('PLATAFORMA', 800, 180);
+    ctx.fillText(txt(tenant.branding.appName, 'Plataforma').toUpperCase(), 800, 180);
     ctx.font = '900 14px Arial';
     ctx.fillStyle = '#94a3b8';
     ctx.fillText('SISTEMA DE ENSINO', 800, 210);
@@ -151,7 +153,7 @@ export default function GoalsPage() {
 
     ctx.font = 'bold 30px Arial';
     ctx.fillStyle = '#f59e0b';
-    ctx.fillText(`${streak} dias consecutivos de estudos (Streak 🔥) e acumulando um total de ${totalXp} XP.`, 800, 700);
+    ctx.fillText(`${streak} dias seguidos de estudo (ofensiva 🔥) e um total de ${fmtNumber(totalXp, 0, '0')} XP.`, 800, 700);
 
     const dateStr = new Date().toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -164,7 +166,7 @@ export default function GoalsPage() {
 
     ctx.font = 'italic 28px Georgia';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('Equipe da Plataforma', 800, 930);
+    ctx.fillText(`Equipe ${txt(tenant.branding.appName, 'da Plataforma')}`, 800, 930);
     ctx.fillRect(700, 950, 200, 1);
     ctx.font = 'normal 16px Arial';
     ctx.fillStyle = '#64748b';
@@ -177,8 +179,8 @@ export default function GoalsPage() {
     link.click();
 
     toast({
-      title: "Certificado Emitido! 🏆",
-      description: "O arquivo PNG de alta resolução foi baixado com sucesso."
+      title: "Certificado baixado! 🏆",
+      description: "A imagem do certificado foi salva no seu aparelho."
     });
   };
 
@@ -199,7 +201,7 @@ export default function GoalsPage() {
   const handleCreate = async () => {
     if (!user) return;
     if (!form.title.trim()) {
-      toast({ title: 'Título obrigatório', variant: 'destructive' });
+      toast({ title: 'Dê um nome à sua meta', description: 'Ex.: Resolver 20 questões de exatas por dia.', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -218,7 +220,7 @@ export default function GoalsPage() {
       setForm({ title: '', goal_type: 'questions', target_value: 20, period: 'daily', deadline: '' });
       loadGoals();
     } catch (e: any) {
-      toast({ title: 'Erro ao criar meta', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não deu para criar a meta', description: 'Confira sua internet e toque em Criar meta de novo.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -230,6 +232,8 @@ export default function GoalsPage() {
     if (!error) {
       toast({ title: 'Meta excluída' });
       loadGoals();
+    } else {
+      toast({ title: 'Não deu para excluir a meta', description: 'Confira sua internet e tente de novo.', variant: 'destructive' });
     }
   };
 
@@ -241,11 +245,13 @@ export default function GoalsPage() {
     if (!error) {
       toast({ title: 'Meta concluída! 🏆', description: 'Parabéns pela conquista.' });
       loadGoals();
+    } else {
+      toast({ title: 'Não deu para concluir a meta', description: 'Confira sua internet e tente de novo.', variant: 'destructive' });
     }
   };
 
   const handleProgress = async (g: Goal, delta: number) => {
-    const next = Math.max(0, Math.min(g.target_value, g.current_value + delta));
+    const next = Math.max(0, Math.min(Number(g.target_value) || 0, (Number(g.current_value) || 0) + delta));
     const isDone = next >= g.target_value;
     const { error } = await supabase
       .from('student_goals')
@@ -275,7 +281,7 @@ export default function GoalsPage() {
           onClick={() => setOpenCreate(true)}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 rounded-2xl shadow-lg shadow-emerald-200 border-none px-6"
         >
-          <Plus className="h-4 w-4 mr-2" /> Nova Meta
+          <Plus className="h-4 w-4 mr-2" /> Nova meta
         </Button>
       </div>
 
@@ -308,26 +314,30 @@ export default function GoalsPage() {
             {[0, 1, 2].map(i => <div key={i} className="h-32 bg-muted/20 rounded-2xl animate-pulse" />)}
           </div>
         ) : active.length === 0 ? (
-          <div className="py-12 text-center border-2 border-dashed border-emerald-200 rounded-3xl bg-emerald-50/30">
-            <Target className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-            <p className="font-black text-emerald-700 italic">Nenhuma meta ativa</p>
-            <p className="text-xs text-emerald-600/70 mt-1">Crie uma para começar a se desafiar.</p>
-          </div>
+          <EmptyState
+            icon={Target}
+            title={completed.length > 0 ? 'Você não tem metas em andamento' : 'Você ainda não criou metas'}
+            description="Uma meta é um combinado com você mesmo — por exemplo, 20 questões por dia. Ela aparece aqui com uma barra para você marcar o progresso."
+            action={{ label: 'Criar meta', onClick: () => setOpenCreate(true), icon: Plus }}
+            compact
+          />
         ) : (
           <div className="grid gap-3">
             {active.map(g => {
-              const pct = Math.min(100, Math.round((g.current_value / Math.max(1, g.target_value)) * 100));
+              const cur = Number(g.current_value) || 0;
+              const alvo = Number(g.target_value) || 0;
+              const pct = pctOf(cur, alvo);
               return (
                 <div key={g.id} className="bg-white rounded-3xl p-5 border border-slate-100 shadow-md">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-black text-primary italic text-base">{g.title}</p>
+                      <p className="font-black text-primary italic text-base">{txt(g.title, "Meta sem nome")}</p>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
                         <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                          {TYPE_LABEL[g.goal_type]}
+                          {TYPE_LABEL[g.goal_type] ?? 'Personalizada'}
                         </span>
                         <span className="text-[9px] font-black uppercase tracking-widest text-brand-slate bg-brand-slate/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Calendar className="h-2.5 w-2.5" /> {PERIOD_LABEL[g.period]}
+                          <Calendar className="h-2.5 w-2.5" /> {PERIOD_LABEL[g.period] ?? 'Personalizada'}
                         </span>
                       </div>
                     </div>
@@ -343,7 +353,7 @@ export default function GoalsPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                       <span>Progresso</span>
-                      <span className="text-emerald-700">{g.current_value} / {g.target_value} ({pct}%)</span>
+                      <span className="text-emerald-700">{cur} / {alvo || VAZIO} ({pct}%)</span>
                     </div>
                     <Progress value={pct} className="h-2 rounded-full bg-slate-100" />
                   </div>
@@ -391,9 +401,9 @@ export default function GoalsPage() {
             {completed.slice(0, 10).map(g => (
               <div key={g.id} className="bg-brand-yellow/20 rounded-card p-4 border border-foreground/15 flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-black text-primary italic text-sm truncate">{g.title}</p>
+                  <p className="font-black text-primary italic text-sm truncate">{txt(g.title, "Meta sem nome")}</p>
                   <p className="text-[10px] font-bold text-foreground/70 mt-0.5">
-                    {TYPE_LABEL[g.goal_type]} · {g.target_value} unidades
+                    {TYPE_LABEL[g.goal_type] ?? 'Personalizada'} · {fmtNumber(g.target_value)} {Number(g.target_value) === 1 ? 'unidade' : 'unidades'}
                   </p>
                 </div>
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
@@ -407,17 +417,17 @@ export default function GoalsPage() {
       <section className="bg-card border-2 border-foreground rounded-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between mt-8">
         <div className="space-y-2 text-left">
           <span className="text-[9px] font-black uppercase tracking-widest bg-brand-yellow/40 text-foreground px-3 py-1 rounded-control border border-foreground/20">
-            Recompensa de Prestígio 🏆
+            Recompensa 🏆
           </span>
           <h3 className="u-display text-xl md:text-2xl text-primary leading-tight">
             Certificado de Engajamento
           </h3>
           <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">
-            Desbloqueie e baixe seu certificado oficial de engajamento ao atingir <span className="font-black text-foreground">7 dias consecutivos de estudos</span> ou <span className="font-black text-foreground">Nível 3</span>.
+            Baixe seu certificado de engajamento quando chegar a <span className="font-black text-foreground">7 dias consecutivos de estudos</span> ou <span className="font-black text-foreground">Nível 3</span>.
           </p>
           <div className="flex gap-4 text-xs font-bold text-slate-500 pt-1">
             <span className={streak >= 7 ? 'text-emerald-600' : ''}>
-              Seu streak: {streak}/7 dias {streak >= 7 ? '✅' : ''}
+              Sua ofensiva: {streak}/7 dias {streak >= 7 ? '✅' : ''}
             </span>
             <span className={level >= 3 ? 'text-emerald-600' : ''}>
               Seu nível: Nível {level}/3 {level >= 3 ? '✅' : ''}
@@ -433,7 +443,7 @@ export default function GoalsPage() {
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'
           }`}
         >
-          {streak >= 7 || level >= 3 ? 'Emitir Certificado' : 'Bloqueado 🔒'}
+          {streak >= 7 || level >= 3 ? 'Baixar certificado' : 'Ainda bloqueado 🔒'}
         </Button>
       </section>
 
@@ -447,7 +457,7 @@ export default function GoalsPage() {
               </div>
               <div>
                 <DialogTitle className="u-display text-lg md:text-xl text-emerald-700 leading-tight">Nova meta</DialogTitle>
-                <DialogDescription className="text-xs font-bold text-emerald-600 mt-1">Defina um objetivo claro e mensurável</DialogDescription>
+                <DialogDescription className="text-xs font-bold text-emerald-600 mt-1">Escolha um objetivo claro, que dê para contar</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -521,7 +531,7 @@ export default function GoalsPage() {
               className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 border-none disabled:opacity-40"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              Criar Meta
+              Criar meta
             </Button>
           </div>
         </DialogContent>

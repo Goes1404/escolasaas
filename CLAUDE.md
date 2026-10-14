@@ -341,6 +341,32 @@ disparo é no carregamento, use `celebrateOnce(chave)`.
 - **Feedback**: use **sempre** o hook `useToast` (`src/hooks/use-toast.ts`) para erros e sucessos
 - **Responsividade**: mobile-first; sidebar com toggle móvel já implementado no layout
 
+## ✨ Acabamento profissional (14/10/2026) — regras para código novo
+
+- **Nunca mostrar erro cru.** Data/número/moeda na tela passam por `src/lib/format.ts`
+  (`fmtDate`, `fmtLocale`, `fmtNumber`, `pct`, `fmtPct`, `fmtBRL`, `txt`, `VAZIO`).
+  `format(new Date(x))` do date-fns LANÇA com data inválida e derrubava telas inteiras;
+  `a / b` com `b = 0` virava "NaN%". Faltou dado → "—".
+- **Tela quebrou → `ErrorScreen`** (`app/dashboard/error.tsx`, `app/error.tsx`,
+  `app/global-error.tsx`): mensagem em português + "Tentar de novo", e a falha vai para a
+  telemetria e para `/api/client-error`.
+- **Estado vazio = `EmptyState`** (`src/components/EmptyState.tsx`): ícone, o que vai
+  aparecer, próxima ação. Nada de texto cinza solto.
+- **Capa de conteúdo = `ContentCover`**: imagem cadastrada → miniatura do YouTube →
+  capa desenhada da matéria. Sem foto aleatória externa (picsum/unsplash).
+- **Linguagem:** português simples. Sem inglês em selo ("STANDALONE"), sem frase de efeito
+  ("Sintonizando…"), "Aurora IA" (nunca "Aurora AI"). Toast diz o que houve e o que fazer,
+  sem `error.message` técnico.
+- **Nenhuma métrica inventada.** Sem dado real, mostra "—" ou estado vazio (havia 88% de
+  acerto e ofensiva de 5 dias fixos no código).
+- **Monitoramento:** erros do servidor → `src/instrumentation.ts` (`onRequestError`) →
+  logs da Vercel (`server.request_error`); erros de tela → Admin › Uso › "O que está
+  falhando" e `client.render_error` nos logs.
+- **Contas duplicadas:** `secretary/duplicates` é só consulta + planilha; fundir continua
+  sendo decisão da secretaria.
+- **Animação em loop só com `transform`/`opacity`.** `background-position`, `box-shadow` e
+  `filter` animados redesenham a tela a cada quadro e travavam a rolagem no celular.
+
 ## 🧠 Regras de Desenvolvimento
 
 ### Componentes

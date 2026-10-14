@@ -41,6 +41,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import { fmtNumber, txt, VAZIO } from "@/lib/format";
+import { EmptyState } from "@/components/EmptyState";
 import { StudentFilterBar, distinctOptions } from "@/components/secretary/StudentFilterBar";
 import {
   AlertDialog,
@@ -118,11 +120,11 @@ export default function AdminStudentsPage() {
         .update({ class_id: destCohortId })
         .eq('class_id', sourceCohortId);
       if (error) throw error;
-      toast({ title: "Grupos Mesclados!" });
+      toast({ title: "Turmas unidas" });
       fetchData();
       setIsMergeOpen(false);
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Não foi possível concluir", description: e.message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -143,11 +145,11 @@ export default function AdminStudentsPage() {
         .update(updates)
         .eq('id', editingStudent.id);
       if (error) throw error;
-      toast({ title: "Dados do aluno atualizados!" });
+      toast({ title: "Dados do aluno atualizados" });
       setEditingStudent(null);
       fetchData();
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Não foi possível concluir", description: e.message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -159,9 +161,9 @@ export default function AdminStudentsPage() {
       const { error } = await supabase.from('profiles').delete().eq('id', id);
       if (error) throw error;
       setStudents(prev => prev.filter(s => s.id !== id));
-      toast({ title: "Removido!" });
+      toast({ title: "Aluno removido" });
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Não foi possível concluir", description: e.message, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }
@@ -191,33 +193,71 @@ export default function AdminStudentsPage() {
   const pagedStudents = filteredStudents.slice(0, displayCount);
   const hasMore = displayCount < filteredStudents.length;
 
+  const openEdit = (student: any) => {
+    setEditingStudent(student);
+    setNewEmail(student.email || "");
+    setNewInstitution(student.institution || "");
+    setNewCourse(student.course || "");
+    setNewExamTarget(student.exam_target || "ENEM");
+  };
+
+  const rowActions = (student: any) => (
+    <div className="flex items-center justify-end gap-1">
+      <Button variant="ghost" size="icon" title="Ver desempenho" aria-label="Ver desempenho" asChild className="h-10 w-10 rounded-control">
+        <Link href={`/dashboard/admin/students/${student.id}`}>
+          <Eye className="h-4 w-4" />
+        </Link>
+      </Button>
+      <Button variant="ghost" size="icon" title="Editar dados" aria-label="Editar dados" onClick={() => openEdit(student)} className="h-10 w-10 rounded-control">
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        title="Remover aluno"
+        aria-label="Remover aluno"
+        onClick={() => handleDeleteStudent(student.id)}
+        className="h-10 w-10 rounded-control text-red-500 hover:bg-red-50 hover:text-red-600"
+      >
+        {deletingId === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+      </Button>
+    </div>
+  );
+
+  const segmentBadge = (student: any) => (
+    <Badge variant="outline" className="font-bold uppercase text-[10px]">
+      {txt(student.exam_target, "ENEM")}
+    </Badge>
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 px-1">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">Gestão de Turmas & Lista Mestra</h1>
-          <p className="text-muted-foreground font-medium italic">Administração centralizada e agrupamento de alunos (ETEC/ENEM).</p>
+    <div className="space-y-6 pb-20 px-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><Users className="h-3.5 w-3.5" /> Coordenação · alunos</p>
+          <h1 className="u-page-title text-3xl mt-1">Turmas e alunos</h1>
+          <p className="text-muted-foreground text-sm mt-2">Lista completa dos alunos, com agrupamento por turma e segmento (ETEC/ENEM).</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
           <Dialog open={isMergeOpen} onOpenChange={setIsMergeOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="rounded-2xl h-14 border-dashed border-primary/20 text-primary font-black px-6 hover:bg-primary/5 transition-all flex items-center justify-center gap-3">
-                <GitMerge className="h-5 w-5 text-accent" />
-                <span>Mesclar Grupos</span>
+              <Button variant="outline" className="rounded-control h-11 font-bold px-5 flex items-center justify-center gap-2">
+                <GitMerge className="h-4 w-4" />
+                <span>Juntar turmas</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-card p-6 bg-white max-w-lg border-none shadow-2xl">
+            <DialogContent className="rounded-card p-6 max-w-lg">
               <DialogHeader>
-                <DialogTitle className="text-xl font-black italic text-primary">Mesclar Cohorts</DialogTitle>
-                <DialogDescription className="italic text-xs">Isso moverá todos os alunos de uma turma para outra.</DialogDescription>
+                <DialogTitle className="text-xl font-bold text-foreground">Juntar turmas</DialogTitle>
+                <DialogDescription className="text-sm">Move todos os alunos de uma turma para outra.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Origem</Label>
+                  <Label className="u-label ml-1">Origem</Label>
                   <Select value={sourceCohortId} onValueChange={setSourceCohortId}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold italic text-sm">
-                      <SelectValue placeholder="Selecione a origem..." />
+                    <SelectTrigger className="h-11 rounded-control text-sm">
+                      <SelectValue placeholder="Escolha a turma de origem..." />
                     </SelectTrigger>
                     <SelectContent>
                       {cohorts.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -225,10 +265,10 @@ export default function AdminStudentsPage() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40 ml-2">Destino</Label>
+                  <Label className="u-label ml-1">Destino</Label>
                   <Select value={destCohortId} onValueChange={setDestCohortId}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold italic text-sm">
-                      <SelectValue placeholder="Selecione o destino..." />
+                    <SelectTrigger className="h-11 rounded-control text-sm">
+                      <SelectValue placeholder="Escolha a turma de destino..." />
                     </SelectTrigger>
                     <SelectContent>
                       {cohorts.map(c => <SelectItem key={c.id} value={c.id} disabled={c.id === sourceCohortId}>{c.name}</SelectItem>)}
@@ -237,8 +277,8 @@ export default function AdminStudentsPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleMergeCohorts} disabled={isSubmitting || !sourceCohortId || !destCohortId} className="w-full h-12 bg-primary text-white font-black rounded-xl shadow-xl">
-                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Unificar Grupos"}
+                <Button onClick={handleMergeCohorts} disabled={isSubmitting || !sourceCohortId || !destCohortId} className="w-full h-11 font-bold rounded-control">
+                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Juntar turmas"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -246,44 +286,25 @@ export default function AdminStudentsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <Card className="border-none shadow-xl rounded-card bg-primary text-white overflow-hidden p-6 md:p-8">
-            <div className="flex items-center justify-between">
-              <Users className="h-8 w-8 opacity-40" />
-              <Badge className="bg-accent text-accent-foreground font-black">TOTAL</Badge>
-            </div>
-            <div className="mt-6">
-              <p className="text-5xl font-black italic">{counts.total}</p>
-              <p className="text-[10px] font-black uppercase tracking-widest mt-2 opacity-60">Alunos na Base</p>
-            </div>
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        {[
+          { icon: Users, label: "Total", sub: "Alunos na base", value: counts.total },
+          { icon: GraduationCap, label: "ETEC", sub: "Preparatório ETEC", value: counts.etec },
+          { icon: GraduationCap, label: "ENEM", sub: "Preparatório ENEM", value: counts.enem },
+        ].map((k) => (
+          <Card key={k.label} className="rounded-card p-4 sm:p-6">
+            <div className="u-label flex items-center gap-2"><k.icon className="h-3.5 w-3.5 shrink-0" /> {k.label}</div>
+            <p className="u-num text-2xl sm:text-3xl tabular-nums mt-2">{loading ? VAZIO : fmtNumber(k.value, 0, "0")}</p>
+            <p className="text-xs text-muted-foreground mt-1">{k.sub}</p>
           </Card>
-
-          <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-orange-500">
-            <div className="flex items-center justify-between font-black">
-              <GraduationCap className="h-8 w-8 text-orange-500" />
-              <Badge className="bg-orange-100 text-orange-700">ETEC</Badge>
-            </div>
-            <div className="mt-6">
-              <p className="text-5xl font-black italic text-primary">{counts.etec}</p>
-              <p className="text-[10px] font-black uppercase tracking-widest mt-2 text-muted-foreground">Preparatório ETEC</p>
-            </div>
-          </Card>
-
-          <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden p-6 md:p-8 border-l-[12px] border-blue-500">
-            <div className="flex items-center justify-between font-black">
-              <ZapOff className="h-8 w-8 text-blue-500" />
-              <Badge className="bg-blue-100 text-blue-700">ENEM</Badge>
-            </div>
-            <div className="mt-6">
-              <p className="text-5xl font-black italic text-primary">{counts.enem}</p>
-              <p className="text-[10px] font-black uppercase tracking-widest mt-2 text-muted-foreground">Preparatório ENEM</p>
-            </div>
-          </Card>
+        ))}
       </div>
 
-      <Card className="border-none shadow-2xl rounded-3xl bg-white overflow-hidden">
-        <CardHeader className="p-4 md:p-8 border-b border-muted/10 space-y-4">
-          <CardTitle className="text-xl font-black text-primary italic">Lista Mestra de Alunos ({filteredStudents.length})</CardTitle>
+      <Card className="rounded-card overflow-hidden">
+        <CardHeader className="p-4 md:p-6 border-b space-y-4">
+          <CardTitle className="text-base font-bold text-foreground">
+            Lista de alunos (<span className="tabular-nums">{filteredStudents.length}</span>)
+          </CardTitle>
           <StudentFilterBar
             search={searchTerm}
             onSearchChange={setSearchTerm}
@@ -300,77 +321,74 @@ export default function AdminStudentsPage() {
           />
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow className="h-12 md:h-16">
-                <TableHead className="px-4 md:px-8 font-black uppercase text-[10px] min-w-[140px]">Estudante</TableHead>
-                <TableHead className="font-black uppercase text-[10px] min-w-[120px] hidden sm:table-cell">Instituição / Escola</TableHead>
-                <TableHead className="font-black uppercase text-[10px] min-w-[80px]">Segmento</TableHead>
-                <TableHead className="text-right px-4 md:px-8 font-black uppercase text-[10px]">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={4} className="h-40 text-center"><Loader2 className="animate-spin h-8 w-8 mx-auto opacity-20" /></TableCell></TableRow>
-              ) : pagedStudents.map((student) => (
-                <TableRow key={student.id} className="h-16 hover:bg-muted/10 transition-colors">
-                  <TableCell className="px-4 md:px-8 font-black text-primary italic">{student.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge variant="outline" className="border-blue-200 text-blue-600 bg-blue-50 font-bold uppercase text-[9px]">{student.institution || 'Não definido'}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={`font-black uppercase text-[9px] ${student.exam_target?.includes('ETEC') ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'}`}>
-                      {student.exam_target || 'ENEM'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right px-4 md:px-8">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Ver desempenho"
-                        asChild
-                        className="h-10 w-10 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
-                        <Link href={`/dashboard/admin/students/${student.id}`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Editar dados"
-                        onClick={() => { setEditingStudent(student); setNewEmail(student.email || ""); setNewInstitution(student.institution || ""); setNewCourse(student.course || ""); setNewExamTarget(student.exam_target || "ENEM"); }}
-                        className="h-10 w-10 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Remover aluno"
-                        onClick={() => handleDeleteStudent(student.id)}
-                        className="h-10 w-10 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
-                      >
-                        {deletingId === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                      </Button>
+          {loading ? (
+            <div className="h-40 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
+              <p className="u-label">Carregando alunos…</p>
+            </div>
+          ) : pagedStudents.length === 0 ? (
+            <div className="p-4 md:p-6">
+              <EmptyState
+                compact
+                icon={Users}
+                title={students.length === 0 ? "Nenhum aluno cadastrado" : "Nenhum aluno encontrado"}
+                description={students.length === 0
+                  ? "Cadastre o primeiro aluno para ele aparecer nesta lista."
+                  : "Nenhum aluno corresponde à busca e aos filtros escolhidos."}
+                action={students.length === 0
+                  ? { label: "Cadastrar aluno", href: "/dashboard/admin/users/new", icon: PlusCircle }
+                  : { label: "Limpar filtros", onClick: () => { setSearchTerm(""); setCourseFilter(""); setExamTargetFilter(""); setSelectedPoloName(null); } }}
+              />
+            </div>
+          ) : (
+            <>
+              <ul className="sm:hidden divide-y">
+                {pagedStudents.map((student) => (
+                  <li key={student.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-foreground break-words">{txt(student.name, "Aluno sem nome")}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 break-words">{txt(student.institution, "Escola não definida")}</p>
+                      </div>
+                      {segmentBadge(student)}
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          </div>
+                    {rowActions(student)}
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="px-6 u-label min-w-[140px]">Aluno</TableHead>
+                      <TableHead className="u-label min-w-[120px]">Escola / polo</TableHead>
+                      <TableHead className="u-label min-w-[80px]">Segmento</TableHead>
+                      <TableHead className="text-right px-6 u-label">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedStudents.map((student) => (
+                      <TableRow key={student.id} className="hover:bg-muted/20">
+                        <TableCell className="px-6 py-3 font-semibold text-foreground">{txt(student.name, "Aluno sem nome")}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{txt(student.institution, "Não definida")}</TableCell>
+                        <TableCell>{segmentBadge(student)}</TableCell>
+                        <TableCell className="text-right px-6">{rowActions(student)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
 
-          {hasMore && (
-            <div className="p-8 flex justify-center">
-              <Button 
-                variant="outline" 
+          {!loading && hasMore && (
+            <div className="p-6 flex justify-center border-t">
+              <Button
+                variant="outline"
                 onClick={() => setDisplayCount(prev => prev + 100)}
-                className="rounded-2xl border-dashed border-primary/20 font-black italic px-12 hover:bg-primary/5 h-14"
+                className="rounded-control font-bold px-8 h-11"
               >
-                Carregar Mais Alunos (+100)
+                Carregar mais alunos (+100)
               </Button>
             </div>
           )}
@@ -378,68 +396,67 @@ export default function AdminStudentsPage() {
       </Card>
 
       <Dialog open={!!editingStudent} onOpenChange={() => setEditingStudent(null)}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-hidden max-w-md">
-          <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
+        <DialogContent className="rounded-card p-0 overflow-hidden max-w-md">
+          <DialogHeader className="p-6 pb-4 border-b">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-lg shadow">
+              <div className="h-12 w-12 rounded-control bg-primary/10 flex items-center justify-center font-bold text-primary text-lg shrink-0">
                 {editingStudent?.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
               <div>
-                <DialogTitle className="text-xl font-black italic text-primary leading-none uppercase tracking-tight">
-                  Editar Aluno
+                <DialogTitle className="text-lg font-bold text-foreground leading-tight">
+                  Editar aluno
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5 font-medium text-muted-foreground">
+                <DialogDescription className="text-sm mt-0.5 text-muted-foreground">
                   {editingStudent?.name}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-8 space-y-5">
+          <div className="p-6 space-y-5">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">E-mail</Label>
+              <Label className="u-label ml-1">E-mail</Label>
               <Input
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="email@exemplo.com"
-                className="h-12 bg-muted/30 border-none rounded-xl font-mono text-sm"
+                className="h-12 bg-muted/30 border-none rounded-control font-mono text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Escola / Polo</Label>
+              <Label className="u-label ml-1">Escola / Polo</Label>
               <Input
                 value={newInstitution}
                 onChange={(e) => setNewInstitution(e.target.value)}
                 placeholder="Nome da escola ou polo"
-                className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                className="h-12 bg-muted/30 border-none rounded-control font-medium text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Sala / Turma</Label>
+              <Label className="u-label ml-1">Sala / Turma</Label>
               <Input
                 value={newCourse}
                 onChange={(e) => setNewCourse(e.target.value)}
                 placeholder="Ex: 3ª Série A, Turma Manhã"
-                className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                className="h-12 bg-muted/30 border-none rounded-control font-medium text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Segmento</Label>
+              <Label className="u-label ml-1">Segmento</Label>
               <div className="flex gap-3">
                 {['ENEM', 'ETEC'].map(opt => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => setNewExamTarget(opt)}
-                    className={`flex-1 h-12 rounded-xl font-black text-sm transition-all border-2 ${
+                    aria-pressed={newExamTarget === opt}
+                    className={`flex-1 h-11 rounded-control font-bold text-sm transition-colors border ${
                       newExamTarget === opt
-                        ? opt === 'ETEC'
-                          ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-200'
-                          : 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-200'
-                        : 'bg-white border-muted text-muted-foreground hover:border-primary/30'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >
                     {opt}
@@ -449,14 +466,14 @@ export default function AdminStudentsPage() {
             </div>
           </div>
 
-          <div className="px-8 pb-8">
+          <div className="px-6 pb-6">
             <Button
               onClick={handleUpdateStudent}
               disabled={isSubmitting}
-              className="w-full h-14 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 uppercase tracking-widest text-xs transition-all active:scale-95"
+              className="w-full h-11 font-bold rounded-control"
             >
               {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-              Salvar Alterações
+              Salvar alterações
             </Button>
           </div>
         </DialogContent>

@@ -59,21 +59,21 @@ export function StudentFilterBar({
   return (
     <div className="space-y-3">
       <div className="flex flex-col lg:flex-row gap-2.5">
-        <div className="relative flex-1 min-w-[180px]">
+        <div className="relative flex-1 min-w-0 lg:min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 h-11 bg-muted/30 border-none rounded-xl font-medium text-sm"
+            className="pl-10 h-11 bg-muted/30 border-none rounded-control font-medium text-sm"
           />
         </div>
 
         <Select value={course || ALL} onValueChange={(v) => onCourseChange(v === ALL ? "" : v)}>
-          <SelectTrigger className="h-11 w-full lg:w-44 bg-muted/30 border-none rounded-xl font-bold text-sm">
+          <SelectTrigger className="h-11 w-full lg:w-44 bg-muted/30 border-none rounded-control font-bold text-sm">
             <SelectValue placeholder={courseLabel} />
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-none shadow-2xl">
+          <SelectContent className="rounded-control">
             <SelectItem value={ALL} className="font-bold text-xs">Todas as turmas</SelectItem>
             {courseOptions.map((c) => (
               <SelectItem key={c} value={c} className="font-bold text-xs">{c}</SelectItem>
@@ -82,10 +82,10 @@ export function StudentFilterBar({
         </Select>
 
         <Select value={institution || ALL} onValueChange={(v) => onInstitutionChange(v === ALL ? "" : v)}>
-          <SelectTrigger className="h-11 w-full lg:w-48 bg-muted/30 border-none rounded-xl font-bold text-sm">
+          <SelectTrigger className="h-11 w-full lg:w-48 bg-muted/30 border-none rounded-control font-bold text-sm">
             <SelectValue placeholder="Colégio / Polo" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-none shadow-2xl">
+          <SelectContent className="rounded-control">
             <SelectItem value={ALL} className="font-bold text-xs">Todos os colégios</SelectItem>
             {institutionOptions.map((i) => (
               <SelectItem key={i} value={i} className="font-bold text-xs">{i}</SelectItem>
@@ -95,10 +95,10 @@ export function StudentFilterBar({
 
         {onExamTargetChange && (
           <Select value={examTarget || ALL} onValueChange={(v) => onExamTargetChange(v === ALL ? "" : v)}>
-            <SelectTrigger className="h-11 w-full lg:w-32 bg-muted/30 border-none rounded-xl font-bold text-sm">
+            <SelectTrigger className="h-11 w-full lg:w-32 bg-muted/30 border-none rounded-control font-bold text-sm">
               <SelectValue placeholder="Foco" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
+            <SelectContent className="rounded-control">
               <SelectItem value={ALL} className="font-bold text-xs">ENEM + ETEC</SelectItem>
               <SelectItem value="ENEM" className="font-bold text-xs">ENEM</SelectItem>
               <SelectItem value="ETEC" className="font-bold text-xs">ETEC</SelectItem>
@@ -112,16 +112,16 @@ export function StudentFilterBar({
           <Button
             variant="ghost"
             onClick={clearAll}
-            className="h-11 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-100 shrink-0"
+            className="h-11 rounded-control font-bold text-xs text-muted-foreground hover:text-foreground shrink-0"
           >
-            <X className="h-3.5 w-3.5 mr-1" /> Limpar
+            <X className="h-3.5 w-3.5 mr-1" /> Limpar filtros
           </Button>
         )}
       </div>
 
       {hasActiveFilter && (
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-          {resultCount} de {totalCount}
+        <p className="u-label ml-1">
+          <span className="u-num">{resultCount}</span> de <span className="u-num">{totalCount}</span> {totalCount === 1 ? "aluno" : "alunos"}
         </p>
       )}
     </div>

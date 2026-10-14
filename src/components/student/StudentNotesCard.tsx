@@ -18,6 +18,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate } from '@/lib/format';
 
 interface Note {
   id: string;
@@ -166,7 +167,7 @@ export function StudentNotesCard({ studentId }: { studentId: string }) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={`border-none font-black text-[9px] uppercase px-2 h-4 ${meta.cls}`}>{meta.label}</Badge>
                       <span className="text-[10px] font-bold text-slate-400">
-                        {format(new Date(n.created_at), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
+                        {fmtDate(n.created_at, "dd/MM/yy 'às' HH:mm")}
                       </span>
                     </div>
                     <p className="text-sm font-semibold text-slate-700 mt-1.5 whitespace-pre-wrap break-words">{n.note}</p>

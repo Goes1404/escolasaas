@@ -16,7 +16,9 @@ import {
   PenLine,
   Sparkles
 } from "lucide-react";
-import Image from "next/image";
+import { ContentCover } from "@/components/ContentCover";
+import { EmptyState } from "@/components/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -29,33 +31,9 @@ import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import Link from "next/link";
 
-const CATEGORY_IMAGES: Record<string, string> = {
-  'Matemática': 'https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=800&auto=format&fit=crop',
-  'Física': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800&auto=format&fit=crop',
-  'Química': 'https://images.unsplash.com/photo-1532094349884-543648cdbd8e?q=80&w=800&auto=format&fit=crop',
-  'Biologia': 'https://images.unsplash.com/photo-1576319155264-99536e0be1ee?q=80&w=800&auto=format&fit=crop',
-  'História': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=800&auto=format&fit=crop',
-  'Geografia': 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop',
-  'Linguagens': 'https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=800&auto=format&fit=crop',
-  'Saúde': 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=800&auto=format&fit=crop',
-  'Atualidades': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=800&auto=format&fit=crop',
-  'Literatura': 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=800&auto=format&fit=crop',
-  'Filosofia': 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop',
-  'Sociologia': 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800&auto=format&fit=crop',
-  'Didáticos': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=800&auto=format&fit=crop',
-  'Técnicos': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop',
-  'Guias': 'https://images.unsplash.com/photo-1501534159981-3ef501f27838?q=80&w=800&auto=format&fit=crop',
-};
-
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop';
-
-function getSafeLibraryImage(url: string | null | undefined, category: string) {
-  if (!url || url.includes('picsum.photos')) {
-    const cleanCategory = category.replace('LIVRO|', '');
-    return CATEGORY_IMAGES[cleanCategory] || DEFAULT_IMAGE;
-  }
-  return url;
-}
+// Rótulo em português para o tipo gravado no banco (o valor do filtro continua o mesmo).
+const TYPE_LABEL: Record<string, string> = { Video: "Vídeo", "E-book": "E-book", PDF: "PDF", Artigo: "Artigo", Todos: "Todos" };
+const typeLabel = (t?: string | null) => (t ? TYPE_LABEL[t] ?? t : "Material");
 
 const categories = ["Todos", "Matemática", "Física", "Linguagens", "História", "Saúde", "Atualidades", "Literatura", "Química", "Filosofia", "Sociologia"];
 const types = ["Todos", "PDF", "Video", "E-book", "Artigo"];
@@ -125,9 +103,21 @@ export default function LibraryPage() {
 
   if (loading) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="font-black text-muted-foreground uppercase text-xs tracking-widest animate-pulse">Carregando Acervo Digital...</p>
+      <div className="space-y-8 pb-20" aria-busy="true" aria-label="Carregando biblioteca">
+        <Skeleton className="h-56 md:h-64 w-full rounded-card" />
+        <Skeleton className="h-14 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-card bg-white overflow-hidden shadow-xl">
+              <Skeleton className="aspect-[16/10] w-full rounded-none" />
+              <div className="p-8 space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-6 w-4/5" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -151,14 +141,14 @@ export default function LibraryPage() {
               Acervo de <br /><span className="text-accent">alta performance</span>
             </h1>
             <p className="text-xs md:text-sm text-gray-300 font-medium italic leading-relaxed">
-              Acesse apostilas, videoaulas e materiais de apoio recomendados pelo corpo docente para acelerar seus estudos.
+              Apostilas, videoaulas e materiais de apoio escolhidos pelos professores para os seus estudos.
             </p>
           </div>
           
           <div className="relative w-full md:w-80 group/search shrink-0">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/65 transition-colors group-focus-within/search:text-accent" />
             <Input
-              placeholder="Buscar material..."
+              placeholder="Buscar material…"
               className="pl-12 h-14 bg-white/10 backdrop-blur-md border border-white/10 hover:border-white/20 text-white placeholder:text-white/65 rounded-[1.25rem] text-sm font-medium italic focus-visible:ring-accent focus-visible:ring-1 focus-visible:border-accent transition-all duration-300"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -167,7 +157,7 @@ export default function LibraryPage() {
         </div>
       </section>
 
-      <Tabs defaultValue="Todos" className="w-full space-y-6">
+      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full space-y-6">
         {/* Barra de filtros no lugar dela — não acompanha a rolagem.
             O TabsList do shadcn vem com justify-center: quando as abas não
             cabem, o excesso transborda para os dois lados e o início ("Todos")
@@ -190,18 +180,18 @@ export default function LibraryPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-14 px-6 rounded-2xl bg-white border-none shadow-sm hover:bg-slate-50 transition-all font-black text-[10px] uppercase gap-2 active:scale-95 shrink-0 w-full sm:w-auto">
                 <Filter className="h-4 w-4 text-accent" />
-                Tipo: <span className="text-primary">{activeType}</span>
+                Tipo: <span className="text-primary">{typeLabel(activeType)}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-none shadow-2xl">
-              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-3 py-3">Filtrar por Tipo</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-3 py-3">Filtrar por tipo</DropdownMenuLabel>
               {types.map(type => (
                 <DropdownMenuItem 
                   key={type} 
                   onClick={() => setActiveType(type)}
                   className={`rounded-xl px-3 py-2.5 font-bold text-sm cursor-pointer mb-1 last:mb-0 ${activeType === type ? 'bg-primary text-white' : ''}`}
                 >
-                  {type}
+                  {typeLabel(type)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -220,31 +210,31 @@ export default function LibraryPage() {
               >
               <Card className="gradient-border overflow-hidden border-none shadow-xl hover:shadow-2xl hover:-translate-y-1.5 hover:glow-orange-strong transition-all duration-300 group bg-white rounded-card flex flex-col h-full">
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0">
-                  <Image
-                    src={getSafeLibraryImage(item.image_url, item.category)}
-                    alt={item.title || "Material"}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    priority={index === 0}
+                  <ContentCover
+                    imageUrl={item.image_url}
+                    videoUrl={item.type === "Video" ? item.url : null}
+                    subject={item.category}
+                    title={item.title}
+                    className="absolute inset-0"
+                    imgClassName="transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
                     <Badge className="bg-white/95 backdrop-blur-md text-primary border-none shadow-lg flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider">
                       {item.type === "Video" ? <Video className="h-3.5 w-3.5 text-accent" /> : <FileText className="h-3.5 w-3.5 text-blue-500" />}
-                      {item.type}
+                      {typeLabel(item.type)}
                     </Badge>
                   </div>
                 </div>
                 
                 <CardHeader className="p-8 space-y-3 flex-1">
                   <Badge variant="outline" className="w-fit text-[8px] border-accent/20 text-accent font-black uppercase px-2 py-0.5 bg-accent/5 tracking-wider rounded-md">
-                    {item.category}
+                    {item.category || "Geral"}
                   </Badge>
                   <CardTitle className="text-xl font-black text-primary italic leading-tight line-clamp-2 group-hover:text-accent transition-colors">
-                    {item.title}
+                    {item.title || "Material sem título"}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground font-medium leading-relaxed line-clamp-3 italic opacity-80">
-                    {item.description || "Material de apoio técnico pedagógico para aceleração do seu aprendizado."}
+                    {item.description || "Material de apoio indicado pelos professores."}
                   </p>
                 </CardHeader>
                 
@@ -253,13 +243,13 @@ export default function LibraryPage() {
                     {item.type !== "Video" ? (
                       <Button asChild className="btn-shimmer flex-1 bg-primary text-white h-12 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all border-none">
                         <Link href={`/dashboard/library/book/${item.id}`}>
-                          <PenLine className="h-4 w-4 mr-2 text-accent" /> Estudar Agora
+                          <PenLine className="h-4 w-4 mr-2 text-accent" /> Estudar agora
                         </Link>
                       </Button>
                     ) : (
                       <Button asChild className="btn-shimmer flex-1 bg-slate-900 text-white h-12 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all border-none">
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          <Video className="h-4 w-4 mr-2 text-accent animate-pulse" /> Ver Videoaula
+                          <Video className="h-4 w-4 mr-2 text-accent animate-pulse" /> Ver videoaula
                         </a>
                       </Button>
                     )}
@@ -270,11 +260,21 @@ export default function LibraryPage() {
             ))}
           </div>
         ) : (
-          <div className="py-24 text-center border-4 border-dashed border-muted/20 rounded-[3rem] bg-white/50 animate-in zoom-in-95 duration-500">
-            <FileText className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="u-display text-xl text-primary/40">Biblioteca em sincronização</p>
-            <p className="text-sm text-muted-foreground mt-2">Nenhum material encontrado para os filtros atuais.</p>
-          </div>
+          resources.filter(r => !r.category?.startsWith('LIVRO|')).length === 0 ? (
+            <EmptyState
+              icon={BookOpen}
+              title="A biblioteca ainda está vazia"
+              description="Quando os professores publicarem apostilas e videoaulas, elas aparecem aqui. Enquanto isso, dá para estudar pelas trilhas."
+              action={{ label: "Explorar trilhas", href: "/dashboard/trails" }}
+            />
+          ) : (
+            <EmptyState
+              icon={Search}
+              title="Nenhum material com esses filtros"
+              description="Tente outra matéria, outro tipo ou uma palavra diferente na busca."
+              action={{ label: "Limpar filtros", onClick: () => { setSearchTerm(""); setActiveCategory("Todos"); setActiveType("Todos"); } }}
+            />
+          )
         )}
       </Tabs>
     </div>

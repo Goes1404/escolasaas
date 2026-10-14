@@ -28,6 +28,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import Link from "next/link";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate } from '@/lib/format';
 
 /* ─── Mapa de prioridades ─────────────────────────────────────────────── */
 const PRIORITY_CONFIG = {
@@ -295,7 +296,7 @@ export function NotificationBell() {
                 </h2>
                 <p className="text-white/70 text-[10px] font-bold mt-2 flex items-center gap-1.5">
                   <Calendar className="h-3 w-3" />
-                  {format(new Date(selectedAnn.created_at), "d 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                  {fmtDate(selectedAnn.created_at, "d 'de' MMMM 'de' yyyy 'às' HH:mm")}
                 </p>
               </div>
 

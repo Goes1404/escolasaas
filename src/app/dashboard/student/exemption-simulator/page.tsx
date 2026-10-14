@@ -41,7 +41,7 @@ export default function ExemptionSimulatorPage() {
           isEligible: true,
           message: "Parabéns! Você tem alta probabilidade de ser elegível!",
           reason:
-            "Você atende aos critérios principais: inscrição no CadÚnico, estudou em escola pública e possui renda familiar per capita de até 1,5 salário mínimo.",
+            "Você atende aos critérios principais: inscrição no CadÚnico, estudou em escola pública e possui renda por pessoa da família de até 1,5 salário mínimo.",
         });
       } else if (schoolType === "public" && income <= 1.5 * minimumWage) {
         setResult({
@@ -55,7 +55,7 @@ export default function ExemptionSimulatorPage() {
           isEligible: false,
           message: "Pouco provável que você seja elegível.",
           reason:
-            "Com base nos dados fornecidos, você não atende aos critérios principais de renda familiar ou tipo de escola exigidos pela maioria dos programas de isenção.",
+            "Pelo que você informou, você não atende aos critérios principais de renda familiar ou tipo de escola exigidos pela maioria dos programas de isenção.",
         });
       }
       setIsLoading(false);
@@ -72,7 +72,7 @@ export default function ExemptionSimulatorPage() {
           <div className="flex items-center gap-2 mb-1">
             <HandHeart className="h-3 w-3 text-emerald-200" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
-              Apoio Social
+              Apoio social
             </p>
           </div>
           <h1 className="u-page-title text-2xl leading-[1.15]">
@@ -107,7 +107,7 @@ export default function ExemptionSimulatorPage() {
               <input
                 type="number"
                 inputMode="decimal"
-                placeholder="2100,50"
+                placeholder="Ex.: 2100"
                 value={familyIncome}
                 onChange={(e) => setFamilyIncome(e.target.value)}
                 className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 text-sm font-bold text-primary placeholder:text-slate-400 outline-none focus:border-emerald-400 transition-all"
@@ -156,12 +156,12 @@ export default function ExemptionSimulatorPage() {
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Analisando...
+                Calculando…
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                Simular Agora
+                Ver meu resultado
               </span>
             )}
           </Button>

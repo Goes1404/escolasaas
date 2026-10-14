@@ -59,7 +59,7 @@ console.log('\nSaneamento de propriedades — o que É BARRADO');
     full_name: 'Lucas Costa Barbalarga',
     email: 'aluno@compromisso.com',
     telefone: '11999998888',
-    senha: 'compromisso2026',
+    senha: process.env.TEST_USER_PASSWORD ?? '',
     token: 'eyJhbGciOi',
     texto: 'A redação inteira do aluno...',
     conteudo: 'mais texto',

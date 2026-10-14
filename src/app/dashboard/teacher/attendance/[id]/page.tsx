@@ -15,6 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate } from '@/lib/format';
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/EmptyState";
 
 const CHECKIN_CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -111,7 +114,7 @@ export default function AttendanceSessionPage() {
     } else {
       setSession((prev: any) => ({ ...prev, checkin_code: code, checkin_code_expires_at: expiresAt }));
       setCountdown(remainingSec);
-      toast({ title: `Token ${code}`, description: "Válido até as 17h00 do dia da aula." });
+      toast({ title: `Código ${code}`, description: "Válido até as 17h00 do dia da aula." });
     }
     setGeneratingCode(false);
   }
@@ -212,8 +215,8 @@ export default function AttendanceSessionPage() {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <Sparkles className="h-8 w-8 text-orange-400 animate-pulse" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/70">Carregando chamada...</p>
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="u-label">Carregando chamada…</p>
         </div>
       </div>
     );
@@ -221,215 +224,204 @@ export default function AttendanceSessionPage() {
 
   if (!session) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-white/70">Sessão não encontrada.</p>
-        <Link href="/dashboard/teacher/attendance" className="text-orange-400 font-bold text-sm mt-2 block">Voltar</Link>
+      <div className="py-10">
+        <EmptyState
+          icon={AlertCircle}
+          title="Chamada não encontrada"
+          description="Ela pode ter sido excluída. Volte para a lista e abra outra chamada."
+          action={{ label: "Voltar para as chamadas", href: "/dashboard/teacher/attendance", icon: ArrowLeft }}
+        />
       </div>
     );
   }
 
+  const tag = "inline-flex items-center text-[10px] font-semibold border border-border rounded-control px-2 py-0.5 text-muted-foreground";
+  const missingCount = allStudents.filter((s) => !records[s.id]).length;
+
   return (
-    <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pb-24 space-y-6">
 
-      {/* ── Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.13) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(34,197,94,0.08) 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative z-10">
-          <div className="flex items-start gap-3 mb-4">
-            <Link
-              href="/dashboard/teacher/attendance"
-              className="h-8 w-8 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/8 transition-all shrink-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
+      {/* ── Cabeçalho (nível médio) ── */}
+      <div className="flex items-start gap-3">
+        <Link
+          href="/dashboard/teacher/attendance"
+          className="h-9 w-9 rounded-control border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mt-1"
+          aria-label="Voltar para as chamadas"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <p className="u-label flex items-center gap-2"><ClipboardCheck className="h-3.5 w-3.5" /> Professor · chamada</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mt-1 break-words">{session.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1 first-letter:uppercase">
+            {fmtDate(session.session_date, "EEEE, dd 'de' MMMM")}
+            {session.start_time && ` — ${session.start_time.slice(0, 5)}`}
+          </p>
+          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+            <span className={tag}>{session.session_type === "live" ? "Ao vivo" : "Presencial"}</span>
+            {session.subject && <span className={tag}>{session.subject}</span>}
+            {session.class_label && <span className={tag}>Turma {session.class_label}</span>}
+          </div>
+        </div>
+        {session.live_id && (
+          <Button asChild variant="outline" size="sm" className="h-9 shrink-0 rounded-control text-xs font-semibold">
+            <Link href={`/dashboard/teacher/live/${session.live_id}`}>
+              <MonitorPlay className="h-3.5 w-3.5 mr-1.5" />
+              Aula ao vivo
             </Link>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                <ClipboardCheck className="h-3 w-3 text-orange-400" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400/85">Chamada</p>
-                {session.session_type === "live" ? (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/25 rounded-full px-2 py-0.5">Live</span>
-                ) : (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/25 rounded-full px-2 py-0.5">Presencial</span>
-                )}
-                {session.subject && (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-white/5 text-white/70 border border-white/10 rounded-full px-2 py-0.5">{session.subject}</span>
-                )}
-                {session.class_label && (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 rounded-full px-2 py-0.5">Turma {session.class_label}</span>
-                )}
-              </div>
-              <h1 className="text-xl font-black italic tracking-tight text-white leading-none">{session.title}</h1>
-              <p className="text-white/70 text-xs font-semibold mt-0.5">
-                {format(new Date(session.session_date + "T12:00:00"), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-                {session.start_time && ` — ${session.start_time.slice(0, 5)}`}
-              </p>
-            </div>
-            {session.live_id && (
-              <Link
-                href={`/dashboard/teacher/live/${session.live_id}`}
-                className="h-9 shrink-0 flex items-center gap-1.5 bg-purple-500/15 border border-purple-500/25 text-purple-400 rounded-xl px-3 text-[10px] font-black uppercase tracking-wider hover:bg-purple-500/20 transition-all"
-              >
-                <MonitorPlay className="h-3.5 w-3.5" />
-                Live
-              </Link>
-            )}
-          </div>
+          </Button>
+        )}
+      </div>
 
-          {/* KPI row */}
-          <div className="grid grid-cols-4 gap-2">
-            <div className="flex flex-col items-center bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-emerald-400 leading-none">{stats.presentes}</span>
-              <span className="text-[8px] font-bold text-emerald-400/80 uppercase tracking-wider mt-0.5">Presentes</span>
-            </div>
-            <div className="flex flex-col items-center bg-red-500/10 border border-red-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-red-400 leading-none">{stats.ausentes}</span>
-              <span className="text-[8px] font-bold text-red-400/80 uppercase tracking-wider mt-0.5">Ausentes</span>
-            </div>
-            <div className="flex flex-col items-center bg-amber-500/10 border border-amber-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-amber-400 leading-none">{stats.justificados}</span>
-              <span className="text-[8px] font-bold text-amber-400/80 uppercase tracking-wider mt-0.5">Justif.</span>
-            </div>
-            <div className="flex flex-col items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-blue-400 leading-none">{pct}%</span>
-              <span className="text-[8px] font-bold text-blue-400/80 uppercase tracking-wider mt-0.5">Freq.</span>
-            </div>
-          </div>
+      {/* ── Indicadores (cor só como sinal) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label !text-emerald-600">Presentes</p>
+          <p className="u-num text-xl sm:text-2xl mt-1.5 text-emerald-600">{stats.presentes}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label !text-red-600">Ausentes</p>
+          <p className="u-num text-xl sm:text-2xl mt-1.5 text-red-600">{stats.ausentes}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label">Justificados</p>
+          <p className="u-num text-xl sm:text-2xl mt-1.5">{stats.justificados}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label">Frequência</p>
+          <p className="u-num text-xl sm:text-2xl mt-1.5">{pct}%</p>
         </div>
       </div>
 
-      {/* ── Check-in Code ── */}
-      <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ClipboardCheck className="h-4 w-4 text-orange-400/85" />
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">Auto Check-in</p>
-          </div>
+      {/* ── Código de presença ── */}
+      <div className="u-surface overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 flex-wrap">
+          <p className="u-label flex items-center gap-1.5"><ClipboardCheck className="h-3.5 w-3.5" /> Código de presença</p>
           {codeActive && (
-            <span className="text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5">
-              Ativo · {countdownLabel} restantes
+            <span className="text-[11px] font-semibold text-emerald-600">
+              Ativo · faltam {countdownLabel}
             </span>
           )}
         </div>
         <div className="p-4">
           {codeActive ? (
             <div className="space-y-3">
-              <div className="bg-[#4CCCED]/8 border border-[#4CCCED]/20 rounded-2xl p-4 text-center">
-                <p className="text-6xl font-black tracking-[0.5em] text-orange-400 font-mono leading-none pl-[0.5em]">
+              <div className="border border-border rounded-control p-4 text-center bg-muted/30">
+                <p className="text-5xl sm:text-6xl font-bold tracking-[0.4em] text-foreground font-mono leading-none pl-[0.4em]">
                   {session.checkin_code}
                 </p>
-                <p className="text-[9px] font-bold text-orange-400/70 uppercase tracking-widest mt-2">
-                  Encerra às 17h00 do dia da aula
+                <p className="text-xs text-muted-foreground mt-2">
+                  Os alunos digitam este código para confirmar presença. Vale até as 17h00 do dia da aula.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => { navigator.clipboard.writeText(session.checkin_code); toast({ title: "Código copiado!" }); }}
-                  className="h-10 flex items-center justify-center gap-1.5 bg-white shadow-sm border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition-all touch-manipulation active:scale-95"
+                  className="h-10 rounded-control text-xs font-semibold"
                 >
-                  <Copy className="h-3.5 w-3.5" />Copiar
-                </button>
-                <button
+                  <Copy className="h-3.5 w-3.5 mr-1.5" />Copiar
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={handleGenerateCode}
                   disabled={generatingCode}
-                  className="h-10 flex items-center justify-center gap-1.5 bg-white shadow-sm border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition-all touch-manipulation active:scale-95 disabled:opacity-50"
+                  className="h-10 rounded-control text-xs font-semibold"
                 >
-                  {generatingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}Novo
-                </button>
-                <button
+                  {generatingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}Novo
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={handleInvalidateCode}
-                  className="h-10 flex items-center justify-center gap-1.5 bg-red-500/8 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-red-400 hover:bg-red-500/15 transition-all touch-manipulation active:scale-95"
+                  className="h-10 rounded-control text-xs font-semibold text-red-600 hover:text-red-600 hover:bg-red-500/10"
                 >
-                  <X className="h-3.5 w-3.5" />Invalidar
-                </button>
+                  <X className="h-3.5 w-3.5 mr-1.5" />Encerrar
+                </Button>
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-medium text-slate-600">
-                {session.checkin_code && countdown === 0 ? "Código expirado." : "Gere um código para os alunos confirmarem presença."}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                {session.checkin_code && countdown === 0 ? "O código expirou. Gere um novo se ainda for o dia da aula." : "Gere um código para os alunos confirmarem presença pelo celular."}
               </p>
-              <button
+              <Button
                 onClick={handleGenerateCode}
                 disabled={generatingCode}
-                className="shrink-0 h-11 px-5 flex items-center gap-2 bg-[#4CCCED] hover:bg-orange-600 text-slate-800 font-black rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 transition-all touch-manipulation active:scale-95 disabled:opacity-50"
+                className="shrink-0 h-10 px-4 rounded-control text-xs font-semibold"
               >
-                {generatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
-                Gerar Código
-              </button>
+                {generatingCode ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ClipboardCheck className="h-4 w-4 mr-2" />}
+                Gerar código
+              </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Student Roster ── */}
-      <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-orange-400/85" />
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
-              Chamada ({rosterStudents.length})
-            </p>
-          </div>
-          <button
+      {/* ── Lista da chamada ── */}
+      <div className="u-surface overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+          <p className="u-label flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" /> Alunos na chamada · <span className="tabular-nums">{rosterStudents.length}</span>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => { setShowAddPanel((v) => !v); setAddSearch(""); }}
-            className="h-8 flex items-center gap-1.5 bg-[#4CCCED]/15 border border-[#4CCCED]/25 text-orange-400 rounded-xl px-3 text-[9px] font-black uppercase tracking-wider hover:bg-[#4CCCED]/20 transition-all touch-manipulation active:scale-95"
+            className="h-8 rounded-control text-xs font-semibold"
           >
-            <UserPlus className="h-3.5 w-3.5" />
-            Adicionar
-          </button>
+            <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+            {showAddPanel ? "Fechar" : "Adicionar"}
+          </Button>
         </div>
 
-        {/* Add student panel */}
         {showAddPanel && (
-          <div className="border-b border-slate-100 p-4 space-y-3 bg-white/2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-black text-slate-800 italic">Adicionar à chamada</p>
-              <button
+          <div className="border-b border-border p-4 space-y-3 bg-muted/30">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-foreground">Adicionar à chamada</p>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleAddAll}
-                disabled={addingAll || allStudents.filter((s) => !records[s.id]).length === 0}
-                className="h-7 flex items-center gap-1.5 bg-white shadow-sm border border-slate-200 rounded-lg px-2.5 text-[9px] font-black uppercase tracking-wider text-slate-600 hover:text-slate-800 transition-all disabled:opacity-40"
+                disabled={addingAll || missingCount === 0}
+                className="h-8 rounded-control text-xs font-semibold"
               >
-                {addingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <UsersRound className="h-3 w-3" />}
-                Todos ({allStudents.filter((s) => !records[s.id]).length})
-              </button>
+                {addingAll ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <UsersRound className="h-3.5 w-3.5 mr-1.5" />}
+                Adicionar todos ({missingCount})
+              </Button>
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
-                placeholder="Buscar aluno pelo nome..."
+                placeholder="Buscar aluno pelo nome…"
                 value={addSearch}
                 onChange={(e) => setAddSearch(e.target.value)}
                 autoFocus
-                className="w-full h-10 bg-white shadow-sm border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-semibold text-slate-800 placeholder:text-slate-500 outline-none focus:border-[#4CCCED]/40 transition-all"
+                className="w-full h-10 bg-background border border-border rounded-control pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors"
               />
             </div>
             {availableStudents.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-2">
-                {allStudents.filter((s) => !records[s.id]).length === 0 ? "Todos os alunos já estão na lista." : `Nenhum resultado para "${addSearch}".`}
+              <p className="text-sm text-muted-foreground text-center py-2">
+                {missingCount === 0 ? "Todos os alunos já estão na lista." : `Nenhum aluno encontrado para "${addSearch}".`}
               </p>
             ) : (
               <div className="max-h-48 overflow-y-auto scrollbar-hide space-y-1">
                 {availableStudents.map((student) => (
-                  <div key={student.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white shadow-sm border border-slate-100">
+                  <div key={student.id} className="flex items-center justify-between gap-2 p-2.5 rounded-control bg-background border border-border">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-800 truncate">{student.name || "Sem nome"}</p>
-                      <p className="text-[10px] text-slate-500 font-medium">{student.institution || student.exam_target || "—"}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{student.name || "Sem nome"}</p>
+                      <p className="text-[11px] text-muted-foreground">{student.institution || student.exam_target || "—"}</p>
                     </div>
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleAddStudent(student.id)}
                       disabled={addingId === student.id}
-                      className="ml-3 h-8 flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 rounded-lg px-2.5 text-[9px] font-black uppercase tracking-wider hover:bg-emerald-500/20 transition-all disabled:opacity-50 touch-manipulation active:scale-95"
+                      className="h-8 rounded-control text-xs font-semibold shrink-0"
                     >
-                      {addingId === student.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3" />}
-                      Add
-                    </button>
+                      {addingId === student.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <UserPlus className="h-3.5 w-3.5 mr-1" />}
+                      Incluir
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -437,37 +429,40 @@ export default function AttendanceSessionPage() {
           </div>
         )}
 
-        {/* Roster list */}
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-border">
           {rosterStudents.length === 0 ? (
-            <div className="py-14 flex flex-col items-center gap-3">
-              <Inbox className="h-8 w-8 text-white/15" />
-              <div className="text-center">
-                <p className="font-black italic text-xs text-slate-500 uppercase tracking-widest">Lista vazia</p>
-                <p className="text-[10px] text-slate-600 mt-0.5">Use "Adicionar" para montar a chamada</p>
-              </div>
+            <div className="p-4">
+              <EmptyState
+                compact
+                icon={Inbox}
+                title="A lista da chamada está vazia"
+                description="Inclua os alunos desta aula para marcar presença."
+                action={{ label: "Adicionar alunos", onClick: () => { setShowAddPanel(true); setAddSearch(""); }, icon: UserPlus }}
+              />
             </div>
           ) : (
             rosterStudents.map((student) => {
               const rec = records[student.id];
-              const statusBg = rec.status === "presente" ? "bg-emerald-500/8 border-l-emerald-500" : rec.status === "justificado" ? "bg-amber-500/5 border-l-amber-500" : "border-l-transparent";
+              // Faixa à esquerda = sinal do estado (verde presente, vermelho ausente).
+              const statusBar = rec.status === "presente" ? "border-l-emerald-500" : rec.status === "ausente" ? "border-l-red-500" : "border-l-border";
               return (
-                <div key={student.id} className={`relative flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 border-l-2 transition-colors ${statusBg}`}>
+                <div key={student.id} className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 border-l-2 ${statusBar}`}>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 text-sm truncate">{student.name || "Aluno sem nome"}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{student.institution || student.exam_target || "—"}</p>
+                    <p className="font-semibold text-foreground text-sm truncate">{student.name || "Aluno sem nome"}</p>
+                    <p className="text-[11px] text-muted-foreground">{student.institution || student.exam_target || "—"}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* P / A / J Toggle */}
-                    <div className="flex rounded-xl overflow-hidden border border-slate-200">
+                    <div className="flex rounded-control overflow-hidden border border-border" role="group" aria-label="Situação do aluno">
                       {(["presente", "ausente", "justificado"] as AttendanceStatus[]).map((s) => (
                         <button
                           key={s}
                           onClick={() => setStatus(student.id, s)}
-                          className={`px-4 py-2 text-xs font-black uppercase transition-colors touch-manipulation ${
+                          title={s === "presente" ? "Presente" : s === "ausente" ? "Ausente" : "Falta justificada"}
+                          aria-pressed={rec.status === s}
+                          className={`px-4 py-2 text-xs font-bold transition-colors touch-manipulation ${
                             rec.status === s
-                              ? s === "presente" ? "bg-emerald-500 text-slate-800" : s === "justificado" ? "bg-amber-500 text-slate-800" : "bg-red-500 text-slate-800"
-                              : "bg-white shadow-sm text-slate-400 hover:bg-white/6 hover:text-slate-800/80"
+                              ? s === "presente" ? "bg-emerald-600 text-white" : s === "ausente" ? "bg-red-600 text-white" : "bg-foreground text-background"
+                              : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
                           }`}
                         >
                           {s === "presente" ? "P" : s === "ausente" ? "A" : "J"}
@@ -476,8 +471,8 @@ export default function AttendanceSessionPage() {
                     </div>
                     {rec.status === "justificado" && (
                       <input
-                        className="h-9 w-32 bg-white shadow-sm border border-slate-200 rounded-lg px-3 text-xs font-medium text-slate-800 placeholder:text-slate-500 outline-none focus:border-amber-500/40 transition-all"
-                        placeholder="Motivo..."
+                        className="h-9 flex-1 min-w-[8rem] sm:flex-none sm:w-40 bg-background border border-border rounded-control px-3 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors"
+                        placeholder="Motivo da falta…"
                         value={rec.justification}
                         onChange={(e) => setJustification(student.id, e.target.value)}
                       />
@@ -485,7 +480,9 @@ export default function AttendanceSessionPage() {
                     <button
                       onClick={() => handleRemoveStudent(student.id)}
                       disabled={removingId === student.id}
-                      className="h-9 w-9 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
+                      title="Tirar da chamada"
+                      aria-label="Tirar da chamada"
+                      className="h-9 w-9 rounded-control border border-border text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors flex items-center justify-center touch-manipulation disabled:opacity-50"
                     >
                       {removingId === student.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserMinus className="h-3.5 w-3.5" />}
                     </button>
@@ -497,15 +494,16 @@ export default function AttendanceSessionPage() {
         </div>
       </div>
 
-      {/* ── Save ── */}
-      <button
+      {/* ── Salvar: CTA primário da tela ── */}
+      <Button
+        variant="arcade"
         onClick={handleSaveAll}
         disabled={saving || rosterStudents.length === 0}
-        className="w-full h-13 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-800 font-black rounded-2xl shadow-xl shadow-orange-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40 flex items-center justify-center gap-2 touch-manipulation active:scale-[0.99] transition-all"
+        className="w-full h-12 rounded-control font-bold"
       >
-        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
-        {saving ? "Salvando..." : "Salvar Chamada"}
-      </button>
+        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ClipboardCheck className="h-4 w-4 mr-2" />}
+        {saving ? "Salvando…" : "Salvar chamada"}
+      </Button>
     </div>
   );
 }

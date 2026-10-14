@@ -197,6 +197,10 @@ export function LoginForm() {
               </Link>
             </div>
           </form>
+          <p className="text-center text-[11px] text-white/40 mt-4">
+            Ao entrar você concorda com a{' '}
+            <Link href="/privacidade" className="underline underline-offset-4 decoration-white/20 hover:text-primary">política de privacidade</Link>.
+          </p>
 
           {/* ── Trust badge ── */}
           <div className="relative mt-8 pt-5 border-t-2 border-white/10 flex items-center justify-center gap-2">

@@ -19,6 +19,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { fmtDate } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -242,7 +244,7 @@ function NoteGridCard({ note, subject, onClick }: { note: Note; subject?: { id: 
           <span key={t} className="hidden sm:inline truncate max-w-[6rem] text-[11px] text-muted-foreground">#{t}</span>
         ))}
         <span className="u-label ml-auto shrink-0 !tracking-[0.18em]">
-          {format(new Date(note.updated_at), "d MMM yy", { locale: ptBR })}
+          {fmtDate(note.updated_at, "d MMM yy")}
         </span>
       </div>
     </button>
@@ -335,7 +337,7 @@ export default function StudentNotesPage() {
         if (error) throw error;
         setNotes(prev => prev.map(n => n.id === id ? { ...n, title: title || "Sem título", blocks: bks, subject_id: subId, is_pinned: pinned, updated_at: new Date().toISOString() } : n));
       } catch (e: unknown) {
-        toast({ title: "Erro ao salvar", description: (e as Error).message, variant: "destructive" });
+        toast({ title: "Não deu para salvar a nota", description: "Confira sua internet. Seu texto continua na tela; tente editar de novo para salvar.", variant: "destructive" });
       } finally { setSaving(false); }
     }, 1200);
   }, [user, toast]);
@@ -556,8 +558,9 @@ export default function StudentNotesPage() {
   // ── Render ────────────────────────────────────────────────────────────────────
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center justify-center gap-3 min-h-[60vh]">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <p className="u-label">Carregando caderno…</p>
     </div>
   );
 
@@ -644,16 +647,14 @@ export default function StudentNotesPage() {
               <Button variant="outline" onClick={createNote} className="hover:bg-muted hover:text-foreground"><Plus /> Criar primeira nota</Button>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-card border border-dashed border-border px-6 py-12 flex flex-col items-center text-center gap-3">
-              <Search className="h-8 w-8 text-muted-foreground/60" />
-              <p className="text-sm text-muted-foreground">Nenhuma nota encontrada com esses filtros.</p>
-              {hasFilter && (
-                <Button variant="outline" size="sm" className="hover:bg-muted hover:text-foreground"
-                  onClick={() => { setSearch(""); setFilterSubject(null); }}>
-                  Limpar filtros
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              compact
+              icon={Search}
+              title="Nenhuma nota com esses filtros"
+              description="Tente outra palavra ou outra matéria."
+              action={hasFilter ? { label: "Limpar filtros", onClick: () => { setSearch(""); setFilterSubject(null); } } : undefined}
+              secondary={{ label: "Nova nota", onClick: createNote }}
+            />
           ) : (
             <div className="space-y-8">
               {[{ label: "Fixadas", items: pinned }, { label: pinned.length > 0 ? "Outras notas" : "Notas", items: recents }]
@@ -721,7 +722,7 @@ export default function StudentNotesPage() {
             <aside className="hidden lg:flex w-64 shrink-0 flex-col u-surface overflow-hidden">
               <div className="p-3 border-b border-border">{searchBox()}</div>
               <div className="flex-1 overflow-y-auto p-2 space-y-px">
-                {filtered.length === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">Nenhuma nota</p>}
+                {filtered.length === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">Nenhuma nota com essa busca</p>}
                 {pinned.length > 0 && <p className="u-label px-2.5 pt-2 pb-1">Fixadas</p>}
                 {pinned.map(n => <NoteListItem key={n.id} note={n} isActive={activeId === n.id} onClick={() => openNote(n)} />)}
                 {recents.length > 0 && pinned.length > 0 && <p className="u-label px-2.5 pt-3 pb-1">Notas</p>}
@@ -771,7 +772,7 @@ export default function StudentNotesPage() {
                           <span className={`h-1.5 w-1.5 rounded-full ${subjectDot(activeSubject.name)}`} />{activeSubject.name}
                         </span>
                       )}
-                      <span>Editada em {format(new Date(activeNote.updated_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                      <span>Editada em {fmtDate(activeNote.updated_at, "dd 'de' MMMM 'de' yyyy")}</span>
                     </p>
                   )}
 

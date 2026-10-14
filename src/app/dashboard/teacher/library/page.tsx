@@ -11,9 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
-import Image from "next/image";
 import { EDUCATIONAL_CATEGORIES, RESOURCE_TYPES } from "@/lib/constants";
 import { DOCUMENT_ACCEPT } from "@/lib/file-types";
+import { EmptyState } from "@/components/EmptyState";
+import { ContentCover } from "@/components/ContentCover";
+
+/** O valor gravado continua "Video"; só o rótulo na tela ganha acento. */
+const tipoLabel = (t?: string | null) => (t === "Video" ? "Vídeo" : t || "Material");
 
 export default function LibraryManagementPage() {
   const { toast } = useToast();
@@ -49,7 +53,7 @@ export default function LibraryManagementPage() {
       setResources(data || []);
     } catch (e: any) {
       console.error(e);
-      toast({ title: "Erro de Rede", description: "Falha ao carregar acervo.", variant: "destructive" });
+      toast({ title: "Não foi possível carregar", description: "Falha ao carregar a biblioteca.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -61,7 +65,7 @@ export default function LibraryManagementPage() {
 
   const handleSave = async () => {
     if (!formData.title || (!formData.url && !file)) {
-      toast({ title: "Campos obrigatórios", description: "Título e Arquivo (ou Link) são necessários.", variant: "destructive" });
+      toast({ title: "Campos obrigatórios", description: "Informe o título e um arquivo (ou link).", variant: "destructive" });
       return;
     }
 
@@ -142,7 +146,7 @@ export default function LibraryManagementPage() {
 
       if (error) throw error;
       
-      toast({ title: editingId ? "Material Atualizado!" : "Material Cadastrado!" });
+      toast({ title: editingId ? "Material atualizado" : "Material cadastrado" });
       
       await fetchResources(); // Sempre re-sincronize do banco para garantir integridade.
       
@@ -168,7 +172,7 @@ export default function LibraryManagementPage() {
       const { error } = await supabase.from('library_resources').delete().eq('id', id);
       if (error) throw error;
       setResources(prev => prev.filter(r => r.id !== id));
-      toast({ title: "Removido do acervo." });
+      toast({ title: "Material removido da biblioteca" });
     } catch (e: any) {
       toast({ title: "Erro ao excluir", description: e.message, variant: "destructive" });
     }
@@ -198,11 +202,12 @@ export default function LibraryManagementPage() {
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">Gestão da Biblioteca</h1>
-          <p className="text-muted-foreground font-medium italic">Curadoria industrial da biblioteca e materiais didáticos.</p>
+    <div className="space-y-6 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="u-label flex items-center gap-2"><BookOpen className="h-3.5 w-3.5" /> Professor · biblioteca</p>
+          <h1 className="u-page-title text-3xl mt-1">Biblioteca</h1>
+          <p className="text-sm text-muted-foreground mt-1">Materiais de apoio que os alunos encontram na biblioteca.</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -216,142 +221,155 @@ export default function LibraryManagementPage() {
           }
         }}>
           <DialogTrigger asChild>
-            <Button className="rounded-2xl h-14 bg-accent text-accent-foreground font-black px-8 shadow-xl hover:scale-105 transition-all">
-              <Plus className="h-6 w-6 mr-2" /> Novo Material
+            <Button variant="arcade" className="rounded-control h-11 px-5 font-bold w-full md:w-auto">
+              <Plus className="h-4 w-4 mr-2" /> Novo material
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-card md:rounded-card p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto border-none shadow-2xl">
+          <DialogContent className="rounded-card p-5 md:p-6 w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black italic text-primary">Configurar Material</DialogTitle>
+              <DialogTitle className="text-lg font-bold text-foreground">{editingId ? "Editar material" : "Novo material"}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-3 py-2">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Título</Label>
-                <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Ex: Guia de Trigonometria" className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                <Label className="u-label">Título</Label>
+                <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Ex: Guia de Trigonometria" className="h-10 rounded-control font-medium" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40">Categoria</Label>
+                  <Label className="u-label">Categoria</Label>
                   <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10 rounded-control font-medium"><SelectValue /></SelectTrigger>
                     <SelectContent>{EDUCATIONAL_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40">Tipo</Label>
+                  <Label className="u-label">Tipo</Label>
                   <Select value={formData.type} onValueChange={v => setFormData({...formData, type: v})}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold"><SelectValue /></SelectTrigger>
-                    <SelectContent>{RESOURCE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    <SelectTrigger className="h-10 rounded-control font-medium"><SelectValue /></SelectTrigger>
+                    <SelectContent>{RESOURCE_TYPES.map(t => <SelectItem key={t} value={t}>{tipoLabel(t)}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Público-Alvo</Label>
+                <Label className="u-label">Público-alvo</Label>
                 <Select value={formData.target_audience} onValueChange={v => setFormData({...formData, target_audience: v})}>
-                  <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold">
-                    <SelectValue placeholder="Todos os Alunos" />
+                  <SelectTrigger className="h-10 rounded-control font-medium">
+                    <SelectValue placeholder="Todos os alunos" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl">
-                    <SelectItem value="all">Todos os Alunos</SelectItem>
-                    <SelectItem value="etec">Apenas Turma ETEC</SelectItem>
-                    <SelectItem value="enem">Apenas Turma ENEM</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="all">Todos os alunos</SelectItem>
+                    <SelectItem value="etec">Só a turma ETEC</SelectItem>
+                    <SelectItem value="enem">Só a turma ENEM</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Arquivo a ser enviado (Ou Link Externo)</Label>
+                <Label className="u-label">Arquivo (ou link externo)</Label>
                 <div className="flex flex-col gap-2">
                   <Input 
                     type="file" 
                     accept={DOCUMENT_ACCEPT}
                     onChange={e => setFile(e.target.files?.[0] || null)} 
-                    className="h-10 rounded-xl bg-muted/30 border-2 border-dashed border-primary/20 cursor-pointer hover:border-accent p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white"
+                    className="h-10 rounded-control bg-muted/30 border-2 border-dashed border-border cursor-pointer hover:border-primary/40 p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-control file:border-0 file:text-xs file:font-bold file:bg-primary file:text-primary-foreground"
                   />
                   {!file && (
                     <Input 
                       value={formData.url} 
                       onChange={e => setFormData({...formData, url: e.target.value})} 
-                      placeholder="Ou cole a URL..." 
-                      className="h-10 rounded-xl bg-muted/30 border-none font-medium text-xs mt-1" 
+                      placeholder="Ou cole o link..." 
+                      className="h-10 rounded-control text-sm mt-1" 
                     />
                   )}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Capa (Opcional - Arquivo ou URL)</Label>
+                <Label className="u-label">Capa (opcional: arquivo ou link)</Label>
                 <div className="flex flex-col gap-2">
                   <Input 
                     type="file" 
                     accept="image/*"
                     onChange={e => setCoverFile(e.target.files?.[0] || null)} 
-                    className="h-10 rounded-xl bg-muted/30 border-2 border-dashed border-primary/20 cursor-pointer hover:border-accent p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white"
+                    className="h-10 rounded-control bg-muted/30 border-2 border-dashed border-border cursor-pointer hover:border-primary/40 p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-control file:border-0 file:text-xs file:font-bold file:bg-primary file:text-primary-foreground"
                     disabled={isSubmitting || uploading}
                   />
                   {!coverFile && (
-                    <Input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="Ou cole a URL da imagem..." className="h-10 rounded-xl bg-muted/30 border-none font-medium text-xs mt-1" disabled={isSubmitting || uploading} />
+                    <Input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="Ou cole o link da imagem..." className="h-10 rounded-control text-sm mt-1" disabled={isSubmitting || uploading} />
                   )}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Resumo Pedagógico</Label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Descrição breve para o aluno..." className="min-h-[50px] w-full rounded-xl bg-muted/30 border-none px-3 py-2 text-sm font-medium resize-none" />
+                <Label className="u-label">Descrição</Label>
+                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Descrição breve para o aluno..." className="min-h-[50px] w-full rounded-control border border-input bg-background px-3 py-2 text-sm resize-none" />
               </div>
             </div>
             <DialogFooter className="mt-2">
-              <Button onClick={handleSave} disabled={isSubmitting || uploading} className="w-full h-12 bg-primary text-white font-black text-base rounded-2xl shadow-xl">
+              <Button onClick={handleSave} disabled={isSubmitting || uploading} className="w-full h-11 font-bold rounded-control">
                 {(isSubmitting || uploading) ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Plus className="h-5 w-5 mr-2" />}
-                {uploading ? "Enviando arquivo..." : (editingId ? "Atualizar" : "Publicar Material")}
+                {uploading ? "Enviando arquivo..." : (editingId ? "Salvar alterações" : "Publicar material")}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="relative max-w-xl group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
+      <div className="relative max-w-xl">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
           placeholder="Pesquisar na biblioteca..." 
-          className="pl-12 h-14 bg-white border-none shadow-xl rounded-[1.25rem] italic focus-visible:ring-accent"
+          className="pl-11 h-11 rounded-control"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
       </div>
 
       {loading ? (
-        <div className="py-20 flex justify-center"><Loader2 className="h-12 w-12 animate-spin text-accent" /></div>
+        <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center border-4 border-dashed border-muted/20 rounded-[3rem] bg-muted/5">
-          <FileText className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-          <p className="font-black text-primary italic text-xl">Nenhum material localizado</p>
-        </div>
+        searchTerm ? (
+          <EmptyState
+            icon={Search}
+            title="Nenhum material encontrado"
+            description="Tente outro termo de busca ou limpe o filtro."
+            action={{ label: "Limpar busca", onClick: () => setSearchTerm("") }}
+          />
+        ) : (
+          <EmptyState
+            icon={FileText}
+            title="A biblioteca ainda está vazia"
+            description="Cadastre o primeiro material e ele aparece aqui e para os alunos."
+            action={{ label: "Novo material", icon: Plus, onClick: () => setIsDialogOpen(true) }}
+          />
+        )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filtered.map((item) => (
-            <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-card flex flex-col hover:shadow-2xl transition-all duration-500">
+            <Card key={item.id} className="overflow-hidden rounded-card flex flex-col">
               <div className="relative aspect-video bg-muted overflow-hidden">
-                {item.image_url ? (
-                  <img loading="lazy" decoding="async" src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                ) : (
-                  <div aria-hidden="true" className="w-full h-full media-placeholder" />
-                )}
-                <div className="absolute top-4 left-4">
-                  <Badge className="bg-white/80 backdrop-blur-md text-primary border-none px-3 py-1 font-black text-[10px] uppercase shadow-lg flex items-center gap-2">
-                    {item.type === 'Video' ? <Video className="h-3 w-3" /> : item.type === 'Prova' ? <ClipboardCheck className="h-3 w-3 text-red-600" /> : <FileText className="h-3 w-3" />}
-                    {item.type}
+                <ContentCover
+                  imageUrl={item.image_url}
+                  videoUrl={item.type === 'Video' ? item.url : null}
+                  subject={item.category}
+                  title={item.title}
+                  className="absolute inset-0"
+                />
+                <div className="absolute top-3 left-3">
+                  <Badge className="bg-background/90 text-foreground border border-border px-2.5 py-1 font-bold text-[11px] flex items-center gap-1.5">
+                    {item.type === 'Video' ? <Video className="h-3 w-3" /> : item.type === 'Prova' ? <ClipboardCheck className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+                    {tipoLabel(item.type)}
                   </Badge>
                 </div>
               </div>
-              <CardHeader className="p-8 pb-4">
-                <span className="text-[10px] font-black text-accent uppercase tracking-widest">{item.category}</span>
-                <CardTitle className="text-xl font-black italic truncate mt-2">{item.title}</CardTitle>
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-2 italic">{item.description || "Sem descrição."}</p>
+              <CardHeader className="p-5 pb-3">
+                {item.category && <span className="u-label">{item.category}</span>}
+                <CardTitle className="text-base font-bold truncate mt-1">{item.title || "Material sem título"}</CardTitle>
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description || "Sem descrição."}</p>
               </CardHeader>
-              <CardFooter className="p-8 pt-4 border-t border-muted/10 mt-auto flex justify-between">
+              <CardFooter className="p-5 pt-3 border-t border-border mt-auto flex justify-between">
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => startEdit(item)} className="h-10 w-10 rounded-full text-accent hover:bg-accent/10">
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(item)} aria-label="Editar material" className="h-10 w-10 rounded-control text-muted-foreground hover:text-foreground">
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-10 w-10 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} aria-label="Remover material" className="h-10 w-10 rounded-control text-muted-foreground hover:text-red-600 hover:bg-red-50">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

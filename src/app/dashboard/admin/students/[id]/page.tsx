@@ -29,8 +29,10 @@ import {
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { format, subDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { RadarChartPremium, AreaChartPremium } from "@/components/charts/premium";
+import { fmtDate, fmtNumber, fmtPct, pct, toNumber, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { useToast } from '@/hooks/use-toast';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -56,7 +58,7 @@ function formatAttemptDuration(seconds: number | null | undefined): string | nul
 
 function formatLastAccess(ts: string | null) {
   if (!ts) return "Nunca";
-  return format(new Date(ts), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  return fmtDate(ts, "dd/MM/yyyy 'às' HH:mm");
 }
 
 const SUBJECT_COLORS: Record<string, string> = {
@@ -77,6 +79,7 @@ export default function AdminStudentProfilePage() {
   const params = useParams();
   const router = useRouter();
   const studentId = params?.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
@@ -91,7 +94,7 @@ export default function AdminStudentProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.type !== "application/pdf") {
-      alert("Selecione um arquivo PDF válido.");
+      toast({ title: "Arquivo inválido", description: "Selecione um arquivo PDF.", variant: "destructive" });
       return;
     }
 
@@ -132,10 +135,10 @@ export default function AdminStudentProfilePage() {
         [fieldPath]: path
       }));
 
-      alert("Boletim em PDF enviado com sucesso!");
+      toast({ title: "Boletim enviado" });
     } catch (err: any) {
       console.error(err);
-      alert(`Falha ao enviar boletim: ${err.message}`);
+      toast({ title: "Não foi possível enviar o boletim", description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -169,10 +172,10 @@ export default function AdminStudentProfilePage() {
         [fieldPath]: null
       }));
 
-      alert("Boletim removido com sucesso!");
+      toast({ title: "Boletim removido" });
     } catch (err: any) {
       console.error(err);
-      alert(`Falha ao remover boletim: ${err.message}`);
+      toast({ title: "Não foi possível remover o boletim", description: err.message, variant: "destructive" });
     }
   };
 
@@ -254,10 +257,10 @@ export default function AdminStudentProfilePage() {
     return Array.from({ length: 15 }, (_, i) => {
       const dateStr = format(subDays(new Date(), 14 - i), "yyyy-MM-dd");
       const day = answers.filter(
-        (a) => format(new Date(a.created_at ?? a.answered_at), "yyyy-MM-dd") === dateStr
+        (a) => fmtDate(a.created_at ?? a.answered_at, "yyyy-MM-dd") === dateStr
       );
       return {
-        date: format(new Date(dateStr), "dd/MM"),
+        date: fmtDate(dateStr, "dd/MM"),
         acertos: day.filter((a) => a.is_correct).length,
         total: day.length,
       };
@@ -275,292 +278,213 @@ export default function AdminStudentProfilePage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="text-primary font-black italic uppercase tracking-widest animate-pulse text-sm">
-          Carregando perfil...
-        </p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="u-label">Carregando perfil…</p>
       </div>
     );
   }
 
   if (!student) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-primary font-black italic">Aluno não encontrado.</p>
-        <Button onClick={() => router.back()} variant="outline" className="rounded-2xl font-bold">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
+      <div className="max-w-xl mx-auto py-10 px-1">
+        <EmptyState
+          icon={User}
+          title="Aluno não encontrado"
+          description="Este aluno pode ter sido removido, ou o link está incorreto."
+          action={{ label: "Voltar para a lista", href: "/dashboard/admin/students", icon: ArrowLeft }}
+        />
       </div>
     );
   }
 
-  const isEtec = (student.exam_target ?? "").toUpperCase().includes("ETEC");
+  const semesterCard = (semester: 1 | 2) => {
+    const url = semester === 1 ? student.report_card_pdf_url_1sem : student.report_card_pdf_url_2sem;
+    const uploading = semester === 1 ? uploading1 : uploading2;
+    return (
+      <div className="border rounded-card p-4 sm:p-5 space-y-3 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <span className="u-label">{semester}º semestre</span>
+          {url && (
+            <Badge className="bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase border-none">Disponível</Badge>
+          )}
+        </div>
+
+        {url ? (
+          <div className="flex flex-col gap-2">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-semibold text-foreground hover:underline"
+            >
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Ver boletim em PDF
+            </a>
+            <Button
+              variant="outline"
+              onClick={() => handlePdfDelete(semester)}
+              className="h-9 w-full rounded-control text-red-600 border-red-200 hover:bg-red-50 font-bold text-xs"
+            >
+              Remover boletim
+            </Button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-control h-24 cursor-pointer hover:border-primary/50 transition-colors">
+            {uploading ? (
+              <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+            ) : (
+              <>
+                <FileText className="h-5 w-5 text-muted-foreground mb-1" />
+                <span className="text-xs font-bold text-muted-foreground">Enviar PDF</span>
+              </>
+            )}
+            <input
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => handlePdfUpload(e, semester)}
+            />
+          </label>
+        )}
+      </div>
+    );
+  };
+
+  const sectionTitle = "text-base font-bold text-foreground";
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 px-1">
+    <div className="space-y-6 pb-24 px-1">
 
       {/* ── Voltar ── */}
       <Button
         variant="ghost"
         onClick={() => router.back()}
-        className="h-10 rounded-xl font-bold text-muted-foreground hover:text-primary gap-2 -ml-1"
+        className="h-10 rounded-control font-bold text-muted-foreground hover:text-foreground gap-2 -ml-1"
       >
         <ArrowLeft className="h-4 w-4" />
-        Voltar para lista
+        Voltar para a lista
       </Button>
 
-      {/* ── Hero do aluno ── */}
-      <div className="relative rounded-card overflow-hidden bg-primary p-6 md:p-10 shadow-2xl">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
-
-          {/* Avatar */}
-          <div className="h-20 w-20 md:h-24 md:w-24 rounded-card bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shrink-0">
-            <span className="text-4xl font-black text-white">
-              {student.name?.charAt(0)?.toUpperCase() ?? "?"}
-            </span>
-          </div>
-
-          {/* Info principal */}
-          <div className="flex-1 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl md:text-4xl font-black text-white italic leading-none tracking-tight">
-                {student.name}
-              </h1>
-              <Badge
-                className={`font-black text-[10px] uppercase px-3 py-1 border-none ${
-                  isEtec ? "bg-orange-400 text-white" : "bg-blue-400 text-white"
-                }`}
-              >
-                {student.exam_target ?? "ENEM"}
-              </Badge>
-              {student.status === "suspended" && (
-                <Badge className="bg-red-400 text-white font-black text-[10px] uppercase border-none">
-                  Suspenso
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {student.email && (
-                <span className="flex items-center gap-2 text-white/70 text-sm font-medium">
-                  <Mail className="h-3.5 w-3.5" /> {student.email}
-                </span>
-              )}
-              {student.institution && (
-                <span className="flex items-center gap-2 text-white/70 text-sm font-medium">
-                  <Building2 className="h-3.5 w-3.5" /> {student.institution}
-                </span>
-              )}
-              {student.course && (
-                <span className="flex items-center gap-2 text-white/70 text-sm font-medium">
-                  <GraduationCap className="h-3.5 w-3.5" /> {student.course}
-                </span>
-              )}
-            </div>
-
-            <p className="text-white/65 text-[10px] font-black uppercase tracking-widest">
-              Último acesso: {formatLastAccess(student.last_access)}
-            </p>
-          </div>
-
-          {/* XP bubble */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-card px-6 py-4 md:px-8 md:py-6 text-center shadow-xl shrink-0 self-start md:self-auto">
-            <Zap className="h-6 w-6 text-yellow-300 mx-auto mb-1" />
-            <p className="text-4xl font-black text-white italic">{student.xp_points ?? 0}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mt-1">XP Total</p>
-          </div>
+      {/* ── Cabeçalho do aluno ── */}
+      <div className="flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+        <div className="h-16 w-16 md:h-20 md:w-20 rounded-card bg-primary/10 flex items-center justify-center shrink-0">
+          <span className="text-3xl font-bold text-primary">
+            {txt(student.name, "?").charAt(0).toUpperCase()}
+          </span>
         </div>
+
+        <div className="flex-1 min-w-0 space-y-2">
+          <p className="u-label">Coordenação · desempenho do aluno</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="u-page-title text-2xl md:text-3xl break-words">{txt(student.name, "Aluno sem nome")}</h1>
+            <Badge variant="outline" className="font-bold text-[10px] uppercase px-3 py-1">
+              {txt(student.exam_target, "ENEM")}
+            </Badge>
+            {student.status === "suspended" && (
+              <Badge className="bg-red-100 text-red-700 font-bold text-[10px] uppercase border-none">
+                Suspenso
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+            {student.email && (
+              <span className="flex items-center gap-2 text-muted-foreground text-sm min-w-0 break-all">
+                <Mail className="h-3.5 w-3.5 shrink-0" /> {student.email}
+              </span>
+            )}
+            {student.institution && (
+              <span className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Building2 className="h-3.5 w-3.5 shrink-0" /> {student.institution}
+              </span>
+            )}
+            {student.course && (
+              <span className="flex items-center gap-2 text-muted-foreground text-sm">
+                <GraduationCap className="h-3.5 w-3.5 shrink-0" /> {student.course}
+              </span>
+            )}
+          </div>
+
+          <p className="u-label !text-[10px]">
+            Último acesso: {formatLastAccess(student.last_access)}
+          </p>
+        </div>
+
+        {/* XP */}
+        <Card className="rounded-card px-6 py-4 text-center shrink-0 self-start md:self-auto">
+          <div className="u-label flex items-center justify-center gap-1.5"><Zap className="h-3.5 w-3.5" /> XP total</div>
+          <p className="u-num text-3xl tabular-nums mt-1">{fmtNumber(student.xp_points, 0, "0")}</p>
+        </Card>
       </div>
 
       {/* ── Métricas rápidas ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
+          { label: "Questões respondidas", value: fmtNumber(stats.total, 0, "0"), icon: BrainCircuit, color: "" },
           {
-            label: "Questões Respondidas",
-            value: stats.total,
-            icon: BrainCircuit,
-            color: "text-blue-500",
-            bg: "bg-blue-50",
-          },
-          {
-            label: "Taxa de Acerto",
-            value: `${stats.accuracy}%`,
+            label: "Taxa de acerto",
+            value: fmtPct(stats.accuracy, "0%"),
             icon: Target,
-            color: stats.accuracy >= 60 ? "text-emerald-500" : stats.accuracy >= 40 ? "text-amber-500" : "text-red-500",
-            bg: stats.accuracy >= 60 ? "bg-emerald-50" : stats.accuracy >= 40 ? "bg-amber-50" : "bg-red-50",
+            color: stats.total === 0 ? "" : stats.accuracy >= 60 ? "text-emerald-600" : stats.accuracy >= 40 ? "text-amber-600" : "text-red-600",
           },
-          {
-            label: "Tempo de Estudo",
-            value: formatTime(student.total_time_spent ?? 0),
-            icon: Clock,
-            color: "text-purple-500",
-            bg: "bg-purple-50",
-          },
-          {
-            label: "Medalhas Conquistadas",
-            value: badges.length,
-            icon: Award,
-            color: "text-amber-500",
-            bg: "bg-amber-50",
-          },
+          { label: "Tempo de estudo", value: formatTime(toNumber(student.total_time_spent) ?? 0), icon: Clock, color: "" },
+          { label: "Medalhas", value: fmtNumber(badges.length, 0, "0"), icon: Award, color: "" },
         ].map((m, i) => (
-          <Card key={i} className="border-none shadow-xl rounded-card bg-white">
+          <Card key={i} className="rounded-card">
             <CardContent className="p-4 md:p-6">
-              <div className={`h-9 w-9 md:h-11 md:w-11 rounded-2xl ${m.bg} ${m.color} flex items-center justify-center mb-3 md:mb-4 shadow-inner`}>
-                <m.icon className="h-4 w-4 md:h-5 md:w-5" />
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-primary italic leading-none">{m.value}</p>
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1.5 leading-tight">
-                {m.label}
-              </p>
+              <div className="u-label flex items-center gap-2"><m.icon className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{m.label}</span></div>
+              <p className={`u-num text-2xl md:text-3xl leading-none tabular-nums mt-3 ${m.color}`}>{m.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* ── Boletins em PDF ── */}
-      {student && (
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-4 border-b border-muted/10">
-            <CardTitle className="text-xl font-black text-primary italic">Boletins Oficiais em PDF</CardTitle>
-            <CardDescription className="italic text-xs">
-              Upload dos boletins em formato PDF para que o aluno possa baixar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 1º Semestre */}
-            <div className="border border-slate-100 rounded-2xl p-5 space-y-3 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-400">1º Semestre</span>
-                {student.report_card_pdf_url_1sem && (
-                  <Badge className="bg-emerald-500 text-white font-black text-[9px] uppercase border-none">Disponível</Badge>
-                )}
-              </div>
-              
-              {student.report_card_pdf_url_1sem ? (
-                <div className="flex flex-col gap-2">
-                  <a
-                    href={student.report_card_pdf_url_1sem}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm font-bold text-primary hover:underline"
-                  >
-                    <FileText className="h-4 w-4 text-red-500" />
-                    Visualizar Boletim PDF
-                  </a>
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePdfDelete(1)}
-                    className="h-9 w-full rounded-xl text-red-500 border-red-200 hover:bg-red-50 font-bold text-xs"
-                  >
-                    Remover Boletim
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl h-24 cursor-pointer hover:border-primary/50 transition-colors">
-                    {uploading1 ? (
-                      <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
-                    ) : (
-                      <>
-                        <FileText className="h-5 w-5 text-slate-400 mb-1" />
-                        <span className="text-xs font-bold text-slate-500">Enviar PDF</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      disabled={uploading1}
-                      onChange={(e) => handlePdfUpload(e, 1)}
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-
-            {/* 2º Semestre */}
-            <div className="border border-slate-100 rounded-2xl p-5 space-y-3 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-400">2º Semestre</span>
-                {student.report_card_pdf_url_2sem && (
-                  <Badge className="bg-emerald-500 text-white font-black text-[9px] uppercase border-none">Disponível</Badge>
-                )}
-              </div>
-              
-              {student.report_card_pdf_url_2sem ? (
-                <div className="flex flex-col gap-2">
-                  <a
-                    href={student.report_card_pdf_url_2sem}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm font-bold text-primary hover:underline"
-                  >
-                    <FileText className="h-4 w-4 text-red-500" />
-                    Visualizar Boletim PDF
-                  </a>
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePdfDelete(2)}
-                    className="h-9 w-full rounded-xl text-red-500 border-red-200 hover:bg-red-50 font-bold text-xs"
-                  >
-                    Remover Boletim
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl h-24 cursor-pointer hover:border-primary/50 transition-colors">
-                    {uploading2 ? (
-                      <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
-                    ) : (
-                      <>
-                        <FileText className="h-5 w-5 text-slate-400 mb-1" />
-                        <span className="text-xs font-bold text-slate-500">Enviar PDF</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      disabled={uploading2}
-                      onChange={(e) => handlePdfUpload(e, 2)}
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="rounded-card overflow-hidden">
+        <CardHeader className="p-5 md:p-6 pb-4 border-b">
+          <CardTitle className={sectionTitle}>Boletins oficiais em PDF</CardTitle>
+          <CardDescription className="text-sm">
+            Envie os boletins em PDF para o aluno poder baixar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {semesterCard(1)}
+          {semesterCard(2)}
+        </CardContent>
+      </Card>
 
       {/* ── Gráficos ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
         {/* Radar */}
-        <Card className="lg:col-span-6 border-none shadow-2xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-0">
-            <CardTitle className="text-xl font-black text-primary italic">Mapa de Competências</CardTitle>
-            <CardDescription className="italic text-xs">Acerto por área do conhecimento.</CardDescription>
+        <Card className="lg:col-span-6 rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-0">
+            <CardTitle className={sectionTitle}>Desempenho por área</CardTitle>
+            <CardDescription className="text-sm">Acerto por área do conhecimento.</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 md:p-8 pt-4 h-[260px] md:h-[350px]">
+          <CardContent className="p-4 md:p-6 pt-4 h-[260px] md:h-[350px]">
             {radarData.length > 0 ? (
               <RadarChartPremium data={radarData} angleKey="subject" yKey="score" color="#4ccced" unit="%" />
             ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm opacity-40">
-                Nenhuma resposta registrada ainda.
-              </div>
+              <EmptyState
+                compact
+                className="h-full justify-center"
+                icon={Target}
+                title="Nenhuma resposta registrada ainda"
+                description="Quando o aluno responder questões, o desempenho por área aparece aqui."
+              />
             )}
           </CardContent>
         </Card>
 
         {/* Atividade diária */}
-        <Card className="lg:col-span-6 border-none shadow-2xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-0">
-            <CardTitle className="text-xl font-black text-primary italic">Atividade Diária</CardTitle>
-            <CardDescription className="italic text-xs">Questões acertadas nos últimos 15 dias.</CardDescription>
+        <Card className="lg:col-span-6 rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-0">
+            <CardTitle className={sectionTitle}>Atividade diária</CardTitle>
+            <CardDescription className="text-sm">Questões acertadas nos últimos 15 dias.</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 md:p-8 pt-4 h-[260px] md:h-[350px]">
+          <CardContent className="p-4 md:p-6 pt-4 h-[260px] md:h-[350px]">
             <AreaChartPremium data={historyData} xKey="date" yKey="acertos" color="#4ccced" />
           </CardContent>
         </Card>
@@ -568,36 +492,36 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Breakdown por matéria ── */}
       {subjectData.length > 0 && (
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-4 border-b border-muted/10">
-            <div className="flex items-center justify-between">
+        <Card className="rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-4 border-b">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-xl font-black text-primary italic">Detalhamento por Matéria</CardTitle>
-                <CardDescription className="italic text-xs">Acertos, erros e taxa de aproveitamento.</CardDescription>
+                <CardTitle className={sectionTitle}>Detalhamento por matéria</CardTitle>
+                <CardDescription className="text-sm">Acertos, erros e aproveitamento.</CardDescription>
               </div>
-              <BarChart3 className="h-7 w-7 text-primary/10" />
+              <BarChart3 className="h-6 w-6 text-muted-foreground/40 shrink-0" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-muted/10">
+            <div className="divide-y">
               {subjectData.map((s, i) => (
-                <div key={i} className="flex items-center gap-3 md:gap-6 px-4 md:px-8 py-4 md:py-5 hover:bg-muted/5 transition-colors">
+                <div key={i} className="flex items-center gap-3 md:gap-6 px-4 md:px-6 py-4">
                   <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${subjectColor(s.subject)}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-black text-primary italic text-sm truncate">{s.subject}</p>
-                      <span className="text-xs font-black text-muted-foreground ml-2 shrink-0">{s.score}%</span>
+                      <p className="font-semibold text-foreground text-sm truncate">{s.subject}</p>
+                      <span className="text-xs font-bold text-muted-foreground ml-2 shrink-0 tabular-nums">{fmtPct(s.score, "0%")}</span>
                     </div>
                     <Progress value={s.score} className="h-1.5 rounded-full" />
                   </div>
-                  <div className="flex items-center gap-2 md:gap-4 shrink-0 text-xs font-bold">
-                    <span className="flex items-center gap-1 text-emerald-600">
+                  <div className="flex items-center gap-2 md:gap-4 shrink-0 text-xs font-bold tabular-nums">
+                    <span className="flex items-center gap-1 text-emerald-600" title="Acertos">
                       <CheckCircle2 className="h-3.5 w-3.5" /> {s.correct}
                     </span>
-                    <span className="flex items-center gap-1 text-red-400">
+                    <span className="flex items-center gap-1 text-red-600" title="Erros">
                       <XCircle className="h-3.5 w-3.5" /> {s.total - s.correct}
                     </span>
-                    <Badge variant="outline" className="font-black text-[9px] uppercase border-muted/30 hidden sm:inline-flex">
+                    <Badge variant="outline" className="font-bold text-[10px] uppercase hidden sm:inline-flex">
                       {s.total} questões
                     </Badge>
                   </div>
@@ -609,59 +533,65 @@ export default function AdminStudentProfilePage() {
       )}
 
       {/* ── Grid: Provas + Redações ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 
         {/* Tentativas de provas */}
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-4 border-b border-muted/10">
-            <div className="flex items-center justify-between">
+        <Card className="rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-4 border-b">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-lg font-black text-primary italic">Provas Realizadas</CardTitle>
-                <CardDescription className="italic text-xs">
+                <CardTitle className={sectionTitle}>Provas realizadas</CardTitle>
+                <CardDescription className="text-sm">
                   {examAttempts.length} tentativa{examAttempts.length !== 1 ? "s" : ""}
-                  {examAvgScore !== null && ` · Média: ${examAvgScore} pts`}
+                  {examAvgScore !== null && ` · média de ${fmtNumber(examAvgScore, 0, "0")} pts`}
                 </CardDescription>
               </div>
-              <TrendingUp className="h-6 w-6 text-primary/10" />
+              <TrendingUp className="h-6 w-6 text-muted-foreground/40 shrink-0" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
             {examAttempts.length === 0 ? (
-              <p className="px-8 py-10 text-center text-sm italic text-muted-foreground opacity-50">
-                Nenhuma prova realizada.
-              </p>
+              <div className="p-4 md:p-6">
+                <EmptyState
+                  compact
+                  icon={BookOpen}
+                  title="Nenhuma prova realizada"
+                  description="As provas que o aluno fizer aparecem aqui, com nota e tempo."
+                />
+              </div>
             ) : (
-              <div className="divide-y divide-muted/10">
+              <div className="divide-y">
                 {examAttempts.map((e, i) => {
-                  const pct = e.total_questions > 0 ? Math.round((e.score / e.total_questions) * 100) : 0;
+                  const p = pct(e.score, e.total_questions);
+                  const meta = [e.exams?.year, e.exams?.exam_type].filter(Boolean).join(" · ");
                   return (
-                    <div key={i} className="flex items-center gap-4 px-8 py-4 hover:bg-muted/5 transition-colors">
-                      <div className="h-9 w-9 rounded-xl bg-primary/5 flex items-center justify-center shrink-0">
-                        <BookOpen className="h-4 w-4 text-primary/40" />
+                    <div key={i} className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4">
+                      <div className="h-9 w-9 rounded-control bg-muted flex items-center justify-center shrink-0">
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-black text-primary italic text-sm truncate">
-                          {e.exams?.title ?? "Prova"}
+                        <p className="font-semibold text-foreground text-sm truncate">
+                          {txt(e.exams?.title, "Prova")}
                         </p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                          {e.exams?.year ?? ""} · {e.exams?.exam_type ?? ""}
-                        </p>
+                        {meta && (
+                          <p className="u-label !text-[10px]">{meta}</p>
+                        )}
                         {formatAttemptDuration(e.duration_seconds) && (
-                          <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                          <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             Concluiu em {formatAttemptDuration(e.duration_seconds)}
                           </p>
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-black text-primary italic">
-                          {e.score}/{e.total_questions}
+                        <p className="font-bold text-foreground tabular-nums">
+                          {fmtNumber(e.score, 0, "0")}/{fmtNumber(e.total_questions, 0, "0")}
                         </p>
-                        <p className={`text-[10px] font-black uppercase ${pct >= 60 ? "text-emerald-500" : "text-red-400"}`}>
-                          {pct}%
+                        <p className={`text-[11px] font-bold tabular-nums ${p >= 60 ? "text-emerald-600" : "text-red-600"}`}>
+                          {p}%
                         </p>
                         {e.tri_score != null && (
-                          <p className="text-[10px] font-black uppercase text-orange-500">TRI {e.tri_score}</p>
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground tabular-nums">TRI {fmtNumber(e.tri_score, 0)}</p>
                         )}
                       </div>
                     </div>
@@ -673,41 +603,46 @@ export default function AdminStudentProfilePage() {
         </Card>
 
         {/* Redações */}
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-4 border-b border-muted/10">
-            <div className="flex items-center justify-between">
+        <Card className="rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-4 border-b">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-lg font-black text-primary italic">Redações</CardTitle>
-                <CardDescription className="italic text-xs">
+                <CardTitle className={sectionTitle}>Redações</CardTitle>
+                <CardDescription className="text-sm">
                   {essays.length} envio{essays.length !== 1 ? "s" : ""}
                 </CardDescription>
               </div>
-              <FileText className="h-6 w-6 text-primary/10" />
+              <FileText className="h-6 w-6 text-muted-foreground/40 shrink-0" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
             {essays.length === 0 ? (
-              <p className="px-8 py-10 text-center text-sm italic text-muted-foreground opacity-50">
-                Nenhuma redação enviada.
-              </p>
+              <div className="p-4 md:p-6">
+                <EmptyState
+                  compact
+                  icon={FileText}
+                  title="Nenhuma redação enviada"
+                  description="As redações que o aluno enviar aparecem aqui, com a nota quando corrigidas."
+                />
+              </div>
             ) : (
-              <div className="divide-y divide-muted/10">
+              <div className="divide-y">
                 {essays.map((essay, i) => (
-                  <div key={i} className="flex items-center gap-4 px-8 py-4 hover:bg-muted/5 transition-colors">
-                    <div className="h-9 w-9 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-                      <FileText className="h-4 w-4 text-rose-400" />
+                  <div key={i} className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4">
+                    <div className="h-9 w-9 rounded-control bg-muted flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-black text-primary italic text-sm truncate">{essay.theme ?? "Redação"}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground">
-                        {format(new Date(essay.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                      <p className="font-semibold text-foreground text-sm truncate">{txt(essay.theme, "Redação")}</p>
+                      <p className="text-[11px] text-muted-foreground tabular-nums">
+                        {fmtDate(essay.created_at, "dd/MM/yyyy")}
                       </p>
                     </div>
                     <div className="shrink-0 flex flex-col items-end gap-1">
                       {essay.score != null ? (
-                        <span className="font-black text-primary italic">{essay.score} pts</span>
+                        <span className="font-bold text-foreground tabular-nums">{fmtNumber(essay.score, 0, "0")} pts</span>
                       ) : (
-                        <Badge variant="outline" className="text-[9px] font-black uppercase border-amber-200 text-amber-600 bg-amber-50">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase border-amber-200 text-amber-800 bg-amber-50">
                           Pendente
                         </Badge>
                       )}
@@ -722,21 +657,21 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Medalhas ── */}
       {badges.length > 0 && (
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <CardHeader className="p-8 pb-4 border-b border-muted/10">
-            <CardTitle className="text-lg font-black text-primary italic">Conquistas & Medalhas</CardTitle>
-            <CardDescription className="italic text-xs">{badges.length} medalha{badges.length !== 1 ? "s" : ""} conquistada{badges.length !== 1 ? "s" : ""}.</CardDescription>
+        <Card className="rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-4 border-b">
+            <CardTitle className={sectionTitle}>Conquistas e medalhas</CardTitle>
+            <CardDescription className="text-sm">{badges.length} medalha{badges.length !== 1 ? "s" : ""} conquistada{badges.length !== 1 ? "s" : ""}.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
-            <div className="flex flex-wrap gap-3">
+          <CardContent className="p-5 md:p-6">
+            <div className="flex flex-wrap gap-2">
               {badges.map((b, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2.5 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3"
-                  title={b.earned_at ? format(new Date(b.earned_at), "dd/MM/yyyy") : ""}
+                  className="flex items-center gap-2 bg-muted/40 border rounded-control px-3 py-2"
+                  title={b.earned_at ? fmtDate(b.earned_at, "dd/MM/yyyy") : ""}
                 >
                   <Star className="h-4 w-4 text-amber-500 fill-amber-400" />
-                  <span className="text-xs font-black text-amber-700 uppercase tracking-wide">{b.badge_type}</span>
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">{txt(b.badge_type)}</span>
                 </div>
               ))}
             </div>
@@ -746,21 +681,18 @@ export default function AdminStudentProfilePage() {
 
       {/* ── Resumo acertos/erros ── */}
       {stats.total > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="border-none shadow-lg rounded-card bg-emerald-500 text-white overflow-hidden p-6">
-            <CheckCircle2 className="h-7 w-7 opacity-40 mb-3" />
-            <p className="text-4xl font-black italic">{stats.correct}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">Questões Corretas</p>
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
+          <Card className="rounded-card p-4 md:p-6">
+            <div className="u-label !text-emerald-600 flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> Corretas</div>
+            <p className="u-num text-2xl md:text-3xl tabular-nums mt-2 text-emerald-600">{fmtNumber(stats.correct, 0, "0")}</p>
           </Card>
-          <Card className="border-none shadow-lg rounded-card bg-red-400 text-white overflow-hidden p-6">
-            <XCircle className="h-7 w-7 opacity-40 mb-3" />
-            <p className="text-4xl font-black italic">{stats.incorrect}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">Questões Erradas</p>
+          <Card className="rounded-card p-4 md:p-6">
+            <div className="u-label !text-red-600 flex items-center gap-2"><XCircle className="h-3.5 w-3.5 shrink-0" /> Erradas</div>
+            <p className="u-num text-2xl md:text-3xl tabular-nums mt-2 text-red-600">{fmtNumber(stats.incorrect, 0, "0")}</p>
           </Card>
-          <Card className="border-none shadow-lg rounded-card bg-white overflow-hidden p-6 border-l-8 border-primary">
-            <Target className="h-7 w-7 text-primary/20 mb-3" />
-            <p className="text-4xl font-black italic text-primary">{stats.accuracy}%</p>
-            <p className="text-[10px] font-black uppercase tracking-widest mt-1 text-muted-foreground">Taxa de Aproveitamento</p>
+          <Card className="rounded-card p-4 md:p-6">
+            <div className="u-label flex items-center gap-2"><Target className="h-3.5 w-3.5 shrink-0" /> Aproveitamento</div>
+            <p className="u-num text-2xl md:text-3xl tabular-nums mt-2">{fmtPct(stats.accuracy, "0%")}</p>
           </Card>
         </div>
       )}

@@ -12,18 +12,20 @@ import {
   BookOpen,
   Calendar,
   AlertTriangle,
-  Link2,
   FileCheck,
-  TrendingUp,
   UserPlus,
   ArrowRight,
-  Megaphone
+  Megaphone,
+  RefreshCw,
+  MessageCircle
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useRouter } from "next/navigation";
 import { StudentQuickSearch } from "@/components/StudentQuickSearch";
+import { EmptyState } from "@/components/EmptyState";
+import { fmtNumber, txt } from "@/lib/format";
 
 interface AbsenteeStudent {
   id: string;
@@ -138,168 +140,162 @@ export default function SecretaryDashboard() {
   if (isUserLoading) return (
     <div className="h-96 flex flex-col items-center justify-center gap-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-        Carregando Central da Secretaria...
-      </p>
+      <p className="u-label">Carregando painel da secretaria…</p>
     </div>
   );
 
+  // Nível médio: superfícies neutras, acento só no ícone, entrada em stagger.
+  // A sombra dura fica só no CTA primário (matrículas) — o resto é secundário.
+  const hubs = [
+    {
+      title: 'Matrículas e cadastro',
+      desc: 'Aprove pré-matrículas, gere links de convite para turmas ou suspenda contas inativas.',
+      href: '/dashboard/secretary/enrollments',
+      cta: 'Abrir diretório',
+      icon: UserPlus,
+      primary: true,
+    },
+    {
+      title: 'Registro de chamadas',
+      desc: 'Lance a frequência diária das turmas, registre justificativas de falta enviadas pelos responsáveis ou gere listas.',
+      href: '/dashboard/secretary/attendance',
+      cta: 'Lançar frequência',
+      icon: CheckCircle2,
+      primary: false,
+    },
+    {
+      title: 'Emissão de documentos',
+      desc: 'Gere declarações de matrícula, relatórios de simulados e certificados de conclusão em PDF.',
+      href: '/dashboard/secretary/documents',
+      cta: 'Emitir documentos',
+      icon: FileCheck,
+      primary: false,
+    },
+  ];
+
+  const statCards = [
+    { label: 'Total de alunos', value: stats.totalStudents, desc: 'Cadastrados na base', tone: '' },
+    { label: 'Alunos ativos', value: stats.activeStudents, desc: 'Acesso liberado', tone: '' },
+    { label: 'Contas suspensas', value: stats.suspendedStudents, desc: 'Sem acesso', tone: 'text-red-600' },
+    { label: 'Aulas registradas', value: stats.totalSessions, desc: 'No diário de classe', tone: '' },
+    { label: 'Cadastros no mês', value: stats.newThisMonth, desc: 'Novos alunos no mês', tone: '' },
+  ];
+
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-20 px-1">
+    <div className="space-y-8 pb-20">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl md:text-4xl font-black text-primary italic leading-none uppercase tracking-tighter">
-              Painel Operacional
-            </h1>
-            <Badge className="bg-primary text-white border-none font-black text-[10px] px-4 py-1.5 shadow-xl uppercase tracking-widest">
-              Secretaria
-            </Badge>
-          </div>
-          <p className="text-muted-foreground font-medium text-sm md:text-lg italic">
-            Controle de matrículas, frequências, emissão de documentos e suporte ao estudante.
+      <div className="flex items-start justify-between gap-4 anim-rise">
+        <div className="min-w-0">
+          <p className="u-label flex items-center gap-2"><Activity className="h-3.5 w-3.5" /> Secretaria · início</p>
+          <h1 className="u-page-title text-3xl mt-1">Painel da secretaria</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            Matrículas, frequência, documentos e atendimento ao aluno.
           </p>
         </div>
-        <Button onClick={() => fetchDashboardData()} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 bg-white shadow-xl shrink-0">
-          <Activity className="h-5 w-5 text-primary" />
+        <Button
+          onClick={() => fetchDashboardData()}
+          variant="outline"
+          size="icon"
+          className="rounded-control h-10 w-10 shrink-0"
+          title="Atualizar dados"
+          aria-label="Atualizar dados"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Busca Global de Alunos */}
+      {/* Busca global de alunos */}
       <StudentQuickSearch />
 
-      {/* Ações Rápidas (CEO style operational hubs) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        {/* Hub Matrículas */}
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
-          <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
-            <div>
-              <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 shadow-sm w-fit mb-5 shadow-inner">
-                <UserPlus className="h-7 w-7" />
-              </div>
-              <h3 className="text-xl font-black text-primary italic leading-none">Matrículas & Cadastro</h3>
-              <p className="text-muted-foreground text-xs font-semibold mt-2 leading-relaxed">
-                Aprove pré-matrículas de alunos, emita novos links de convite para turmas ou suspenda contas inativas.
-              </p>
-            </div>
-            <Button asChild className="w-full h-11 rounded-xl bg-blue-600 text-white font-black text-xs uppercase shadow-md hover:bg-blue-700 mt-6 border-none">
-              <Link href="/dashboard/secretary/enrollments" className="flex items-center justify-center gap-2">
-                Acessar Diretório <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Hub Frequência */}
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
-          <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
-            <div>
-              <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm w-fit mb-5 shadow-inner">
-                <CheckCircle2 className="h-7 w-7" />
-              </div>
-              <h3 className="text-xl font-black text-primary italic leading-none">Registro de Chamadas</h3>
-              <p className="text-muted-foreground text-xs font-semibold mt-2 leading-relaxed">
-                Gerencie a frequência diária das turmas, lance justificativas de faltas enviadas por responsáveis ou gere listas.
-              </p>
-            </div>
-            <Button asChild className="w-full h-11 rounded-xl bg-emerald-600 text-white font-black text-xs uppercase shadow-md hover:bg-emerald-700 mt-6 border-none">
-              <Link href="/dashboard/secretary/attendance" className="flex items-center justify-center gap-2">
-                Lançar Frequência <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Hub Certidões */}
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
-          <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
-            <div>
-              <div className="p-4 rounded-2xl bg-purple-50 text-purple-600 shadow-sm w-fit mb-5 shadow-inner">
-                <FileCheck className="h-7 w-7" />
-              </div>
-              <h3 className="text-xl font-black text-primary italic leading-none">Emissão de Documentos</h3>
-              <p className="text-muted-foreground text-xs font-semibold mt-2 leading-relaxed">
-                Gere declarações de matrícula ativa, relatórios de simulados e certificados de conclusão de forma instantânea em PDF.
-              </p>
-            </div>
-            <Button asChild className="w-full h-11 rounded-xl bg-purple-600 text-white font-black text-xs uppercase shadow-md hover:bg-purple-700 mt-6 border-none">
-              <Link href="/dashboard/secretary/documents" className="flex items-center justify-center gap-2">
-                Gerar Certidões <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Ações rápidas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {hubs.map((hub, i) => (
+          <div key={hub.href} className="anim-rise" style={{ '--i': i + 1 } as React.CSSProperties}>
+            <Card className="rounded-card h-full shadow-none">
+              <CardContent className="p-6 flex flex-col justify-between h-full">
+                <div>
+                  <div className="h-11 w-11 rounded-control bg-primary/10 text-primary flex items-center justify-center mb-4">
+                    <hub.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold leading-snug">{hub.title}</h3>
+                  <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{hub.desc}</p>
+                </div>
+                <Button
+                  asChild
+                  variant={hub.primary ? 'arcade' : 'outline'}
+                  className="w-full h-11 rounded-control font-bold mt-6"
+                >
+                  <Link href={hub.href} className="flex items-center justify-center gap-2">
+                    {hub.cta} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ))}
       </div>
 
-      {/* Estatísticas Numéricas */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {[
-          { label: 'Total de Alunos', value: stats.totalStudents, color: 'bg-blue-50 text-blue-600', desc: 'Cadastrados na base' },
-          { label: 'Alunos Ativos',  value: stats.activeStudents, color: 'bg-green-50 text-green-600', desc: 'Acesso liberado' },
-          { label: 'Contas Suspensas', value: stats.suspendedStudents, color: 'bg-red-50 text-red-600', desc: 'Sem acesso' },
-          { label: 'Aulas Registradas', value: stats.totalSessions, color: 'bg-purple-50 text-purple-600', desc: 'No diário de classe' },
-          { label: 'Cadastros Este Mês', value: stats.newThisMonth, color: 'bg-orange-50 text-orange-600', desc: 'Novos alunos no mês' },
-        ].map(s => (
-          <Card key={s.label} className="border-none shadow-xl rounded-3xl bg-white">
-            <CardContent className="p-6">
-              <div className={`h-9 w-9 rounded-xl ${s.color} flex items-center justify-center shrink-0 mb-4 font-black`}>
-                <TrendingUp className="h-4 w-4" />
-              </div>
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {statCards.map((s) => (
+          <Card key={s.label} className="rounded-card shadow-none">
+            <CardContent className="p-4 sm:p-5">
+              <p className="u-label">{s.label}</p>
               {loading ? (
-                <div className="h-8 w-14 rounded-lg bg-slate-100 animate-pulse" />
+                <div className="h-8 w-14 rounded-control bg-muted animate-pulse mt-2" />
               ) : (
-                <p className="text-3xl font-black text-primary leading-none italic">{s.value}</p>
+                <p className={`u-num text-2xl sm:text-3xl leading-none mt-2 ${s.tone}`}>{fmtNumber(s.value)}</p>
               )}
-              <p className="text-[10px] text-primary/70 font-black uppercase tracking-wider mt-2">{s.label}</p>
-              <p className="text-[9px] text-muted-foreground font-medium mt-0.5">{s.desc}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">{s.desc}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Faltômetro & Links Úteis */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Faltômetro (Alerta de evasão) */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden border-l-[12px] border-amber-500">
-          <CardHeader className="p-6 md:p-8 pb-0">
-            <CardTitle className="text-xl font-black text-primary italic flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Alerta de Absenteísmo (Faltômetro)
-            </CardTitle>
-            <CardDescription className="text-xs font-semibold">
-              Alunos com 2 ou mais faltas seguidas ou acumuladas. Risco de evasão escolar.
+      {/* Faltômetro & links úteis */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Faltômetro (alerta de evasão) */}
+        <Card className="lg:col-span-2 rounded-card shadow-none overflow-hidden">
+          <CardHeader className="p-5 sm:p-6 pb-0">
+            <p className="u-label flex items-center gap-2"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Últimos 60 dias</p>
+            <CardTitle className="text-lg font-bold mt-1">Alunos com muitas faltas</CardTitle>
+            <CardDescription className="text-sm">
+              Quem tem 2 ou mais faltas no período. É o primeiro sinal de risco de evasão.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 md:p-8 space-y-4">
+          <CardContent className="p-5 sm:p-6 space-y-3">
             {loading ? (
               <div className="space-y-3">
-                {Array(3).fill(0).map((_, i) => <div key={i} className="h-[68px] rounded-2xl bg-amber-50/50 animate-pulse" />)}
+                {Array(3).fill(0).map((_, i) => <div key={i} className="h-[60px] rounded-control bg-muted animate-pulse" />)}
               </div>
             ) : absentees.length === 0 ? (
-              <div className="py-12 text-center opacity-40 italic font-bold border-2 border-dashed rounded-card text-slate-500">
-                Nenhum aluno com faltas críticas no momento. Excelente!
-              </div>
+              <EmptyState
+                compact
+                icon={CheckCircle2}
+                title="Nenhum aluno com faltas acumuladas"
+                description="Quem tiver 2 ou mais faltas nos últimos 60 dias aparece aqui."
+                action={{ label: 'Lançar frequência', href: '/dashboard/secretary/attendance' }}
+              />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {absentees.map(student => (
-                  <div key={student.id} className="flex items-center justify-between p-4 rounded-2xl bg-amber-50/50 border border-amber-100 hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm italic">
-                        {student.name.charAt(0)}
+                  <div key={student.id} className="flex items-center justify-between gap-3 p-3 rounded-control border border-border">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-control bg-muted text-foreground flex items-center justify-center font-bold text-sm shrink-0">
+                        {(student.name || 'A').charAt(0)}
                       </div>
-                      <div>
-                        <p className="font-bold text-sm text-slate-800 leading-none">{student.name}</p>
-                        <p className="text-[9px] font-black uppercase text-slate-400 mt-1 tracking-wider">{student.course}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm leading-tight truncate">{txt(student.name, 'Aluno')}</p>
+                        <p className="u-label mt-1 truncate">{txt(student.course, 'Sem turma')}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] px-3">
-                        {student.absences} Faltas
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className="border-amber-300 text-amber-700 font-bold">
+                        <span className="u-num mr-1">{student.absences}</span> {student.absences === 1 ? 'falta' : 'faltas'}
                       </Badge>
-                      <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white border border-amber-200 text-amber-600 hover:bg-amber-50">
-                        <Link href={`/dashboard/chat/${student.id}`} title="Contatar aluno">
-                          <Activity className="h-4 w-4" />
+                      <Button asChild variant="outline" size="icon" className="h-9 w-9 rounded-control">
+                        <Link href={`/dashboard/chat/${student.id}`} title="Conversar com o aluno" aria-label="Conversar com o aluno">
+                          <MessageCircle className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
@@ -310,34 +306,30 @@ export default function SecretaryDashboard() {
           </CardContent>
         </Card>
 
-        {/* Links Úteis / Acesso Rápido */}
-        <Card className="border-none shadow-2xl rounded-[3rem] bg-white p-6 md:p-8">
-          <CardHeader className="p-0 mb-6">
-            <CardTitle className="text-xs font-black text-primary/40 uppercase tracking-[0.2em]">
-              Links Auxiliares
-            </CardTitle>
+        {/* Links úteis */}
+        <Card className="rounded-card shadow-none p-5 sm:p-6">
+          <CardHeader className="p-0 mb-4">
+            <CardTitle className="u-label">Atalhos</CardTitle>
           </CardHeader>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {[
-              { label: 'Comunicados em Massa', href: '/secretary/communication', icon: Megaphone, color: 'text-amber-500 bg-amber-50' },
-              { label: 'Calendário de Eventos', href: '/admin/calendar', icon: Calendar, color: 'text-blue-500 bg-blue-50' },
-              { label: 'Lista de Chamadas (Professor)', href: '/teacher/attendance', icon: BookOpen, color: 'text-purple-500 bg-purple-50' },
-              { label: 'Configurações de Perfil', href: '/settings', icon: Users, color: 'text-slate-600 bg-slate-50' },
+              { label: 'Comunicados em massa', href: '/secretary/communication', icon: Megaphone },
+              { label: 'Calendário de eventos', href: '/admin/calendar', icon: Calendar },
+              { label: 'Lista de chamadas (professor)', href: '/teacher/attendance', icon: BookOpen },
+              { label: 'Configurações de perfil', href: '/settings', icon: Users },
             ].map(linkItem => (
-              <Link 
+              <Link
                 key={linkItem.label}
                 href={`/dashboard${linkItem.href}`}
-                className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all group"
+                className="flex items-center justify-between gap-3 p-3 rounded-control border border-border hover:bg-muted/50 transition-colors group"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl ${linkItem.color} group-hover:scale-105 transition-transform shrink-0`}>
-                    <linkItem.icon className="h-4.5 w-4.5" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded-control bg-primary/10 text-primary shrink-0">
+                    <linkItem.icon className="h-4 w-4" />
                   </div>
-                  <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">
-                    {linkItem.label}
-                  </span>
+                  <span className="text-sm font-semibold truncate">{linkItem.label}</span>
                 </div>
-                <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
               </Link>
             ))}
           </div>

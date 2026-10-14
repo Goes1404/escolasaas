@@ -18,6 +18,7 @@ import { AuroraAvatar } from "@/components/AuroraAvatar";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { fmtDate } from '@/lib/format';
 
 interface ChatMessage {
   id: string;
@@ -315,7 +316,7 @@ export default function DirectChatPage() {
                 <div key={msg.id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-2 duration-300`}>
                   <div className="flex items-center gap-2 mb-1 px-3">
                     {!isMe && <span className="text-[8px] font-black uppercase text-primary/30 tracking-widest">{msg.sender_id === contactId ? contact?.name : 'Aurora'}</span>}
-                    <span className="text-[7px] font-bold text-muted-foreground italic opacity-50">{format(new Date(msg.created_at), "HH:mm")}</span>
+                    <span className="text-[7px] font-bold text-muted-foreground italic opacity-50">{fmtDate(msg.created_at, "HH:mm")}</span>
                   </div>
                   <div className={`px-5 py-3.5 rounded-card text-sm leading-relaxed font-medium shadow-sm max-w-[85%] md:max-w-[70%] transition-all border ${
                       isMe 

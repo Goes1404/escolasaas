@@ -8,7 +8,10 @@ import { MotionEngine } from './MotionEngine';
 export function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const isAuthOrHome = ['/', '/login', '/register'].includes(pathname || '');
+  const isAuthOrHome = ['/', '/login', '/register', '/privacidade'].includes(pathname || '');
+  // A tela de suporte já é o chat da Aurora: o botão flutuante dela ali só
+  // cobriria o campo de envio.
+  const hideAurora = isAuthOrHome || (pathname || '').startsWith('/dashboard/support');
 
   // Sem fade de opacity no wrapper global: ele envolvia TODA página e segurava
   // o conteúdo (inclusive o elemento LCP) em opacity:0 por 700ms a cada
@@ -19,7 +22,7 @@ export function ClientWrapper({ children }: { children: React.ReactNode }) {
       {children}
       <FitTextEngine />
       <MotionEngine />
-      {!isAuthOrHome && <AccessibilityWidget />}
+      {!hideAurora && <AccessibilityWidget />}
     </div>
   );
 }

@@ -44,7 +44,10 @@ Deno.serve(async (req: Request) => {
   if (denied) return denied;
 
   const body = await req.json().catch(() => ({}));
-  const defaultPassword = body?.password ?? "compromisso2026";
+  const defaultPassword = body?.password;
+  if (!defaultPassword || String(defaultPassword).length < 8) {
+    return new Response(JSON.stringify({ error: "Informe password (8+ caracteres) no corpo." }), { status: 400, headers: { "Content-Type": "application/json" } });
+  }
   const dryRun = body?.dryRun === true;
 
   // Step 1: fetch teacher rows that are not linked

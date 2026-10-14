@@ -25,6 +25,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { fmtBRL } from "@/lib/format";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
@@ -174,8 +175,8 @@ export default function FinancialAidPage() {
       }
 
       toast({
-        title: "Cálculo Concluído ✅",
-        description: "Seu perfil foi atualizado com o status de elegibilidade social.",
+        title: "Cálculo pronto ✅",
+        description: "O resultado aparece logo abaixo e ficou salvo no seu perfil.",
       });
     } finally {
       setLoading(false);
@@ -191,15 +192,15 @@ export default function FinancialAidPage() {
               Simulador de Isenção
             </h1>
             <Badge className="bg-accent text-accent-foreground border-none font-black text-[10px] px-3 py-1 shadow-lg animate-pulse">
-              VERSÃO 2024
+              CALCULADORA
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm md:text-lg max-w-2xl font-medium italic">
-            Não chute o valor. Use nossa calculadora assistida para somar a renda de cada familiar e descobrir sua elegibilidade no SiSU e ProUni.
+            Não chute o valor. Some a renda de cada pessoa da casa e descubra se você tem direito à isenção (e ao SiSU e ProUni por renda).
           </p>
         </div>
         <div className="flex items-center gap-2 text-primary/40 font-black text-[10px] uppercase tracking-widest bg-white/50 px-4 py-2 rounded-full border border-white/20">
-          <History className="h-3 w-3" /> Status: {result ? 'Simulado' : 'Pendente'}
+          <History className="h-3 w-3" /> {result ? 'Já calculado' : 'Ainda não calculado'}
         </div>
       </div>
 
@@ -213,16 +214,16 @@ export default function FinancialAidPage() {
               <div className="h-10 w-10 rounded-xl bg-accent text-accent-foreground flex items-center justify-center mb-4 shadow-xl">
                 <Scale className="h-5 w-5" />
               </div>
-              <CardTitle className="text-xl font-black italic">A Regra de 1,5 SM</CardTitle>
+              <CardTitle className="text-xl font-black italic">A regra de 1,5 salário mínimo</CardTitle>
               <CardDescription className="text-white/60 font-medium italic text-xs">O critério oficial do Governo Federal.</CardDescription>
             </CardHeader>
             <CardContent className="p-5 md:p-8 pt-0 space-y-5">
               <div className="p-5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-sm space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-accent flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3" /> Teto Atualizado
+                  <CheckCircle2 className="h-3 w-3" /> Limite de renda
                 </p>
                 <p className="text-sm font-medium leading-relaxed italic">
-                  A soma de todas as rendas dividida pelo número de moradores deve ser de até <strong className="text-accent text-lg">R$ {THRESHOLD.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>.
+                  A soma de todas as rendas dividida pelo número de moradores deve ser de até <strong className="text-accent text-lg">{fmtBRL(THRESHOLD)}</strong>.
                 </p>
               </div>
               <div className="space-y-4">
@@ -263,8 +264,8 @@ export default function FinancialAidPage() {
                   <CardDescription className="font-medium italic text-xs mt-0.5">Adicione cada integrante que mora com você.</CardDescription>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Soma Atual</p>
-                  <p className="text-xl font-black text-primary italic">R$ {totalFamilyIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Soma até agora</p>
+                  <p className="text-xl font-black text-primary italic">{fmtBRL(totalFamilyIncome)}</p>
                 </div>
               </div>
             </CardHeader>
@@ -275,7 +276,7 @@ export default function FinancialAidPage() {
                   {members.map((member, index) => (
                     <div key={member.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl bg-muted/20 border border-transparent hover:border-accent/20 transition-all animate-in slide-in-from-left-2">
                       <div className="flex-1 space-y-2">
-                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Integrante / Parentesco</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Quem é</Label>
                         <Input 
                           placeholder={index === 0 ? "Você" : "Ex: Mãe, Pai, Irmão..."} 
                           value={member.label} 
@@ -284,7 +285,7 @@ export default function FinancialAidPage() {
                         />
                       </div>
                       <div className="w-full sm:w-48 space-y-2">
-                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Renda Bruta (R$)</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-wider text-foreground/80 ml-2">Renda bruta (R$)</Label>
                         <Input 
                           type="text" 
                           placeholder="0,00" 
@@ -316,7 +317,7 @@ export default function FinancialAidPage() {
                     onClick={addMember}
                     className="flex-1 h-14 border-dashed border-2 border-primary/20 rounded-2xl font-bold text-primary hover:bg-primary/5"
                   >
-                    <UserPlus className="h-4 w-4 mr-2" /> Adicionar Integrante
+                    <UserPlus className="h-4 w-4 mr-2" /> Adicionar pessoa
                   </Button>
                   <Button 
                     type="submit" 
@@ -324,7 +325,7 @@ export default function FinancialAidPage() {
                     className="flex-1 bg-primary hover:bg-primary/95 text-white h-14 rounded-2xl font-black text-lg shadow-xl"
                   >
                     {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <TrendingUp className="h-5 w-5 mr-2" />}
-                    {loading ? "Analisando..." : "Verificar Elegibilidade"}
+                    {loading ? "Calculando…" : "Ver se tenho direito"}
                   </Button>
                 </div>
               </form>
@@ -343,23 +344,23 @@ export default function FinancialAidPage() {
                       {result.eligible ? "Elegível para isenção" : "Fora do critério de isenção"}
                     </h3>
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-80">
-                      {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} · R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
+                      {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} · {fmtBRL(result.totalFamilyIncome)} no total
                     </p>
                   </div>
                 </div>
                 <CardContent className="p-5 md:p-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 bg-white rounded-2xl border border-muted/20 flex flex-col gap-1 shadow-sm">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Renda Per Capita</span>
+                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Renda por pessoa</span>
                       <span className={`text-2xl font-black italic ${result.eligible ? 'text-green-600' : 'text-red-500'}`}>
-                        R$ {result.perCapita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtBRL(result.perCapita)}
                       </span>
                       <p className="text-[8px] font-bold text-muted-foreground uppercase">Por morador</p>
                     </div>
                     <div className="p-4 bg-white rounded-2xl border border-muted/20 flex flex-col gap-1 shadow-sm">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Limite 1,5 SM</span>
+                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Limite (1,5 salário mínimo)</span>
                       <span className="text-2xl font-black text-primary italic">
-                        R$ {result.threshold.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtBRL(result.threshold)}
                       </span>
                       <p className="text-[8px] font-bold text-muted-foreground uppercase">Referência MEC</p>
                     </div>
@@ -368,19 +369,19 @@ export default function FinancialAidPage() {
                   <div className="mt-5 flex flex-col sm:flex-row gap-3">
                     <Button asChild className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-black h-12 rounded-xl shadow-lg active:scale-95 transition-all [touch-action:manipulation]">
                       <Link href="/dashboard/chat/aurora-ai" className="flex items-center justify-center gap-2">
-                        Tirar Dúvidas com Aurora
+                        Tirar dúvidas com a Aurora
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button variant="outline" asChild className="flex-1 h-12 rounded-xl border-2 font-black text-primary hover:bg-muted/50 active:scale-95 transition-all [touch-action:manipulation]">
                       <Link href="/dashboard/student/documents">
-                        Checklist de Docs
+                        Lista de documentos
                       </Link>
                     </Button>
                   </div>
 
                   <p className="mt-5 text-[9px] text-center text-muted-foreground font-bold uppercase italic opacity-60">
-                    *Salário Mínimo de referência: R$ {result.minWage.toLocaleString('pt-BR')}. Editais podem variar.
+                    *Salário mínimo de referência: {fmtBRL(result.minWage)}. Cada edital pode ter regras próprias.
                   </p>
                 </CardContent>
               </Card>

@@ -141,7 +141,8 @@ async function run() {
   const exam1Id = await ensureExam("1º Simulado ENEM 2026", 2026);
   const exam2Id = await ensureExam("2º Simulado ENEM 2026", 2026);
 
-  const PASS = 'compromisso2026';
+  const PASS = process.env.DEFAULT_USER_PASSWORD;
+  if (!PASS || PASS.length < 8) { console.error('Defina DEFAULT_USER_PASSWORD (8+ caracteres) antes de rodar.'); process.exit(1); }
   const created = [];
   let ok = 0, fail = 0;
 

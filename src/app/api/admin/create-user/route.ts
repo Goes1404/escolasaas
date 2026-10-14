@@ -20,7 +20,24 @@ function generateEmail(fullName: string): string {
   return `${first}${middleInitial}${last}@compromisso.com`;
 }
 
-const DEFAULT_PASSWORD = process.env.DEFAULT_USER_PASSWORD || 'mudar123';
+import { randomInt } from 'crypto';
+
+/**
+ * Senha inicial. Com DEFAULT_USER_PASSWORD configurada na Vercel, vale ela
+ * (fluxo da secretaria). Sem ela, cada conta nasce com uma senha aleatória
+ * própria — antes caía num valor fixo ('mudar123'), igual para todo mundo e
+ * escrito no código. O aluno troca no primeiro acesso de qualquer jeito.
+ */
+function senhaInicial(): string {
+  const env = process.env.DEFAULT_USER_PASSWORD;
+  if (env && env.length >= 8) return env;
+  const letras = 'abcdefghjkmnpqrstuvwxyz'; // sem i/l/o: evita confusão ao ditar
+  const digitos = '23456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += letras[randomInt(letras.length)];
+  for (let i = 0; i < 4; i++) s += digitos[randomInt(digitos.length)];
+  return s;
+}
 
 export async function POST(request: Request) {
   try {
@@ -106,6 +123,8 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
+
+    const DEFAULT_PASSWORD = senhaInicial();
 
     // Criar usuário no Supabase Auth
     const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({

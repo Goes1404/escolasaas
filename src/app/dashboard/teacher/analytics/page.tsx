@@ -12,7 +12,7 @@ export default function AnalyticsPage() {
   const userId = searchParams.get('user') || undefined;
 
   return (
-    <div className="p-4 md:p-8 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8">
       <TeacherAnalyticsDashboard userId={userId} />
     </div>
   );

@@ -27,10 +27,10 @@ import {
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { EDUCATIONAL_CATEGORIES } from "@/lib/constants";
 import { DOCUMENT_ACCEPT, detectKind, toClassMaterialType, describeFile, type FileKind } from "@/lib/file-types";
+import { fmtDate, fmtNumber } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type ClassMaterial = {
   id: string;
@@ -72,11 +72,12 @@ const blank = { title: "", description: "", subject: "none", file_type: "pdf", t
 
 function getTypeBadgeColor(type: string) {
   const map: Record<string, string> = {
-    pdf: "bg-red-500/15 text-red-400 border-red-500/25",
-    video: "bg-blue-500/15 text-blue-400 border-blue-500/25",
-    link: "bg-purple-500/15 text-purple-400 border-purple-500/25",
-    imagem: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-    outro: "bg-white/5 text-white/70 border-white/8",
+    // Cor categórica (diz o que o arquivo é), em par legível sobre fundo claro.
+    pdf: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30",
+    video: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/30",
+    link: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/30",
+    imagem: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30",
+    outro: "bg-muted text-muted-foreground border-border",
   };
   return map[type] ?? map.outro;
 }
@@ -187,7 +188,7 @@ export default function TeacherMaterialsPage() {
         body: JSON.stringify({ type: "material", materialId: matData.id }),
       }).catch(() => {});
 
-      toast({ title: "Material publicado!" });
+      toast({ title: "Material publicado" });
       setForm(blank);
       setFile(null);
       setUrlInput("");
@@ -207,7 +208,7 @@ export default function TeacherMaterialsPage() {
     if (error) {
       toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Material removido." });
+      toast({ title: "Material removido" });
       setMaterials((prev) => prev.filter((m) => m.id !== id));
     }
     setDeletingId(null);
@@ -223,128 +224,105 @@ export default function TeacherMaterialsPage() {
 
   const totalViews = materials.reduce((acc, m) => acc + (m.material_views?.[0]?.count ?? 0), 0);
   const thisMonth = materials.filter((m) =>
-    m.created_at.startsWith(new Date().toISOString().slice(0, 7))
+    (m.created_at ?? "").startsWith(new Date().toISOString().slice(0, 7))
   ).length;
 
+  const closeForm = () => {
+    setShowForm(false);
+    setForm(blank);
+    setFile(null);
+    setUrlInput("");
+  };
+
   return (
-    <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pb-24 space-y-5">
 
-      {/* ── Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.13) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(59,130,246,0.08) 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative z-10">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <FolderOpen className="h-3 w-3 text-orange-400" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400/85">
-                  Acervo Pedagógico
-                </p>
-              </div>
-              <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
-                Materiais de Aula
-              </h1>
-              <p className="text-white/70 text-xs font-semibold mt-1">
-                PDFs, vídeos e links para alunos
-              </p>
-            </div>
-          </div>
+      {/* ── Cabeçalho ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="u-label flex items-center gap-2"><FolderOpen className="h-3.5 w-3.5" /> Professor · materiais</p>
+          <h1 className="u-page-title text-3xl mt-1">Materiais de aula</h1>
+          <p className="text-sm text-muted-foreground mt-1">PDFs, vídeos e links para os alunos.</p>
+        </div>
+        {!showForm && (
+          <Button
+            variant="arcade"
+            onClick={() => setShowForm(true)}
+            className="w-full sm:w-auto h-11 px-5 rounded-control font-bold"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Novo material
+          </Button>
+        )}
+      </div>
 
-          {/* KPI row */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="flex flex-col items-center bg-white/5 border border-white/8 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-white leading-none">{materials.length}</span>
-              <span className="text-[8px] font-bold text-white/55 uppercase tracking-wider mt-0.5">Total</span>
-            </div>
-            <div className="flex flex-col items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-blue-400 leading-none">{totalViews}</span>
-              <span className="text-[8px] font-bold text-blue-400/80 uppercase tracking-wider mt-0.5">Views</span>
-            </div>
-            <div className="flex flex-col items-center bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-emerald-400 leading-none">{thisMonth}</span>
-              <span className="text-[8px] font-bold text-emerald-400/80 uppercase tracking-wider mt-0.5">Mês</span>
-            </div>
-          </div>
+      {/* ── Contadores ── */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label">Total</p>
+          <p className="u-num text-2xl mt-1">{fmtNumber(materials.length)}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label">Visualizações</p>
+          <p className="u-num text-2xl mt-1">{fmtNumber(totalViews)}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-4">
+          <p className="u-label">Este mês</p>
+          <p className="u-num text-2xl mt-1">{fmtNumber(thisMonth)}</p>
         </div>
       </div>
 
-      {/* ── Composer toggle ── */}
-      {!showForm && (
-        <Button
-          onClick={() => setShowForm(true)}
-          className="w-full h-12 bg-[#4CCCED] hover:bg-orange-600 text-slate-800 font-black rounded-2xl shadow-xl shadow-orange-500/20 text-xs uppercase tracking-widest border-none"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Novo Material
-        </Button>
-      )}
-
-      {/* ── Form ── */}
+      {/* ── Formulário ── */}
       {showForm && (
-        <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-          <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4 text-orange-400/85" />
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
-                Publicar Material
-              </p>
-            </div>
+        <div className="u-surface overflow-hidden">
+          <div className="p-4 border-b border-border flex items-center justify-between gap-3">
+            <p className="font-bold text-base text-foreground flex items-center gap-2">
+              <PlusCircle className="h-4 w-4 text-primary" />
+              Publicar material
+            </p>
             <button
-              onClick={() => {
-                setShowForm(false);
-                setForm(blank);
-                setFile(null);
-                setUrlInput("");
-              }}
-              className="text-[10px] font-bold text-slate-500 hover:text-slate-500 uppercase tracking-wider"
+              onClick={closeForm}
+              className="text-sm font-semibold text-muted-foreground hover:text-foreground"
             >
               Fechar
             </button>
           </div>
           <div className="p-4 space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                Título *
-              </Label>
+              <Label className="u-label">Título *</Label>
               <input
                 type="text"
-                placeholder="Ex: Slides — Funções do 2º Grau"
+                placeholder="Ex.: Slides — Funções do 2º grau"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="w-full h-11 bg-white shadow-sm border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-800 placeholder:text-slate-500 outline-none focus:border-[#4CCCED]/40 transition-all"
+                className="w-full h-11 bg-background border border-input rounded-control px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-colors"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Matéria</Label>
+                <Label className="u-label">Matéria</Label>
                 <Select value={form.subject} onValueChange={(val) => setForm((f) => ({ ...f, subject: val }))}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm border-slate-200 text-slate-800 font-bold text-xs">
+                  <SelectTrigger className="h-11 rounded-control text-sm font-medium">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white max-h-60">
-                    <SelectItem value="none" className="font-bold text-slate-600 text-xs">Nenhuma</SelectItem>
+                  <SelectContent className="rounded-control max-h-60">
+                    <SelectItem value="none">Nenhuma</SelectItem>
                     {EDUCATIONAL_CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c} className="font-bold text-slate-600 text-xs">{c}</SelectItem>
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Tipo</Label>
+                <Label className="u-label">Tipo</Label>
                 <Select value={form.file_type} onValueChange={(val) => setForm((f) => ({ ...f, file_type: val }))}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm border-slate-200 text-slate-800 font-bold text-xs">
+                  <SelectTrigger className="h-11 rounded-control text-sm font-medium">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white">
+                  <SelectContent className="rounded-control">
                     {FILE_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value} className="font-bold text-slate-600 text-xs">
+                      <SelectItem key={t.value} value={t.value}>
                         {t.label}
                       </SelectItem>
                     ))}
@@ -352,14 +330,14 @@ export default function TeacherMaterialsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Público</Label>
+                <Label className="u-label">Público</Label>
                 <Select value={form.target_group} onValueChange={(val) => setForm((f) => ({ ...f, target_group: val }))}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm border-slate-200 text-slate-800 font-bold text-xs">
+                  <SelectTrigger className="h-11 rounded-control text-sm font-medium">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white">
+                  <SelectContent className="rounded-control">
                     {TARGET_GROUPS.map((t) => (
-                      <SelectItem key={t.value} value={t.value} className="font-bold text-slate-600 text-xs">
+                      <SelectItem key={t.value} value={t.value}>
                         {t.label}
                       </SelectItem>
                     ))}
@@ -367,16 +345,16 @@ export default function TeacherMaterialsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Aula</Label>
+                <Label className="u-label">Aula</Label>
                 <Select value={form.session_id} onValueChange={(val) => setForm((f) => ({ ...f, session_id: val }))}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm border-slate-200 text-slate-800 font-bold text-xs">
+                  <SelectTrigger className="h-11 rounded-control text-sm font-medium">
                     <SelectValue placeholder="Nenhuma" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white">
-                    <SelectItem value="none" className="font-bold text-slate-600 text-xs">Nenhuma</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="none">Nenhuma</SelectItem>
                     {sessions.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="font-bold text-slate-600 text-xs">
-                        {format(new Date(s.session_date + "T00:00:00"), "dd/MM", { locale: ptBR })} — {s.title}
+                      <SelectItem key={s.id} value={s.id}>
+                        {fmtDate(s.session_date + "T00:00:00", "dd/MM")} — {s.title}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -384,28 +362,24 @@ export default function TeacherMaterialsPage() {
               </div>
             </div>
 
-            {/* Upload / URL toggle */}
+            {/* Arquivo ou link */}
             <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-control bg-muted">
                 <button
                   onClick={() => setUseUpload(true)}
-                  className={`h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all touch-manipulation ${
-                    useUpload
-                      ? "bg-[#4CCCED] text-slate-800 shadow-lg shadow-orange-500/20"
-                      : "bg-white shadow-sm border border-slate-200 text-slate-600"
+                  className={`h-9 text-sm font-semibold rounded-control transition-colors touch-manipulation ${
+                    useUpload ? "bg-background text-foreground border border-border" : "text-muted-foreground"
                   }`}
                 >
-                  Upload
+                  Enviar arquivo
                 </button>
                 <button
                   onClick={() => setUseUpload(false)}
-                  className={`h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all touch-manipulation ${
-                    !useUpload
-                      ? "bg-[#4CCCED] text-slate-800 shadow-lg shadow-orange-500/20"
-                      : "bg-white shadow-sm border border-slate-200 text-slate-600"
+                  className={`h-9 text-sm font-semibold rounded-control transition-colors touch-manipulation ${
+                    !useUpload ? "bg-background text-foreground border border-border" : "text-muted-foreground"
                   }`}
                 >
-                  URL / Link
+                  Colar link
                 </button>
               </div>
               {useUpload ? (
@@ -420,9 +394,9 @@ export default function TeacherMaterialsPage() {
                       // Detecta automaticamente o tipo a partir da extensão
                       if (f) setForm((prev) => ({ ...prev, file_type: toClassMaterialType(detectKind(f.name)) }));
                     }}
-                    className="w-full h-11 rounded-xl bg-white shadow-sm border-2 border-dashed border-[#4CCCED]/20 hover:border-[#4CCCED]/40 cursor-pointer p-2 text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[9px] file:font-black file:uppercase file:bg-[#4CCCED] file:text-slate-800"
+                    className="w-full h-11 rounded-control bg-background border-2 border-dashed border-border hover:border-primary/40 cursor-pointer p-2 text-xs text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded-control file:border-0 file:text-xs file:font-bold file:bg-primary file:text-primary-foreground"
                   />
-                  <p className="text-[9px] font-bold text-slate-400 mt-1 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                     Aceita PDF, Word, PowerPoint, Excel, texto, imagens, vídeo, áudio e mais.
                   </p>
                 </>
@@ -433,46 +407,44 @@ export default function TeacherMaterialsPage() {
                   placeholder="https://..."
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
-                  className="w-full h-11 bg-white shadow-sm border border-slate-200 rounded-xl px-4 text-sm font-medium text-slate-800 placeholder:text-slate-500 outline-none focus:border-[#4CCCED]/40 transition-all"
+                  className="w-full h-11 bg-background border border-input rounded-control px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-colors"
                 />
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                Descrição (opcional)
-              </Label>
+              <Label className="u-label">Descrição (opcional)</Label>
               <Textarea
                 placeholder="Detalhes sobre este material..."
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className="rounded-xl bg-white shadow-sm border-slate-200 text-slate-800 placeholder:text-slate-500 font-medium text-sm resize-none focus-visible:ring-orange-500/30 focus-visible:border-[#4CCCED]/30 min-h-[80px]"
+                className="rounded-control text-sm resize-none min-h-[80px]"
               />
             </div>
 
             <Button
               onClick={handleSubmit}
               disabled={saving || !form.title || (!file && !urlInput)}
-              className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-800 font-black rounded-2xl shadow-xl shadow-orange-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40"
+              className="w-full h-11 rounded-control font-bold"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Publicar Material
+              Publicar material
             </Button>
           </div>
         </div>
       )}
 
-      {/* ── Filters ── */}
+      {/* ── Filtros ── */}
       {!loading && materials.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 font-bold text-xs">
-              <SelectValue placeholder="Todos tipos" />
+            <SelectTrigger className="h-10 rounded-control text-sm font-medium">
+              <SelectValue placeholder="Todos os tipos" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200 bg-white">
-              <SelectItem value="all" className="font-bold text-slate-600 text-xs">Todos os tipos</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todos os tipos</SelectItem>
               {FILE_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value} className="font-bold text-slate-600 text-xs">
+                <SelectItem key={t.value} value={t.value}>
                   {t.label}
                 </SelectItem>
               ))}
@@ -480,13 +452,13 @@ export default function TeacherMaterialsPage() {
           </Select>
           {subjects.length > 0 && (
             <Select value={filterSubject} onValueChange={setFilterSubject}>
-              <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 font-bold text-xs">
-                <SelectValue placeholder="Todas matérias" />
+              <SelectTrigger className="h-10 rounded-control text-sm font-medium">
+                <SelectValue placeholder="Todas as matérias" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200 bg-white">
-                <SelectItem value="all" className="font-bold text-slate-600 text-xs">Todas matérias</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all">Todas as matérias</SelectItem>
                 {subjects.map((s) => (
-                  <SelectItem key={s} value={s} className="font-bold text-slate-600 text-xs">{s}</SelectItem>
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -494,18 +466,27 @@ export default function TeacherMaterialsPage() {
         </div>
       )}
 
-      {/* ── List ── */}
+      {/* ── Lista ── */}
       {loading ? (
         <div className="py-16 flex justify-center">
-          <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
+          <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
-          <FolderOpen className="h-8 w-8 text-white/15 mx-auto mb-2" />
-          <p className="font-black italic text-xs text-slate-500 uppercase tracking-widest">
-            Nenhum material publicado
-          </p>
-        </div>
+        materials.length > 0 ? (
+          <EmptyState
+            icon={FolderOpen}
+            title="Nenhum material com esses filtros"
+            description="Troque o tipo ou a matéria para ver os outros materiais."
+            action={{ label: "Limpar filtros", onClick: () => { setFilterType("all"); setFilterSubject("all"); } }}
+          />
+        ) : (
+          <EmptyState
+            icon={FolderOpen}
+            title="Você ainda não publicou materiais"
+            description="Envie um PDF, vídeo ou link e ele aparece para os alunos da turma."
+            action={showForm ? undefined : { label: "Novo material", icon: PlusCircle, onClick: () => setShowForm(true) }}
+          />
+        )
       ) : (
         <div className="space-y-2">
           {filtered.map((m) => {
@@ -514,65 +495,64 @@ export default function TeacherMaterialsPage() {
             return (
               <div
                 key={m.id}
-                className="bg-white shadow-sm border border-slate-200 rounded-2xl p-3.5 group"
+                className="u-surface p-3.5"
               >
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#4CCCED]/15 border border-[#4CCCED]/25 flex items-center justify-center shrink-0">
-                    <Icon className="h-4 w-4 text-orange-400" />
+                  <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-black text-slate-800 text-sm truncate flex-1 italic leading-tight">
-                        {m.title}
-                      </p>
-                    </div>
+                    <p className="font-semibold text-foreground text-sm truncate leading-tight">
+                      {m.title || "Material sem título"}
+                    </p>
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      <Badge className={`text-[8px] font-black border px-2 h-4 ${getTypeBadgeColor(m.file_type)}`}>
+                      <Badge variant="outline" className={`text-[10px] font-bold border px-2 h-5 ${getTypeBadgeColor(m.file_type)}`}>
                         {typeLabel}
                       </Badge>
                       {m.subject && (
-                        <Badge className="text-[8px] font-black border-none bg-white shadow-sm text-slate-600 px-2 h-4">
+                        <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground px-2 h-5">
                           {m.subject}
                         </Badge>
                       )}
-                      <Badge className="text-[8px] font-black border-none bg-white shadow-sm text-slate-600 px-2 h-4">
+                      <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground px-2 h-5">
                         {TARGET_GROUPS.find((t) => t.value === m.target_group)?.label ?? "Todos"}
                       </Badge>
                     </div>
                     {m.description && (
-                      <p className="text-[11px] text-slate-600 font-medium italic mt-1.5 truncate leading-tight">
+                      <p className="text-xs text-muted-foreground mt-1.5 truncate leading-tight">
                         {m.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                      <span>{format(new Date(m.created_at), "dd/MM/yy", { locale: ptBR })}</span>
-                      <span className="text-white/15">·</span>
-                      <span className="flex items-center gap-0.5">
-                        <Eye className="h-2.5 w-2.5" />
-                        {viewCount}
+                    <div className="flex items-center gap-1.5 mt-2 u-label !tracking-[0.12em]">
+                      <span>{fmtDate(m.created_at, "dd/MM/yy")}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="flex items-center gap-1" title="Visualizações">
+                        <Eye className="h-3 w-3" />
+                        {fmtNumber(viewCount)}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-border">
                   <a
                     href={m.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="h-8 px-3 rounded-lg flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition-all active:scale-95 touch-manipulation"
+                    className="h-9 px-3 rounded-control flex items-center gap-1.5 text-xs font-bold text-foreground border border-border hover:bg-muted transition-colors touch-manipulation"
                   >
-                    <BookOpen className="h-3 w-3" />
+                    <BookOpen className="h-3.5 w-3.5" />
                     Abrir
                   </a>
                   <button
                     onClick={() => handleDelete(m.id)}
                     disabled={deletingId === m.id}
-                    className="h-8 w-8 rounded-lg flex items-center justify-center text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-40 touch-manipulation"
+                    aria-label="Remover material"
+                    className="h-9 w-9 rounded-control flex items-center justify-center text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-40 touch-manipulation"
                   >
                     {deletingId === m.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     )}
                   </button>
                 </div>

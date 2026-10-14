@@ -22,6 +22,8 @@ import {
 import { subDays, formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
+import { fmtDate, fmtNumber } from '@/lib/format';
+import { EmptyState } from "@/components/EmptyState";
 
 // Mock Data for Demo Mode
 const MOCK_PROFILES = [
@@ -145,8 +147,8 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
       } catch (e) {
         console.error("Erro ao processar inteligência analítica:", e);
         toast({
-          title: "Erro de Conexão",
-          description: "Não foi possível sincronizar todos os dados acadêmicos com o banco.",
+          title: "Erro ao carregar",
+          description: "Não foi possível carregar todos os dados de desempenho.",
           variant: "destructive"
         });
       } finally {
@@ -322,7 +324,7 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
   // Dynamic Aurora IA Advisor suggestions
   const auroraInsight = useMemo(() => {
     if (useDemo) {
-      return "Aurora IA: Em modo de demonstração, observamos um excelente aproveitamento de acertos nas disciplinas de Humanas. A Sala 01 lidera o progresso de trilhas. Recomendamos direcionar listas extras de revisão de Matemática Básica e Física Geral para equilibrar a nota TRI geral.";
+      return "Em modo de demonstração, observamos um excelente aproveitamento de acertos nas disciplinas de Humanas. A Sala 01 lidera o progresso de trilhas. Recomendamos direcionar listas extras de revisão de Matemática Básica e Física Geral para equilibrar a nota TRI geral.";
     }
     if (userId) {
       const name = currentStudent?.name || "Aluno";
@@ -332,12 +334,12 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
       const lowestSubjectName = lowestSubject ? lowestSubject.name : "";
 
       if (acc < 50 && acc > 0) {
-        return `Aurora IA: O aluno ${name} apresenta aproveitamento de ${acc}% nos simulados. Observa-se maior dificuldade em ${lowestSubjectName}. Sugerimos enviar uma mensagem via chat orientando a revisão dos conceitos básicos dessa matéria.`;
+        return `O aluno ${name} apresenta aproveitamento de ${acc}% nos simulados. Observa-se maior dificuldade em ${lowestSubjectName}. Sugerimos enviar uma mensagem via chat orientando a revisão dos conceitos básicos dessa matéria.`;
       }
       if (progress < 30) {
-        return `Aurora IA: ${name} está com bom aproveitamento nas questões (${acc}%), porém concluiu apenas ${progress}% das trilhas propostas. Incentive-o a avançar nas aulas pendentes.`;
+        return `${name} está com bom aproveitamento nas questões (${acc}%), porém concluiu apenas ${progress}% das trilhas propostas. Incentive-o a avançar nas aulas pendentes.`;
       }
-      return `Aurora IA: Desempenho sólido observado para o aluno ${name}. Média estimada de ${processedData?.avgScore} pontos (${acc}% de acertos). Mantendo ritmo regular de estudo.`;
+      return `Desempenho sólido observado para o aluno ${name}. Média estimada de ${processedData?.avgScore} pontos (${acc}% de acertos). Mantendo ritmo regular de estudo.`;
     }
 
     const lowestSubject = processedData?.performanceBySubject[processedData.performanceBySubject.length - 1];
@@ -346,18 +348,18 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
     const acc = processedData?.accuracy || 0;
 
     if (acc === 0) {
-      return "Aurora IA: Sintonizando satélite analítico... Sem dados suficientes para traçar diagnósticos pedagógicos neste segmento. Publique trilhas e oriente a resolução de simulados.";
+      return "Ainda não há respostas suficientes neste filtro para um diagnóstico. Publique trilhas e oriente os alunos a resolverem simulados.";
     }
 
     if (lowestScore < 55 && lowestSubjectName && lowestSubjectName !== "Sem Dados") {
-      return `Aurora IA: Detectamos uma queda de rendimento do grupo em ${lowestSubjectName} (média de ${lowestScore}% de acerto). Sugerimos aos mentores liberar um material de revisão focado nesse tema.`;
+      return `Detectamos uma queda de rendimento do grupo em ${lowestSubjectName} (média de ${lowestScore}% de acerto). Sugerimos aos mentores liberar um material de revisão focado nesse tema.`;
     }
 
-    return `Aurora IA: O segmento atual demonstra aproveitamento geral de ${acc}% (${processedData?.avgScore} pts). O engajamento semanal está saudável em ${processedData?.engagementRate}%. Mantenham a consistência!`;
+    return `O segmento atual demonstra aproveitamento geral de ${acc}% (${processedData?.avgScore} pts). O engajamento semanal está saudável em ${processedData?.engagementRate}%. Mantenham a consistência!`;
   }, [useDemo, userId, currentStudent, processedData, rawData]);
 
   const handleDownloadReport = () => {
-    toast({ title: "Gerando Relatório...", description: "Preparando diagnóstico para impressão." });
+    toast({ title: "Gerando relatório…", description: "Preparando o diagnóstico para impressão." });
     setTimeout(() => { window.print(); }, 800);
   };
 
@@ -368,96 +370,81 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
   if (loading) {
     return (
       <div className="py-32 flex flex-col items-center gap-4">
-        <Loader2 className="h-10 w-10 text-orange-500 animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 animate-pulse">Sintonizando Satélite Analítico...</p>
+        <Loader2 className="h-10 w-10 text-primary animate-spin" />
+        <p className="u-label">Carregando desempenho…</p>
       </div>
     );
   }
 
   const data = processedData;
+  const filterLabel = "u-label block mb-1 ml-0.5";
+  const triggerCls = "h-10 rounded-control bg-background border-border text-foreground text-xs font-semibold";
 
   return (
-    <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pb-24 space-y-6">
 
-      {/* ── Header / Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6 md:p-8">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.15) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(99,102,241,0.08) 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <BarChart3 className="h-3.5 w-3.5 text-orange-400" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400/85">
-                  BI · Analytics
-                </p>
-                {useDemo && (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/25 rounded-full px-2 py-0.5 animate-pulse">Modo Demonstrativo</span>
-                )}
-                {userId && (
-                  <span className="text-[8px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-full px-2 py-0.5">Diagnóstico Aluno</span>
-                )}
-              </div>
-              <h1 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white leading-none">
-                {userId ? `Diagnóstico: ${currentStudent?.name || "Aluno"}` : "Inteligência Pedagógica"}
-              </h1>
-              <p className="text-white/70 text-xs font-semibold mt-1">
-                {userId ? `Dados e trilha de desempenho de ${currentStudent?.email}` : "Engajamento, performance e busca ativa do cursinho em tempo real"}
-              </p>
-            </div>
-            <div className="flex gap-2 flex-wrap items-center">
-              {/* Interactive Demo Mode Toggle */}
-              <Button
-                onClick={() => setUseDemo(!useDemo)}
-                variant="outline"
-                className={`rounded-xl h-11 border-white/10 text-white font-black text-xs uppercase active:scale-95 transition-all [touch-action:manipulation] print:hidden ${
-                  useDemo ? "bg-amber-500/20 text-amber-300 border-amber-500/35" : "bg-white/5 hover:bg-white/10"
-                }`}
-              >
-                <Sparkles className="h-4 w-4 mr-1.5" />
-                {useDemo ? "Demo Ativo" : "Ver Demo"}
-              </Button>
-
-              {userId && (
-                <Button
-                  onClick={handleClearUser}
-                  variant="outline"
-                  className="rounded-xl h-11 border-white/10 bg-white/5 text-white font-black text-xs uppercase hover:bg-white/10 active:scale-95 transition-all [touch-action:manipulation] print:hidden"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1.5" />
-                  Geral
-                </Button>
-              )}
-              <Button
-                onClick={handleDownloadReport}
-                className="btn-orange-neon rounded-xl h-11 text-slate-800 font-black text-xs uppercase tracking-wider active:scale-95 transition-all [touch-action:manipulation] border-none px-5 print:hidden"
-              >
-                <FileDown className="h-4 w-4 mr-1.5" />
-                Relatório Executivo
-              </Button>
-            </div>
+      {/* ── Cabeçalho (nível médio): u-label + u-page-title ── */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="u-label flex items-center gap-2"><BarChart3 className="h-3.5 w-3.5" /> Professor · desempenho</p>
+            {useDemo && (
+              <span className="u-label !text-foreground border border-border rounded-control px-2 py-0.5">Demonstração</span>
+            )}
           </div>
+          <h1 className="u-page-title text-2xl md:text-3xl mt-1">
+            {userId ? "Diagnóstico do aluno" : "Desempenho da turma"}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2 break-words">
+            {userId
+              ? `${currentStudent?.name || "Aluno"}${currentStudent?.email ? ` · ${currentStudent.email}` : ""}`
+              : "Engajamento, acertos por matéria e alunos que precisam de atenção."}
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center print:hidden">
+          <Button
+            onClick={() => setUseDemo(!useDemo)}
+            variant="outline"
+            className="rounded-control h-10 text-xs font-semibold [touch-action:manipulation]"
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            {useDemo ? "Sair da demonstração" : "Ver demonstração"}
+          </Button>
+
+          {userId && (
+            <Button
+              onClick={handleClearUser}
+              variant="outline"
+              className="rounded-control h-10 text-xs font-semibold [touch-action:manipulation]"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Visão geral
+            </Button>
+          )}
+          <Button
+            onClick={handleDownloadReport}
+            variant="arcade"
+            className="rounded-control h-10 text-xs font-bold px-4 [touch-action:manipulation]"
+          >
+            <FileDown className="h-4 w-4 mr-1.5" />
+            Baixar relatório
+          </Button>
         </div>
       </div>
 
-      {/* ── Filters (Only on Global view) ── */}
+      {/* ── Filtros (só na visão geral) ── */}
       {!userId && (
-        <div className="bg-white shadow-sm border border-slate-200 rounded-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
-          <div className="space-y-1">
-            <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Sala / Turma</label>
+        <div className="u-surface p-4 grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
+          <div>
+            <label className={filterLabel}>Sala / turma</label>
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-              <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 text-xs font-bold focus:ring-orange-500/25">
+              <SelectTrigger className={triggerCls}>
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200 bg-white">
-                <SelectItem value="all" className="text-slate-600 text-xs font-bold">Todas</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all" className="text-xs">Todas</SelectItem>
                 {filterOptions.courses.map((course) => (
-                  <SelectItem key={course} value={course} className="text-slate-600 text-xs font-bold">
+                  <SelectItem key={course} value={course} className="text-xs">
                     Sala {course}
                   </SelectItem>
                 ))}
@@ -465,16 +452,16 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Polo / Instituição</label>
+          <div>
+            <label className={filterLabel}>Polo / instituição</label>
             <Select value={selectedInstitution} onValueChange={setSelectedInstitution}>
-              <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 text-xs font-bold focus:ring-orange-500/25">
+              <SelectTrigger className={triggerCls}>
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200 bg-white">
-                <SelectItem value="all" className="text-slate-600 text-xs font-bold">Todos</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all" className="text-xs">Todos</SelectItem>
                 {filterOptions.institutions.map((inst) => (
-                  <SelectItem key={inst} value={inst} className="text-slate-600 text-xs font-bold">
+                  <SelectItem key={inst} value={inst} className="text-xs">
                     {inst}
                   </SelectItem>
                 ))}
@@ -482,145 +469,90 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Meta Exame</label>
+          <div>
+            <label className={filterLabel}>Exame-alvo</label>
             <Select value={selectedExamTarget} onValueChange={setSelectedExamTarget}>
-              <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 text-xs font-bold focus:ring-orange-500/25">
-                <SelectValue placeholder="Todas" />
+              <SelectTrigger className={triggerCls}>
+                <SelectValue placeholder="Todos" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200 bg-white">
-                <SelectItem value="all" className="text-slate-600 text-xs font-bold">Todas</SelectItem>
-                <SelectItem value="enem" className="text-slate-600 text-xs font-bold">ENEM</SelectItem>
-                <SelectItem value="etec" className="text-slate-600 text-xs font-bold">ETEC</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all" className="text-xs">Todos</SelectItem>
+                <SelectItem value="enem" className="text-xs">ENEM</SelectItem>
+                <SelectItem value="etec" className="text-xs">ETEC</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Período Histórico</label>
+          <div>
+            <label className={filterLabel}>Período</label>
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="h-10 rounded-xl bg-white shadow-sm border-slate-200 text-slate-600 text-xs font-bold focus:ring-orange-500/25">
-                <SelectValue placeholder="Todo Período" />
+              <SelectTrigger className={triggerCls}>
+                <SelectValue placeholder="Todo o período" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200 bg-white">
-                <SelectItem value="all" className="text-slate-600 text-xs font-bold">Todo Período</SelectItem>
-                <SelectItem value="week" className="text-slate-600 text-xs font-bold">Últimos 7 dias</SelectItem>
-                <SelectItem value="month" className="text-slate-600 text-xs font-bold">Último mês</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all" className="text-xs">Todo o período</SelectItem>
+                <SelectItem value="week" className="text-xs">Últimos 7 dias</SelectItem>
+                <SelectItem value="month" className="text-xs">Últimos 30 dias</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
       )}
 
-      {/* ── KPIs ── */}
+      {/* ── Indicadores ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 flex flex-col justify-between">
-          <div>
-            <div className="h-8 w-8 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
-              <Users className="h-4 w-4 text-blue-600" />
-            </div>
-            <p className="text-2xl md:text-3xl font-black text-slate-900 italic leading-none">
-              {userId ? "1" : data?.totalStudents}
-            </p>
-          </div>
-          <div className="mt-3">
-            <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-              {userId ? "Aluno Selecionado" : "Alunos Ativos"}
-            </p>
-            <p className="text-[8px] text-slate-400 italic">No segmento filtrado</p>
-          </div>
+        <div className="u-surface p-4 md:p-5">
+          <p className="u-label flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {userId ? "Aluno" : "Alunos"}</p>
+          <p className="u-num text-2xl md:text-3xl mt-2">{userId ? "1" : fmtNumber(data?.totalStudents ?? 0)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">{userId ? "Selecionado" : "No filtro atual"}</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 flex flex-col justify-between">
-          <div>
-            <div className="h-8 w-8 rounded-xl bg-orange-50 flex items-center justify-center mb-3">
-              <TrendingUp className="h-4 w-4 text-orange-500" />
-            </div>
-            <p className="text-2xl md:text-3xl font-black text-slate-900 italic leading-none">
-              {data?.avgScore} <span className="text-xs font-bold text-slate-400">pts</span>
-            </p>
-          </div>
-          <div className="mt-3">
-            <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-              Média Geral de Acertos
-            </p>
-            <p className="text-[8px] text-slate-400 font-bold uppercase">{data?.accuracy}% de acerto</p>
-          </div>
+        <div className="u-surface p-4 md:p-5">
+          <p className="u-label flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Nota média</p>
+          <p className="u-num text-2xl md:text-3xl mt-2">
+            {fmtNumber(data?.avgScore ?? 0)} <span className="text-xs font-sans font-semibold text-muted-foreground">pts</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">{data?.accuracy ?? 0}% de acerto</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 flex flex-col justify-between">
-          <div>
-            <div className="h-8 w-8 rounded-xl bg-green-50 flex items-center justify-center mb-3">
-              <ClipboardCheck className="h-4 w-4 text-green-600" />
-            </div>
-            <p className="text-2xl md:text-3xl font-black text-slate-900 italic leading-none">
-              {data?.avgProgress}%
-            </p>
-          </div>
-          <div className="mt-3">
-            <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-              Progresso Médio
-            </p>
-            <p className="text-[8px] text-slate-400 italic">Conclusão de trilhas</p>
-          </div>
+        <div className="u-surface p-4 md:p-5">
+          <p className="u-label flex items-center gap-1.5"><ClipboardCheck className="h-3.5 w-3.5" /> Progresso</p>
+          <p className="u-num text-2xl md:text-3xl mt-2">{data?.avgProgress ?? 0}%</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Média de trilhas concluídas</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 flex flex-col justify-between">
-          <div>
-            <div className="h-8 w-8 rounded-xl bg-purple-50 flex items-center justify-center mb-3">
-              <Activity className="h-4 w-4 text-purple-600" />
-            </div>
-            <p className="text-2xl md:text-3xl font-black text-slate-900 italic leading-none">
-              {userId ? data?.totalAnswers : `${data?.engagementRate}%`}
-            </p>
-          </div>
-          <div className="mt-3">
-            <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-              {userId ? "Respostas no Período" : "Engajamento Semanal"}
-            </p>
-            <p className="text-[8px] text-slate-400 italic">
-              {userId ? "Total de envios" : "Estudantes ativos >7d"}
-            </p>
-          </div>
+        <div className="u-surface p-4 md:p-5">
+          <p className="u-label flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> {userId ? "Respostas" : "Engajamento"}</p>
+          <p className="u-num text-2xl md:text-3xl mt-2">
+            {userId ? fmtNumber(data?.totalAnswers ?? 0) : `${data?.engagementRate ?? 0}%`}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            {userId ? "No período" : "Ativos nos últimos 7 dias"}
+          </p>
         </div>
       </div>
 
-      {/* ── Aurora IA Insights ── */}
-      <div className="relative rounded-card overflow-hidden border border-[#4CCCED]/15 bg-gradient-to-br from-orange-500/5 to-amber-500/3 p-5 shadow-inner">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(76,204,237,0.12) 0%, transparent 60%)" }}
-        />
-        <div className="relative z-10 flex items-start gap-4">
-          <div className="h-10 w-10 rounded-2xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 flex items-center justify-center shrink-0">
-            <BrainCircuit className="h-5 w-5 text-orange-400" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[8px] font-black uppercase tracking-widest text-orange-400">Aurora IA Advisor</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <p className="text-xs font-semibold text-slate-700 leading-relaxed italic">
-              "{auroraInsight}"
-            </p>
-          </div>
+      {/* ── Sugestão da Aurora IA ── */}
+      <div className="u-surface p-4 md:p-5 flex items-start gap-3">
+        <div className="h-9 w-9 rounded-control bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <BrainCircuit className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="u-label">Sugestão da Aurora IA</p>
+          <p className="text-sm text-foreground leading-relaxed mt-1">{auroraInsight}</p>
         </div>
       </div>
 
-      {/* ── Main Charts & Lists Grid ── */}
+      {/* ── Gráficos e listas ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        
-        {/* Charts Column (Left) */}
-        <div className={`${userId ? "lg:col-span-8" : "lg:col-span-7"} space-y-5`}>
-          
-          {/* Performance por Matéria */}
-          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-orange-500/85" />
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">Performance por Matéria</p>
-              </div>
-              <span className="text-[8px] font-black uppercase tracking-wider text-slate-600 bg-white shadow-sm border border-slate-200 rounded-full px-2 py-0.5">Simulados</span>
+
+        <div className={`${userId ? "lg:col-span-8" : "lg:col-span-7"} space-y-5 min-w-0`}>
+
+          {/* Acerto por matéria */}
+          <div className="u-surface overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+              <p className="u-label flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Acerto por matéria</p>
+              <span className="text-[11px] text-muted-foreground">Simulados</span>
             </div>
             <div className="p-4 md:p-6 h-[280px]">
               {data && data.performanceBySubject.length > 0 && data.performanceBySubject[0].name !== "Sem Dados" ? (
@@ -631,24 +563,25 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
                   horizontal
                   domainMax={100}
                   unit="%"
-                  colors={["#4ccced", "#fb923c", "#fdba74", "#fcd34d", "#fde68a", "#6366f1", "#10b981", "#ec4899"]}
+                  colors={["#4ccced"]}
                 />
               ) : (
-                <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-sm">
-                  <p>Sem dados de exercícios para as matérias selecionadas.</p>
-                </div>
+                <EmptyState
+                  compact
+                  icon={BarChart3}
+                  title="Ainda sem respostas neste filtro"
+                  description="O acerto por matéria aparece quando os alunos resolverem questões."
+                  className="h-full justify-center"
+                />
               )}
             </div>
           </div>
 
-          {/* Engajamento de Respostas */}
-          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-white shadow-sm flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-orange-500/85" />
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">Atividade Semanal</p>
-              </div>
-              <span className="text-[8px] font-black uppercase tracking-wider text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5">Respostas</span>
+          {/* Atividade semanal */}
+          <div className="u-surface overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+              <p className="u-label flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> Atividade da semana</p>
+              <span className="text-[11px] text-muted-foreground">Respostas por dia</span>
             </div>
             <div className="p-4 md:p-6 h-[250px]">
               {data && data.engagementTrend.length > 0 ? (
@@ -660,100 +593,103 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
                   unit=" q"
                 />
               ) : (
-                <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-sm">
-                  <p>Sem atividade registrada nos últimos 7 dias.</p>
-                </div>
+                <EmptyState
+                  compact
+                  icon={Activity}
+                  title="Nenhuma atividade nos últimos 7 dias"
+                  className="h-full justify-center"
+                />
               )}
             </div>
           </div>
         </div>
 
-        {/* Diagnostic & Student Context Columns (Right) */}
-        <div className={`${userId ? "lg:col-span-4" : "lg:col-span-5"} space-y-5`}>
-          
-          {/* Individual Student Info (Only on individual diagnostic mode) */}
+        <div className={`${userId ? "lg:col-span-4" : "lg:col-span-5"} space-y-5 min-w-0`}>
+
+          {/* Ficha do aluno (diagnóstico individual) */}
           {userId && currentStudent && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5 space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="h-10 w-10 rounded-xl bg-[#4CCCED]/20 text-orange-400 border border-[#4CCCED]/30 flex items-center justify-center font-black text-base italic shadow-md">
+            <div className="u-surface p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <div className="h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0">
                   {currentStudent.name?.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <h3 className="font-black text-slate-800 text-sm italic leading-tight">{currentStudent.name}</h3>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Cadastro de Estudante</p>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-foreground text-sm leading-tight truncate">{currentStudent.name}</h3>
+                  <p className="u-label mt-0.5">Ficha do aluno</p>
                 </div>
               </div>
 
-              <div className="space-y-2.5 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <div className="space-y-2.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{currentStudent.email}</span>
                 </div>
                 {currentStudent.phone && (
                   <div className="flex items-center gap-2">
-                    <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <Phone className="h-3.5 w-3.5 shrink-0" />
                     <span>{currentStudent.phone}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
                   <span>{currentStudent.institution || "Sem polo informado"}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span>Foco: <strong className="text-orange-500 font-black">{currentStudent.exam_target || "ENEM"}</strong></span>
+                  <Target className="h-3.5 w-3.5 shrink-0" />
+                  <span>Foco: <strong className="text-foreground font-semibold">{currentStudent.exam_target || "ENEM"}</strong></span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span>Turma: <strong className="text-indigo-500 font-black">Sala {currentStudent.course || currentStudent.sala || "Não alocado"}</strong></span>
+                  <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                  <span>Turma: <strong className="text-foreground font-semibold">{(currentStudent.course || currentStudent.sala) ? `Sala ${currentStudent.course || currentStudent.sala}` : "Sem turma"}</strong></span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span>Último Acesso: <strong>
-                    {currentStudent.last_access 
-                      ? formatDistanceToNow(new Date(currentStudent.last_access), { addSuffix: true, locale: ptBR }) 
-                      : "Nunca acessou"}
+                  <Clock className="h-3.5 w-3.5 shrink-0" />
+                  <span>Último acesso: <strong className="text-foreground font-semibold">
+                    {currentStudent.last_access
+                      ? formatDistanceToNow(new Date(currentStudent.last_access), { addSuffix: true, locale: ptBR })
+                      : "nunca acessou"}
                   </strong></span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex gap-2">
-                <Button asChild size="sm" className="flex-1 h-9 rounded-xl text-[9px] font-black uppercase tracking-wider bg-[#4CCCED] hover:bg-orange-600 text-slate-800 border-none shadow-md">
+              <div className="pt-3 border-t border-border">
+                <Button asChild size="sm" className="w-full h-9 rounded-control text-xs font-semibold">
                   <Link href={`/dashboard/chat/${currentStudent.id}`}>
-                    <Send className="h-3 w-3 mr-1" />
-                    Contatar Aluno
+                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                    Enviar mensagem
                   </Link>
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Individual Student Recent answers log (Only on individual diagnostic mode) */}
+          {/* Histórico de respostas (diagnóstico individual) */}
           {userId && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5">
-              <h3 className="font-black text-slate-900 text-xs italic uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <ClipboardCheck className="h-4 w-4 text-orange-400" />
-                Histórico de Respostas
-              </h3>
+            <div className="u-surface p-5">
+              <p className="u-label flex items-center gap-1.5 mb-3"><ClipboardCheck className="h-3.5 w-3.5" /> Últimas respostas</p>
 
               {studentAnswersLog.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 italic text-[11px] border border-dashed rounded-xl">
-                  Nenhuma resposta no histórico.
-                </div>
+                <EmptyState
+                  compact
+                  icon={ClipboardCheck}
+                  title="Este aluno ainda não respondeu questões"
+                  description="As respostas aparecem aqui assim que ele resolver exercícios ou simulados."
+                  action={currentStudent ? { label: "Enviar mensagem", href: `/dashboard/chat/${currentStudent.id}`, icon: Send } : undefined}
+                />
               ) : (
-                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                  {studentAnswersLog.map((log) => (
-                    <div key={log.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                  {studentAnswersLog.map((log: any, idx: number) => (
+                    <div key={log.id ?? idx} className="flex items-center justify-between gap-2 p-2.5 rounded-control bg-muted/40 border border-border">
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate leading-none">
+                        <p className="text-xs font-semibold text-foreground truncate leading-none">
                           {log.questions?.subjects?.name || "Geral"}
                         </p>
-                        <p className="text-[9px] text-slate-400 font-semibold mt-1">
-                          Opção: <span className="font-bold">{log.selected_option}</span> · {format(new Date(log.answered_at), "dd/MM/yyyy HH:mm")}
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          Opção <span className="font-semibold">{log.selected_option ?? "—"}</span> · {fmtDate(log.answered_at, "dd/MM/yyyy HH:mm")}
                         </p>
                       </div>
-                      <Badge className={`border-none text-[8px] font-black uppercase px-1.5 h-4.5 rounded-full ${
-                        log.is_correct ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
+                      <Badge className={`border-none text-[10px] font-semibold px-2 rounded-control shrink-0 ${
+                        log.is_correct ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
                       }`}>
                         {log.is_correct ? "Acerto" : "Erro"}
                       </Badge>
@@ -764,35 +700,36 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
             </div>
           )}
 
-          {/* Destaques da Rede (Only on Global Mode) */}
+          {/* Melhores desempenhos (visão geral) */}
           {!userId && (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-card p-5">
-              <h3 className="font-black text-slate-900 text-xs italic uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                <Award className="h-4 w-4 text-orange-400 animate-pulse-subtle" />
-                🏆 Destaques da Rede
-              </h3>
+            <div className="u-surface p-5">
+              <p className="u-label flex items-center gap-1.5 mb-3"><Award className="h-3.5 w-3.5" /> Melhores desempenhos</p>
 
               {data && data.topPerformers.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 italic text-[11px] border border-dashed rounded-xl">
-                  Nenhum destaque elegível.
-                </div>
+                <EmptyState
+                  compact
+                  icon={Award}
+                  title="Ninguém com respostas suficientes ainda"
+                  description="Entra aqui quem respondeu pelo menos 3 questões no filtro atual."
+                />
               ) : (
-                <div className="space-y-3">
+                <div className="divide-y divide-border">
                   {data?.topPerformers.map((student, i) => (
-                    <div key={student.id} className="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-100 hover:shadow-md transition-all group">
+                    <div key={student.id} className="flex items-center justify-between gap-2 py-2.5">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="text-[10px] font-black text-orange-400/80 w-4">{i + 1}º</span>
+                        <span className="u-num text-sm text-muted-foreground w-6 shrink-0">{i + 1}º</span>
                         <div className="min-w-0">
-                          <p className="text-xs font-black text-slate-800 italic truncate max-w-[130px]">{student.name}</p>
-                          <p className="text-[8px] font-bold text-slate-400 uppercase">Sala {student.course || student.sala || "—"} · {student.answeredCount} res.</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{student.name}</p>
+                          <p className="text-[11px] text-muted-foreground">Sala {student.course || student.sala || "—"} · {student.answeredCount} respostas</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-emerald-500 italic leading-none">{student.accuracy}%</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="u-num text-sm">{student.accuracy}%</span>
                         <Link
                           href={`/dashboard/teacher/analytics?user=${student.id}`}
-                          className="h-7 w-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:bg-[#4CCCED]/10 transition-all"
-                          title="Ficha do Aluno"
+                          className="h-8 w-8 rounded-control border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          title="Ver diagnóstico"
+                          aria-label={`Ver diagnóstico de ${student.name}`}
                         >
                           <ArrowUpRight className="h-3.5 w-3.5" />
                         </Link>
@@ -804,58 +741,57 @@ export default function TeacherAnalyticsDashboard({ userId }: { userId?: string 
             </div>
           )}
 
-          {/* Busca Ativa / Risco (Only on Global Mode) */}
+          {/* Alunos em risco (visão geral) */}
           {!userId && (
-            <div className="bg-[#0d0d0f] border border-white/5 rounded-card p-5 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-28 h-28 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="relative z-10">
-                <h3 className="font-black text-white text-xs italic uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                  <AlertCircle className="h-4 w-4 text-red-500 animate-pulse" />
-                  ⚠️ Busca Ativa (Em Risco)
-                </h3>
+            <div className="u-surface p-5">
+              <p className="u-label flex items-center gap-1.5 mb-3"><AlertCircle className="h-3.5 w-3.5" /> Alunos que precisam de atenção</p>
 
-                {data && data.atRiskStudents.length === 0 ? (
-                  <div className="py-12 text-center text-white/35 italic text-[11px] border border-white/10 rounded-xl">
-                    Sem alertas de evasão ou rendimento. ✅
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {data?.atRiskStudents.map((student) => {
-                      const isInactive = !student.last_access || new Date(student.last_access) < subDays(new Date(), 7);
-                      return (
-                        <div key={student.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
-                          <div className="min-w-0">
-                            <p className="text-xs font-black text-white italic truncate max-w-[130px]">{student.name}</p>
-                            <p className="text-[8px] font-black text-red-400 uppercase tracking-wide mt-0.5">
-                              {isInactive ? "Inatividade" : `Baixo Rendimento (${student.accuracy}%)`}
-                            </p>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <Link
-                              href={`/dashboard/teacher/analytics?user=${student.id}`}
-                              className="h-8 w-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all"
-                              title="Diagnóstico"
-                            >
-                              <ArrowUpRight className="h-4 w-4" />
-                            </Link>
-                            <Link
-                              href={`/dashboard/chat/${student.id}`}
-                              className="h-8 w-8 rounded-xl bg-red-500/20 hover:bg-red-500/35 border border-red-500/20 flex items-center justify-center text-red-400 transition-all"
-                              title="Orientar"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                            </Link>
-                          </div>
+              {data && data.atRiskStudents.length === 0 ? (
+                <EmptyState
+                  compact
+                  icon={CheckCircle2}
+                  title="Nenhum aluno em risco"
+                  description="Ninguém está sem acessar há mais de 7 dias ou com acerto abaixo de 50%."
+                />
+              ) : (
+                <div className="divide-y divide-border">
+                  {data?.atRiskStudents.map((student) => {
+                    const isInactive = !student.last_access || new Date(student.last_access) < subDays(new Date(), 7);
+                    return (
+                      <div key={student.id} className="flex items-center justify-between gap-2 py-2.5">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{student.name}</p>
+                          <p className="text-[11px] font-semibold text-red-600 mt-0.5">
+                            {isInactive ? "Sem acessar há mais de 7 dias" : `Acerto baixo (${student.accuracy}%)`}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        <div className="flex gap-1.5 shrink-0">
+                          <Link
+                            href={`/dashboard/teacher/analytics?user=${student.id}`}
+                            className="h-8 w-8 rounded-control border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title="Ver diagnóstico"
+                            aria-label={`Ver diagnóstico de ${student.name}`}
+                          >
+                            <ArrowUpRight className="h-4 w-4" />
+                          </Link>
+                          <Link
+                            href={`/dashboard/chat/${student.id}`}
+                            className="h-8 w-8 rounded-control border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title="Enviar mensagem"
+                            aria-label={`Enviar mensagem para ${student.name}`}
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                <Button asChild className="w-full mt-4 h-10 rounded-xl bg-white/5 text-white hover:bg-white/10 border border-white/10 font-black text-xs uppercase tracking-wide transition-all">
-                  <Link href="/dashboard/teacher/students">Ver Todos os Alunos</Link>
-                </Button>
-              </div>
+              <Button asChild variant="outline" className="w-full mt-4 h-10 rounded-control text-xs font-semibold">
+                <Link href="/dashboard/teacher/students">Ver todos os alunos</Link>
+              </Button>
             </div>
           )}
         </div>

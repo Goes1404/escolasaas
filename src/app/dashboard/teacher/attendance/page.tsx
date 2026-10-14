@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { EmptyState } from "@/components/EmptyState";
+import { toDate, fmtDate } from "@/lib/format";
 
 export default function TeacherAttendancePage() {
   const { user, profile } = useAuth();
@@ -64,7 +66,7 @@ export default function TeacherAttendancePage() {
     if (error) {
       toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Sessão excluída com sucesso." });
+      toast({ title: "Chamada excluída." });
       setSessions((prev) => prev.filter((s) => s.id !== id));
     }
     setDeletingId(null);
@@ -80,8 +82,8 @@ export default function TeacherAttendancePage() {
 
   const now = new Date();
   const thisMonth = sessions.filter((s) => {
-    const d = new Date(s.session_date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    const d = toDate(s.session_date);
+    return !!d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
 
   const avgPct =
@@ -92,177 +94,112 @@ export default function TeacherAttendancePage() {
       : 0;
 
   return (
-    <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pb-24 space-y-6">
 
-      {/* ── Hero ── */}
-      <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.13) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(16,185,129,0.08) 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-1">
-            <ClipboardCheck className="h-3 w-3 text-orange-400" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400/85">
-              Staff · Chamadas
-            </p>
-          </div>
-          <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
-            Frequência
-          </h1>
-          <p className="text-white/70 text-xs font-semibold mt-1">
-            Gerencie a presença dos alunos
-          </p>
+      {/* ── Cabeçalho (nível médio) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><ClipboardCheck className="h-3.5 w-3.5" /> Professor · chamadas</p>
+          <h1 className="u-page-title text-3xl mt-1">Frequência</h1>
+          <p className="text-muted-foreground text-sm mt-2">Registre e acompanhe a presença dos alunos em cada aula.</p>
+        </div>
+        <Button asChild variant="arcade" className="h-11 rounded-control font-bold w-full sm:w-auto">
+          <Link href="/dashboard/teacher/attendance/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova chamada
+          </Link>
+        </Button>
+      </div>
 
-          {/* KPIs */}
-          <div className="grid grid-cols-3 gap-2 mt-5">
-            <div className="flex flex-col items-center bg-white/5 border border-white/8 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-white leading-none">{sessions.length}</span>
-              <span className="text-[8px] font-bold text-white/55 uppercase tracking-wider mt-0.5">Sessões</span>
-            </div>
-            <div
-              className={`flex flex-col items-center rounded-2xl py-2.5 border ${
-                avgPct >= 75
-                  ? "bg-emerald-500/10 border-emerald-500/20"
-                  : avgPct > 0
-                  ? "bg-amber-500/10 border-amber-500/20"
-                  : "bg-white/5 border-white/8"
-              }`}
-            >
-              <span
-                className={`text-lg font-black leading-none ${
-                  avgPct >= 75 ? "text-emerald-400" : avgPct > 0 ? "text-amber-400" : "text-white/60"
-                }`}
-              >
-                {avgPct}%
-              </span>
-              <span className="text-[8px] font-bold text-white/55 uppercase tracking-wider mt-0.5">Média</span>
-            </div>
-            <div className="flex flex-col items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl py-2.5">
-              <span className="text-lg font-black text-blue-400 leading-none">{thisMonth.length}</span>
-              <span className="text-[8px] font-bold text-blue-400/80 uppercase tracking-wider mt-0.5">Mês</span>
-            </div>
-          </div>
+      {/* ── Indicadores ── */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="u-surface p-3 sm:p-5">
+          <p className="u-label">Chamadas</p>
+          <p className="u-num text-xl sm:text-2xl mt-2">{sessions.length}</p>
+        </div>
+        <div className="u-surface p-3 sm:p-5">
+          <p className="u-label">Presença média</p>
+          {/* Cor como sinal: verde a partir de 75% de presença. */}
+          <p className={`u-num text-xl sm:text-2xl mt-2 ${avgPct >= 75 ? "text-emerald-600" : ""}`}>{avgPct}%</p>
+        </div>
+        <div className="u-surface p-3 sm:p-5">
+          <p className="u-label">Neste mês</p>
+          <p className="u-num text-xl sm:text-2xl mt-2">{thisMonth.length}</p>
         </div>
       </div>
 
-      {/* ── CTA ── */}
-      <Link href="/dashboard/teacher/attendance/new" className="block">
-        <Button className="w-full h-12 bg-[#4CCCED] hover:bg-orange-600 text-slate-800 font-black rounded-2xl shadow-xl shadow-orange-500/20 text-xs uppercase tracking-widest border-none">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Sessão de Chamada
-        </Button>
-      </Link>
-
-      {/* ── Sessions list ── */}
+      {/* ── Histórico ── */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <CalendarDays className="h-4 w-4 text-orange-400/80" />
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
-            Histórico de Sessões
-          </p>
-        </div>
+        <p className="u-label flex items-center gap-2 px-1"><CalendarDays className="h-3.5 w-3.5" /> Histórico de chamadas</p>
 
         {loading ? (
-          <div className="py-16 flex justify-center">
-            <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
+          <div className="py-16 flex flex-col items-center gap-3">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
+            <p className="u-label">Carregando chamadas…</p>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
-            <Inbox className="h-8 w-8 mx-auto mb-2 text-white/15" />
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-              Nenhuma sessão criada
-            </p>
-            <p className="text-[10px] font-medium text-slate-400 mt-1">
-              Clique em "Nova Sessão" para começar
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="Você ainda não fez nenhuma chamada"
+            description="Crie uma chamada para a aula de hoje e marque quem está presente."
+            action={{ label: "Nova chamada", href: "/dashboard/teacher/attendance/new", icon: Plus }}
+          />
         ) : (
           <div className="space-y-2">
             {sessions.map((session) => {
               const stats = getSessionStats(session);
-              const d = new Date(session.session_date);
-              const dayNum = d.getDate();
-              const monthShort = d
-                .toLocaleDateString("pt-BR", { month: "short" })
-                .replace(".", "")
-                .toUpperCase();
+              const d = toDate(session.session_date);
+              const dayNum = d ? String(d.getDate()).padStart(2, "0") : "—";
+              const monthShort = fmtDate(session.session_date, "MMM", "").replace(".", "");
               const isLive = session.session_type === "live";
-              const pctTone =
-                stats.pct >= 75
-                  ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/25"
-                  : stats.pct > 0
-                  ? "text-amber-400 bg-amber-500/15 border-amber-500/25"
-                  : "text-slate-600 bg-white shadow-sm border-slate-200";
 
               return (
-                <div
-                  key={session.id}
-                  className="group bg-white shadow-sm border border-slate-200 hover:border-[#4CCCED]/20 rounded-2xl p-3.5 transition-all"
-                >
+                <div key={session.id} className="u-surface p-3.5">
                   <div className="flex items-start gap-3">
-                    {/* Date anchor */}
-                    <div className="flex flex-col items-center justify-center min-w-[44px] py-1 px-2 bg-white shadow-sm border border-slate-200 rounded-xl shrink-0">
-                      <span className="text-xl font-black italic leading-none text-slate-800">
-                        {String(dayNum).padStart(2, "0")}
-                      </span>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-orange-400/85 mt-0.5">
-                        {monthShort}
-                      </span>
+                    <div className="flex flex-col items-center justify-center min-w-[48px] py-1.5 px-2 border border-border rounded-control shrink-0">
+                      <span className="u-num text-xl leading-none">{dayNum}</span>
+                      <span className="u-label mt-1">{monthShort}</span>
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-slate-800 italic leading-snug truncate">
+                      <p className="text-sm font-semibold text-foreground leading-snug truncate">
                         {session.title}
                       </p>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <Badge
-                          className={`border font-black text-[8px] uppercase px-1.5 h-4 ${
-                            isLive
-                              ? "bg-purple-500/15 text-purple-400 border-purple-500/25"
-                              : "bg-blue-500/15 text-blue-400 border-blue-500/25"
-                          }`}
-                        >
-                          {isLive ? "Live" : "Presencial"}
+                        <Badge variant="outline" className="font-semibold text-[10px] px-1.5 h-5 rounded-control">
+                          {isLive ? "Ao vivo" : "Presencial"}
                         </Badge>
                         {session.subject && (
-                          <Badge className="bg-white shadow-sm text-slate-600 border border-slate-200 font-black text-[8px] uppercase px-1.5 h-4">
+                          <Badge variant="outline" className="font-semibold text-[10px] px-1.5 h-5 rounded-control">
                             {session.subject}
                           </Badge>
                         )}
-                        <span
-                          className={`border font-black text-[8px] uppercase tracking-widest px-2 h-4 rounded-full flex items-center gap-1 ${pctTone}`}
-                        >
-                          <TrendingUp className="h-2 w-2" />
-                          {stats.presentes}/{stats.total} · {stats.pct}%
+                        <span className={`text-[11px] font-semibold flex items-center gap-1 ${stats.pct >= 75 ? "text-emerald-600" : "text-muted-foreground"}`}>
+                          <TrendingUp className="h-3 w-3" />
+                          <span className="tabular-nums">{stats.presentes}/{stats.total} · {stats.pct}%</span>
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions footer */}
-                  <div className="flex items-center justify-end gap-1.5 mt-3 pt-3 border-t border-slate-100">
-                    <Link
-                      href={`/dashboard/teacher/attendance/${session.id}`}
-                      className="h-8 px-3 rounded-lg flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-orange-400 bg-[#4CCCED]/10 hover:bg-[#4CCCED]/20 transition-all active:scale-95 touch-manipulation"
-                    >
-                      <Eye className="h-3 w-3" />
-                      Abrir
-                    </Link>
+                  <div className="flex items-center justify-end gap-1.5 mt-3 pt-3 border-t border-border">
+                    <Button asChild variant="outline" size="sm" className="h-8 rounded-control text-xs font-semibold">
+                      <Link href={`/dashboard/teacher/attendance/${session.id}`}>
+                        <Eye className="h-3.5 w-3.5 mr-1.5" />
+                        Abrir
+                      </Link>
+                    </Button>
                     <button
                       onClick={() => handleDelete(session.id)}
                       disabled={deletingId === session.id}
-                      className="h-8 w-8 rounded-lg flex items-center justify-center text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-40 touch-manipulation"
-                      title="Excluir"
+                      className="h-8 w-8 rounded-control flex items-center justify-center text-red-600 border border-border hover:bg-red-500/10 transition-colors disabled:opacity-40 touch-manipulation"
+                      title="Excluir chamada"
+                      aria-label="Excluir chamada"
                     >
                       {deletingId === session.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       )}
                     </button>
                   </div>

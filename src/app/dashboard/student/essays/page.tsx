@@ -38,6 +38,8 @@ import { trackMissionProgress } from "@/lib/missions";
 import { EssayHighlightedText, BancaMirror, AnulacaoAviso } from "@/components/EssayMirror";
 import { trackAcao, trackFalha } from "@/lib/telemetry";
 import { medir, TempoEsgotado } from "@/lib/perf";
+import { fmtDate, fmtNumber, pct, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 const EssayChart = dynamic(
   () =>
@@ -168,12 +170,12 @@ export default function StudentEssayPage() {
         if (sorted.length === 1) {
           setChartData([
             { date: "Início", score: 0, theme: "" },
-            { date: format(new Date(sorted[0].created_at), "dd/MM"), score: Number(sorted[0].score), theme: sorted[0].theme },
+            { date: fmtDate(sorted[0].created_at, "dd/MM"), score: Number(sorted[0].score), theme: sorted[0].theme },
           ]);
         } else {
           setChartData(
             sorted.map((d) => ({
-              date: format(new Date(d.created_at), "dd/MM"),
+              date: fmtDate(d.created_at, "dd/MM"),
               score: Number(d.score),
               theme: d.theme,
             }))
@@ -243,11 +245,11 @@ export default function StudentEssayPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast({ title: "Arquivo inválido", description: "Envie uma foto (JPEG, PNG ou WEBP).", variant: "destructive" });
+      toast({ title: "Esse arquivo não é uma foto", description: "Envie uma foto da redação (JPG, PNG ou WEBP).", variant: "destructive" });
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
-      toast({ title: "Imagem muito grande", description: "Use uma foto de até 8MB.", variant: "destructive" });
+      toast({ title: "Imagem muito grande", description: "Use uma foto de até 8 MB — tirar de novo com a câmera do celular costuma resolver.", variant: "destructive" });
       return;
     }
 
@@ -256,7 +258,7 @@ export default function StudentEssayPage() {
       const dataUrl: string = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error("Falha ao ler o arquivo."));
+        reader.onerror = () => reject(new Error("Não deu para abrir o arquivo."));
         reader.readAsDataURL(file);
       });
 
@@ -297,7 +299,7 @@ export default function StudentEssayPage() {
       }
     } catch (err: any) {
       trackFalha("redacao_falha_ocr", err);
-      toast({ title: "Erro ao digitalizar", description: err.message, variant: "destructive" });
+      toast({ title: "Não conseguimos ler a foto", description: "Tire outra com boa luz, sem sombra e com a folha inteira aparecendo. Se preferir, digite o texto.", variant: "destructive" });
     } finally {
       setLoadingOcr(false);
     }
@@ -320,7 +322,7 @@ export default function StudentEssayPage() {
       if (res.ok && data.success) {
         setTheme(data.result.title);
         setSupportingTexts(data.result.supporting_texts || []);
-        toast({ title: "Proposta ENEM Gerada!", description: "A Aurora carregou os textos motivadores." });
+        toast({ title: "Proposta pronta!", description: "A Aurora trouxe o tema e os textos motivadores." });
       } else {
         throw new Error(data.error || "IA falhou");
       }
@@ -355,7 +357,7 @@ export default function StudentEssayPage() {
       const isEtec = audience.includes("etec");
       const pool = isEtec ? etecThemes : enemThemes;
       const pick = pool[Math.floor(Math.random() * pool.length)];
-      toast({ title: "Banco de Apoio", description: `Tema padrão ${isEtec ? "ETEC" : "ENEM"}` });
+      toast({ title: "Tema sugerido", description: `A Aurora não respondeu agora, então trouxemos um tema ${isEtec ? "ETEC" : "ENEM"} do nosso banco.` });
       setTheme(pick.theme);
       setSupportingTexts(pick.texts);
     } finally {
@@ -381,7 +383,7 @@ export default function StudentEssayPage() {
       trackAcao("redacao_bloqueada_sem_tema", { chars: text.trim().length });
       toast({
         title: "Qual é o tema?",
-        description: "Escolha um tema acima (ou escreva o seu em 'Tema Manual') antes de enviar. A correção usa o tema para avaliar fuga.",
+        description: "Escolha um tema acima (ou escreva o seu em 'Escrever meu tema') antes de enviar. A correção usa o tema para ver se você fugiu dele.",
         variant: "destructive",
       });
       return;
@@ -445,10 +447,10 @@ export default function StudentEssayPage() {
             // barrava toda redação com nota real. Agora o erro é registrado.
             trackFalha("redacao_falha_salvar", insertError, { nota: aiOutput.total_score });
             console.error("Erro insert", insertError);
-            toast({ title: "Erro na Evolução", description: "Avaliação finalizada, mas houve falha ao salvar no histórico.", variant: "destructive" });
+            toast({ title: "A correção não foi para o histórico", description: "Sua nota está logo abaixo, mas não conseguimos guardá-la. Tire um print para não perder.", variant: "destructive" });
           }
         }
-        toast({ title: "Avaliação Concluída!" });
+        toast({ title: "Correção pronta!" });
         setTimeout(() => {
           document.getElementById("audit-results")?.scrollIntoView({ behavior: "smooth" });
         }, 100);
@@ -484,7 +486,7 @@ export default function StudentEssayPage() {
                 <p className="u-label">Aurora IA ativa</p>
               </div>
               <h1 className="u-page-title text-2xl leading-[1.15]">Lab de redação</h1>
-              <p className="text-muted-foreground text-xs font-semibold mt-1.5">Auditoria por IA · critérios INEP</p>
+              <p className="text-muted-foreground text-xs font-semibold mt-1.5">Correção por IA · critérios do INEP</p>
             </div>
             <div className="relative shrink-0">
               <svg className="h-16 w-16 -rotate-90" viewBox="0 0 56 56">
@@ -510,7 +512,7 @@ export default function StudentEssayPage() {
                 customTheme ? "bg-foreground border-foreground text-background" : "bg-transparent border-foreground text-foreground hover:bg-foreground/5"
               }`}
             >
-              {customTheme ? "Sair do Manual" : "Tema Manual"}
+              {customTheme ? "Cancelar meu tema" : "Escrever meu tema"}
             </Button>
             <Button
               onClick={handleGenerateTopic}
@@ -569,11 +571,15 @@ export default function StudentEssayPage() {
             <>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-3 w-3 text-primary" />
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#0F7A95]">Tema Sintonizado</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#0F7A95]">Tema da redação</p>
               </div>
-              <h2 className="u-display text-base text-primary leading-snug">
-                {theme || "Aguardando geração de tema..."}
-              </h2>
+              {theme ? (
+                <h2 className="u-display text-base text-primary leading-snug">{theme}</h2>
+              ) : (
+                <p className="text-sm font-medium text-slate-500 leading-snug">
+                  Você ainda não escolheu um tema. Toque em &quot;Gerar com IA&quot; ou em &quot;Escrever meu tema&quot;.
+                </p>
+              )}
             </>
           )}
         </div>
@@ -589,7 +595,7 @@ export default function StudentEssayPage() {
             }`}
           >
             {loadingOcr ? (
-              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Digitalizando...</>
+              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Lendo a foto…</>
             ) : (
               <><Camera className="h-3.5 w-3.5" /> Foto da redação</>
             )}
@@ -604,7 +610,8 @@ export default function StudentEssayPage() {
           </label>
         </div>
         <Textarea
-          placeholder="Inicie seu texto aqui... Desenvolva sua tese com clareza."
+          id="essay-editor"
+          placeholder="Comece seu texto aqui… Deixe claro, logo no início, o que você defende."
           value={text}
           onChange={(e) => setText(e.target.value)}
           disabled={loadingGrading || loadingOcr}
@@ -614,7 +621,7 @@ export default function StudentEssayPage() {
         <div className="px-5 pb-4 space-y-3 border-t border-slate-100 pt-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
             <CheckSquare2 className="h-3.5 w-3.5 text-primary" />
-            Checklist antes de enviar
+            Confira antes de enviar
           </p>
           <div className="grid grid-cols-2 gap-2">
             {[
@@ -669,7 +676,7 @@ export default function StudentEssayPage() {
                 Escolha um tema antes de enviar.
               </p>
               <p className="text-[10px] font-medium text-foreground/70 mt-1 leading-snug">
-                Use o tema da semana, gere uma proposta ou escreva o seu em "Tema Manual".
+                Use o tema da semana, gere uma proposta ou escreva o seu em "Escrever meu tema".
               </p>
             </div>
           )}
@@ -680,9 +687,9 @@ export default function StudentEssayPage() {
             className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-control border-2 border-foreground shadow-hard active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all text-xs uppercase tracking-widest disabled:opacity-40 group"
           >
             {loadingGrading ? (
-              <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Sincronizando Auditoria...</span>
+              <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Corrigindo… pode levar 1 minuto</span>
             ) : (
-              <span className="flex items-center gap-2">Submeter para Aurora IA<ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></span>
+              <span className="flex items-center gap-2">Enviar para a Aurora corrigir<ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></span>
             )}
           </Button>
           <div className="flex items-center justify-center gap-1.5">
@@ -697,7 +704,7 @@ export default function StudentEssayPage() {
         <div id="audit-results" className="space-y-5 animate-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 px-1">
             <div className="h-0.5 flex-1 bg-border" />
-            <p className="u-label">Diagnóstico</p>
+            <p className="u-label">Resultado</p>
             <div className="h-0.5 flex-1 bg-border" />
           </div>
 
@@ -717,7 +724,7 @@ export default function StudentEssayPage() {
                   <Star className="h-3 w-3 text-accent fill-accent" />
                   <span className="u-label !text-white/70">Pontuação final</span>
                 </div>
-                <h2 className="u-num text-6xl sm:text-7xl leading-[0.95] text-white">{result.total_score}</h2>
+                <h2 className="u-num text-6xl sm:text-7xl leading-[0.95] text-white">{fmtNumber(result.total_score)}</h2>
                 <p className="u-label !text-white/55 mt-2">de 1000 pontos</p>
               </div>
               <div className="relative shrink-0">
@@ -731,14 +738,16 @@ export default function StudentEssayPage() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="u-num text-base text-white leading-none">{Math.round(((result.total_score || 0) / 1000) * 100)}</span>
+                  <span className="u-num text-base text-white leading-none">{pct(result.total_score, 1000)}</span>
                   <span className="u-label !text-[7px] !text-white/55 mt-0.5">%</span>
                 </div>
               </div>
             </div>
             <div className="relative z-10 mt-5 pt-5 border-t-2 border-white/15">
               <MessageSquareQuote className="h-4 w-4 text-accent mb-2" />
-              <p className="text-xs font-medium text-white/70 leading-relaxed">"{result.general_feedback}"</p>
+              <p className="text-xs font-medium text-white/70 leading-relaxed">
+                {result.general_feedback ? `"${result.general_feedback}"` : "A correção não trouxe um comentário geral desta vez."}
+              </p>
             </div>
             </div>
           </div>
@@ -761,11 +770,11 @@ export default function StudentEssayPage() {
                     <div className={`p-2 rounded-xl border ${info.bg}`}><Icon className={`h-4 w-4 ${info.color}`} /></div>
                     <div className="text-right">
                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Nota</p>
-                      <p className="u-num text-2xl text-primary leading-none">{comp.score}</p>
+                      <p className="u-num text-2xl text-primary leading-none">{fmtNumber(comp?.score)}</p>
                     </div>
                   </div>
                   <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${info.color}`}>{info.label}</p>
-                  <p className="text-xs font-medium italic text-slate-500 leading-relaxed">{comp.feedback}</p>
+                  <p className="text-xs font-medium italic text-slate-500 leading-relaxed">{txt(comp?.feedback, "")}</p>
                 </div>
               );
             })}
@@ -788,7 +797,7 @@ export default function StudentEssayPage() {
                   <div className="h-7 w-7 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center">
                     <AlertCircle className="h-3.5 w-3.5 text-red-600" />
                   </div>
-                  <h3 className="u-display text-sm text-red-700">Raio-X de desvios</h3>
+                  <h3 className="u-display text-sm text-red-700">O que corrigir</h3>
                 </div>
               </div>
               <div className="p-4 space-y-3">
@@ -844,7 +853,7 @@ export default function StudentEssayPage() {
               <div key={st.id} className="bg-white border border-slate-100 border-l-4 border-l-primary rounded-card p-4">
                 <p className="text-xs font-medium italic text-slate-600 leading-relaxed">"{st.content}"</p>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fonte: {st.source}</span>
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{st.source ? `Fonte: ${st.source}` : ""}</span>
                   <Badge className="bg-primary/10 text-[#0F7A95] border border-primary/25 font-black text-[7px] uppercase px-1.5 h-4">Motivador</Badge>
                 </div>
               </div>
@@ -865,15 +874,13 @@ export default function StudentEssayPage() {
               <EssayChart data={chartData} />
             </div>
           ) : (
-            <div className="h-[220px] flex flex-col items-center justify-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center">
-                <History className="h-4 w-4 text-slate-400" />
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Radar de Evolução</p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Aguardando seu primeiro envio</p>
-              </div>
-            </div>
+            <EmptyState
+              icon={TrendingUp}
+              title="Seu gráfico ainda está vazio"
+              description="Cada redação corrigida vira um ponto aqui, para você acompanhar sua nota subir."
+              compact
+              className="border-none bg-transparent"
+            />
           )}
         </div>
       </div>
@@ -893,11 +900,13 @@ export default function StudentEssayPage() {
             {[0, 1, 2].map(i => <div key={i} className="h-24 bg-slate-100 rounded-2xl animate-pulse" />)}
           </div>
         ) : fullHistory.length === 0 ? (
-          <div className="py-10 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
-            <BookOpen className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-            <p className="font-black text-slate-400 italic">Sem redações ainda</p>
-            <p className="text-xs text-slate-400 mt-1">Escreva sua primeira redação acima.</p>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="Você ainda não enviou redações"
+            description="Depois da primeira correção, cada redação fica guardada aqui com a nota e os comentários da Aurora."
+            action={{ label: "Escrever minha primeira redação", icon: PenTool, onClick: () => document.getElementById("essay-editor")?.focus() }}
+            compact
+          />
         ) : (
           <div className="space-y-3">
             {fullHistory.map((entry, idx) => {
@@ -923,21 +932,21 @@ export default function StudentEssayPage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-sm font-black text-primary leading-none italic">{entry.score}</span>
+                        <span className="text-sm font-black text-primary leading-none italic">{fmtNumber(entry.score)}</span>
                       </div>
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge className={`${colors.badge} border-none font-black text-[8px] uppercase px-2`}>
-                          {entry.score} pts
+                          {fmtNumber(entry.score)} pts
                         </Badge>
                         <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
                           <Calendar className="h-2.5 w-2.5" />
-                          {format(new Date(entry.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          {fmtDate(entry.created_at, "dd/MM/yyyy 'às' HH:mm")}
                         </span>
                       </div>
-                      <p className="text-sm font-black text-primary italic leading-snug line-clamp-1 mb-1">{entry.theme}</p>
+                      <p className="text-sm font-black text-primary italic leading-snug line-clamp-1 mb-1">{txt(entry.theme, "Tema não informado")}</p>
                       <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">{entry.content}</p>
                     </div>
 
@@ -964,22 +973,22 @@ export default function StudentEssayPage() {
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
                       <svg className="h-14 w-14 -rotate-90" viewBox="0 0 56 56">
-                        <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth="3" />
-                        <circle cx="28" cy="28" r="22" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"
+                        <circle cx="28" cy="28" r="22" fill="none" stroke="hsl(var(--foreground) / 0.15)" strokeWidth="3" />
+                        <circle cx="28" cy="28" r="22" fill="none" stroke="hsl(var(--foreground))" strokeWidth="3" strokeLinecap="round"
                           strokeDasharray={2 * Math.PI * 22}
                           strokeDashoffset={(2 * Math.PI * 22) * (1 - (selectedEntry.score || 0) / 1000)}
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-base font-black text-white leading-none italic">{selectedEntry.score}</span>
-                        <span className="text-[7px] font-bold text-white/70 mt-0.5">pts</span>
+                        <span className="text-base font-black text-foreground leading-none italic">{fmtNumber(selectedEntry.score)}</span>
+                        <span className="text-[7px] font-bold text-foreground/70 mt-0.5">pts</span>
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <SheetTitle className="u-display text-foreground text-base leading-snug line-clamp-2">{selectedEntry.theme}</SheetTitle>
-                      <p className="text-white/75 text-[10px] font-bold mt-1 flex items-center gap-1">
+                      <SheetTitle className="u-display text-foreground text-base leading-snug line-clamp-2">{txt(selectedEntry.theme, "Tema não informado")}</SheetTitle>
+                      <p className="text-foreground/70 text-[10px] font-bold mt-1 flex items-center gap-1">
                         <Calendar className="h-2.5 w-2.5" />
-                        {format(new Date(selectedEntry.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                        {fmtDate(selectedEntry.created_at, "dd 'de' MMMM 'de' yyyy 'às' HH:mm")}
                       </p>
                     </div>
                   </div>
@@ -1013,10 +1022,10 @@ export default function StudentEssayPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-[10px] font-black uppercase tracking-widest ${info.color}`}>{info.label}</p>
-                                <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed mt-0.5 line-clamp-2">{comp.feedback}</p>
+                                <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed mt-0.5 line-clamp-2">{txt(comp?.feedback, "")}</p>
                               </div>
                               <div className="text-right shrink-0">
-                                <span className="u-num text-xl text-primary">{comp.score}</span>
+                                <span className="u-num text-xl text-primary">{fmtNumber(comp?.score)}</span>
                                 <span className="text-[9px] font-bold text-slate-400 block">/ 200</span>
                               </div>
                             </div>

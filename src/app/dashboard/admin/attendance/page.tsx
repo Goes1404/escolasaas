@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ClipboardCheck, Loader2, AlertTriangle, Users, CalendarDays, TrendingUp, Search } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
+import { fmtNumber, fmtPct, txt } from "@/lib/format";
+import { EmptyState } from "@/components/EmptyState";
 
 export default function AdminAttendancePage() {
   const { user } = useAuth();
@@ -80,85 +82,73 @@ export default function AdminAttendancePage() {
     return { avgPct, atRiskCount };
   }, [studentStats]);
 
+  const pctColor = (v: number) => (v >= 75 ? "text-emerald-600" : v >= 50 ? "text-amber-600" : "text-red-600");
+  const situacao = (student: any) =>
+    student.atRisk ? (
+      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 gap-1">
+        <AlertTriangle className="h-3 w-3" />
+        Em risco
+      </Badge>
+    ) : (
+      <Badge variant="outline">Regular</Badge>
+    );
+
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-orange-100 rounded-xl">
-          <ClipboardCheck className="h-6 w-6 text-orange-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black italic">Frequência Geral</h1>
-          <p className="text-sm text-muted-foreground">Visão consolidada de presença dos alunos</p>
-        </div>
+    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      <div>
+        <p className="u-label flex items-center gap-2"><ClipboardCheck className="h-3.5 w-3.5" /> Coordenação · frequência</p>
+        <h1 className="u-page-title text-3xl mt-1">Frequência geral</h1>
+        <p className="text-sm text-muted-foreground mt-2">Presença consolidada de todos os alunos.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="rounded-card shadow-2xl border-none">
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <CalendarDays className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-black">{sessions.length}</p>
-              <p className="text-sm text-muted-foreground">Total de Sessões</p>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="rounded-card">
+          <CardContent className="p-4 sm:p-6">
+            <div className="u-label flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> Aulas</div>
+            <p className="u-num text-2xl tabular-nums mt-2">{fmtNumber(sessions.length, 0, "0")}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-card shadow-2xl border-none">
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-xl">
-              <Users className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-black">{students.length}</p>
-              <p className="text-sm text-muted-foreground">Total de Alunos</p>
-            </div>
+        <Card className="rounded-card">
+          <CardContent className="p-4 sm:p-6">
+            <div className="u-label flex items-center gap-2"><Users className="h-3.5 w-3.5" /> Alunos</div>
+            <p className="u-num text-2xl tabular-nums mt-2">{fmtNumber(students.length, 0, "0")}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-card shadow-2xl border-none">
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-xl">
-              <TrendingUp className="h-5 w-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-black">{globalStats.avgPct}%</p>
-              <p className="text-sm text-muted-foreground">Média Geral</p>
-            </div>
+        <Card className="rounded-card">
+          <CardContent className="p-4 sm:p-6">
+            <div className="u-label flex items-center gap-2"><TrendingUp className="h-3.5 w-3.5" /> Média geral</div>
+            <p className="u-num text-2xl tabular-nums mt-2">{fmtPct(globalStats.avgPct, "0%")}</p>
           </CardContent>
         </Card>
-        <Card className={`rounded-card shadow-2xl border-none ${globalStats.atRiskCount > 0 ? "bg-red-50" : ""}`}>
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${globalStats.atRiskCount > 0 ? "bg-red-100" : "bg-gray-100"}`}>
-              <AlertTriangle className={`h-5 w-5 ${globalStats.atRiskCount > 0 ? "text-red-600" : "text-gray-400"}`} />
-            </div>
-            <div>
-              <p className={`text-2xl font-black ${globalStats.atRiskCount > 0 ? "text-red-600" : ""}`}>
-                {globalStats.atRiskCount}
-              </p>
-              <p className="text-sm text-muted-foreground">Alunos em Risco</p>
-            </div>
+        <Card className="rounded-card">
+          <CardContent className="p-4 sm:p-6">
+            <div className={`u-label flex items-center gap-2 ${globalStats.atRiskCount > 0 ? "!text-red-600" : ""}`}><AlertTriangle className="h-3.5 w-3.5" /> Em risco</div>
+            <p className={`u-num text-2xl tabular-nums mt-2 ${globalStats.atRiskCount > 0 ? "text-red-600" : ""}`}>
+              {fmtNumber(globalStats.atRiskCount, 0, "0")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">abaixo de 75%</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="rounded-card shadow-2xl border-none">
-        <CardHeader>
-          <CardTitle className="font-black italic flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-500" />
-            Frequência por Aluno
+      <Card className="rounded-card">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <Users className="h-5 w-5 text-muted-foreground" />
+            Frequência por aluno
           </CardTitle>
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                className="pl-9"
+                className="pl-9 rounded-control"
                 placeholder="Buscar aluno..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <Select value={filterClass} onValueChange={setFilterClass}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-full sm:w-48 rounded-control">
                 <SelectValue placeholder="Filtrar por turma" />
               </SelectTrigger>
               <SelectContent>
@@ -170,59 +160,73 @@ export default function AdminAttendancePage() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {loading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex flex-col items-center gap-3 py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="u-label">Carregando frequência…</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center py-14 gap-3 text-muted-foreground border-2 border-dashed rounded-2xl">
-              <Users className="h-10 w-10 opacity-30" />
-              <p className="font-semibold">Nenhum aluno encontrado</p>
-            </div>
+            <EmptyState
+              compact
+              icon={Users}
+              title={students.length === 0 ? "Nenhum aluno cadastrado" : "Nenhum aluno encontrado"}
+              description={students.length === 0
+                ? "Cadastre alunos para acompanhar a frequência deles aqui."
+                : "Tente outro nome ou outra turma."}
+              action={students.length === 0
+                ? { label: "Cadastrar aluno", href: "/dashboard/admin/users/new" }
+                : { label: "Limpar filtros", onClick: () => { setSearch(""); setFilterClass("all"); } }}
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-muted-foreground">
-                    <th className="text-left py-3 px-2 font-semibold">Aluno</th>
-                    <th className="text-left py-3 px-2 font-semibold">Turma</th>
-                    <th className="text-center py-3 px-2 font-semibold">Presentes</th>
-                    <th className="text-center py-3 px-2 font-semibold">Total Aulas</th>
-                    <th className="text-center py-3 px-2 font-semibold">Frequência</th>
-                    <th className="text-center py-3 px-2 font-semibold">Situação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((student) => (
-                    <tr
-                      key={student.id}
-                      className={`border-b last:border-0 transition-colors ${student.atRisk ? "bg-red-50 hover:bg-red-100/50" : "hover:bg-muted/30"}`}
-                    >
-                      <td className="py-3 px-2 font-medium">{student.full_name || "—"}</td>
-                      <td className="py-3 px-2 text-muted-foreground">{student.className}</td>
-                      <td className="py-3 px-2 text-center">{student.presentes}</td>
-                      <td className="py-3 px-2 text-center">{student.total}</td>
-                      <td className="py-3 px-2 text-center">
-                        <span className={`font-black ${student.pct >= 75 ? "text-green-600" : student.pct >= 50 ? "text-yellow-600" : "text-red-600"}`}>
-                          {student.pct}%
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        {student.atRisk ? (
-                          <Badge className="bg-red-100 text-red-700 hover:bg-red-100 gap-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            Em Risco
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Regular</Badge>
-                        )}
-                      </td>
+            <>
+              <ul className="sm:hidden divide-y">
+                {filtered.map((student) => (
+                  <li key={student.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm break-words">{txt(student.full_name)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {student.className} · <span className="tabular-nums">{student.presentes}/{student.total}</span> aulas
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`u-num text-lg tabular-nums ${pctColor(student.pct)}`}>{fmtPct(student.pct, "0%")}</span>
+                      {situacao(student)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="u-label text-left py-3 px-2">Aluno</th>
+                      <th className="u-label text-left py-3 px-2">Turma</th>
+                      <th className="u-label text-center py-3 px-2">Presenças</th>
+                      <th className="u-label text-center py-3 px-2">Aulas</th>
+                      <th className="u-label text-center py-3 px-2">Frequência</th>
+                      <th className="u-label text-center py-3 px-2">Situação</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filtered.map((student) => (
+                      <tr key={student.id} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="py-3 px-2 font-medium">{txt(student.full_name)}</td>
+                        <td className="py-3 px-2 text-muted-foreground">{student.className}</td>
+                        <td className="py-3 px-2 text-center tabular-nums">{student.presentes}</td>
+                        <td className="py-3 px-2 text-center tabular-nums">{student.total}</td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`font-bold tabular-nums ${pctColor(student.pct)}`}>
+                            {fmtPct(student.pct, "0%")}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-center">{situacao(student)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

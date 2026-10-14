@@ -105,11 +105,11 @@ export default function SettingsPage() {
 
       setGuardianToken(token);
       toast({
-        title: "Link Gerado! 🔗",
+        title: "Link criado! 🔗",
         description: "Agora você pode compartilhar este link com seus responsáveis."
       });
     } catch (err: any) {
-      toast({ title: "Erro ao gerar link", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para criar o link", description: "Confira sua internet e tente de novo.", variant: "destructive" });
     } finally {
       setGeneratingToken(false);
     }
@@ -202,11 +202,11 @@ export default function SettingsPage() {
       if (error) throw error;
 
       toast({
-        title: "Perfil Atualizado! ✅",
-        description: "Suas preferências foram sincronizadas com a rede industrial."
+        title: "Perfil salvo! ✅",
+        description: "Suas alterações já estão valendo."
       });
     } catch (err: any) {
-      toast({ title: "Erro na Atualização", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para salvar", description: "Confira sua internet e tente de novo em instantes.", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
@@ -232,9 +232,9 @@ export default function SettingsPage() {
       await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user.id);
       
       setFormData(prev => ({ ...prev, avatar_url: data.publicUrl }));
-      toast({ title: "Foto industrial atualizada! 📸", description: "Sua nova imagem já está ativa em toda a rede." });
+      toast({ title: "Foto atualizada! 📸", description: "Sua nova foto já aparece para todo mundo." });
     } catch (err: any) {
-      toast({ title: "Falha no Upload", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para enviar a foto", description: "Tente uma imagem menor (JPG ou PNG) ou confira sua internet.", variant: "destructive" });
     } finally {
       setIsUploading(false);
     }
@@ -253,11 +253,11 @@ export default function SettingsPage() {
     <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20 px-2 md:px-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">Configurações de Identidade</h1>
-          <p className="text-muted-foreground font-medium italic">Gerencie sua presença digital e preferências acadêmicas.</p>
+          <h1 className="text-3xl font-black text-primary italic leading-none">Meu perfil</h1>
+          <p className="text-muted-foreground font-medium italic">Sua foto, seus dados e suas preferências de estudo.</p>
         </div>
         <Badge className="bg-accent text-accent-foreground font-black border-none px-5 py-2.5 flex items-center gap-2 w-fit rounded-xl shadow-xl">
-          <ShieldCheck className="h-4 w-4" /> ACESSO VERIFICADO
+          <ShieldCheck className="h-4 w-4" /> CONTA VERIFICADA
         </Badge>
       </div>
 
@@ -269,7 +269,7 @@ export default function SettingsPage() {
               <div className="h-48 w-48 rounded-[3rem] overflow-hidden border-[8px] border-slate-50 shadow-2xl relative transition-transform duration-500 group-hover:scale-105">
                 <Avatar className="h-full w-full rounded-none">
                   <AvatarImage src={formData.avatar_url || undefined} className="object-cover" />
-                  <AvatarFallback className="bg-primary text-white text-6xl u-display">{formData.name?.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-white text-6xl u-display">{(formData.name || "?").charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center">
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                 onClick={() => fileInputRef.current?.click()} 
                 disabled={isUploading} 
                 className="absolute -bottom-3 -right-3 h-14 w-14 bg-accent rounded-2xl border-4 border-white flex items-center justify-center text-accent-foreground shadow-2xl hover:scale-110 active:scale-95 transition-all z-10"
-                title="Trocar Foto"
+                title="Trocar foto" aria-label="Trocar foto"
               >
                 <Camera className="h-7 w-7" />
               </button>
@@ -295,11 +295,11 @@ export default function SettingsPage() {
                   {isStudent && (
                     <>
                       <p className="opacity-80 text-primary">Turma {profile?.exam_target || 'ENEM'}</p> 
-                      <p className="opacity-60">{profile?.institution || 'Colégio Colaço'}</p>
+                      <p className="opacity-60">{profile?.institution || 'Unidade não informada'}</p>
                     </>
                   )}
                   {!isStudent && (
-                    <p className="opacity-80 text-primary">{profile?.course || 'Docente'}</p>
+                    <p className="opacity-80 text-primary">{profile?.course || 'Professor'}</p>
                   )}
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function SettingsPage() {
               {isStudent && (
                  <div className="pt-4 space-y-6">
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2 flex items-center justify-center gap-3">
-                    <Palette className="h-4 w-4" /> Sugestões de Avatar
+                    <Palette className="h-4 w-4" /> Sugestões de foto
                   </Label>
                   <div className="flex flex-wrap items-center justify-center gap-4">
                     {PRESET_AVATARS.map((url, i) => (
@@ -341,14 +341,14 @@ export default function SettingsPage() {
             <Card className="border-none shadow-2xl bg-white rounded-[3rem] overflow-hidden">
               <CardHeader className="bg-muted/10 p-10 border-b border-dashed border-muted/20">
                 <CardTitle className="text-2xl font-black text-primary italic uppercase tracking-tighter">Dados Cadastrais</CardTitle>
-                <CardDescription className="font-medium italic text-lg mt-2">Alterações de nome são restritas por segurança de rede.</CardDescription>
+                <CardDescription className="font-medium italic text-lg mt-2">Por segurança, a troca de nome é limitada. Precisa corrigir? Fale com a secretaria.</CardDescription>
               </CardHeader>
               <CardContent className="p-10">
                 <form onSubmit={handleUpdateProfile} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-3">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2 flex items-center gap-3">
-                        <User className="h-4 w-4" /> Nome de Exibição
+                        <User className="h-4 w-4" /> Nome
                       </Label>
                       <div className="relative">
                         <Input 
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                     {isStudent && (
                       <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2 flex items-center gap-3">
-                          <GraduationCap className="h-4 w-4" /> Objetivo Acadêmico
+                          <GraduationCap className="h-4 w-4" /> Objetivo
                         </Label>
                         <div className="relative">
                           <Input 
@@ -400,7 +400,7 @@ export default function SettingsPage() {
                         </Label>
                         <div className="relative">
                           <Input 
-                            value={profile?.course || "Docente"} 
+                            value={profile?.course || "Professor"} 
                             disabled 
                             className="h-16 rounded-2xl border-none font-bold text-xl italic bg-muted/30 opacity-60" 
                           />
@@ -412,14 +412,14 @@ export default function SettingsPage() {
                     {isStudent && (
                       <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2 flex items-center gap-3">
-                          <Star className="h-4 w-4" /> Matéria de Foco
+                          <Star className="h-4 w-4" /> Matéria favorita
                         </Label>
                         <Select value={formData.favorite_subject} onValueChange={(v) => setFormData({...formData, favorite_subject: v})}>
                           <SelectTrigger className="h-16 rounded-2xl bg-muted/40 border-none font-bold text-xl italic shadow-inner">
                             {loadingSubjects ? (
-                              <div className="flex items-center gap-3"><RefreshCw className="h-4 w-4 animate-spin" /> Sincronizando...</div>
+                              <div className="flex items-center gap-3"><RefreshCw className="h-4 w-4 animate-spin" /> Carregando matérias…</div>
                             ) : (
-                              <SelectValue placeholder="Selecione sua preferência" />
+                              <SelectValue placeholder="Escolha uma matéria" />
                             )}
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-none shadow-2xl max-h-80 p-2">
@@ -433,7 +433,7 @@ export default function SettingsPage() {
                   {!isStudent && (
                     <div className="space-y-6">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2 flex items-center gap-3">
-                        <Palette className="h-4 w-4" /> Galeria de Avatares Dinâmicos
+                        <Palette className="h-4 w-4" /> Sugestões de foto
                       </Label>
                       <div className="grid grid-cols-3 sm:grid-cols-6 gap-6">
                         {PRESET_AVATARS.map((url, i) => (
@@ -469,7 +469,7 @@ export default function SettingsPage() {
               <Card className="border-none shadow-2xl bg-white rounded-[3rem] overflow-hidden mt-8">
                 <CardHeader className="bg-muted/10 p-10 border-b border-dashed border-muted/20">
                   <CardTitle className="text-2xl font-black text-primary italic uppercase tracking-tighter flex items-center gap-3">
-                    <Users className="h-6 w-6 text-accent" /> Acompanhamento dos Responsáveis
+                    <Users className="h-6 w-6 text-accent" /> Acompanhamento dos responsáveis
                   </CardTitle>
                   <CardDescription className="font-medium italic text-lg mt-2">
                     Gere um link exclusivo e seguro para que seus pais ou responsáveis acompanhem seu desempenho sem precisar de login.
@@ -479,7 +479,7 @@ export default function SettingsPage() {
                   {guardianToken ? (
                     <div className="space-y-4">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2">
-                        Seu Link de Acompanhamento
+                        Seu link de acompanhamento
                       </Label>
                       <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 bg-muted/40 p-4 rounded-2xl font-bold text-xs sm:text-sm text-slate-700 select-all truncate border border-slate-100 flex items-center">
@@ -489,11 +489,11 @@ export default function SettingsPage() {
                           onClick={handleCopyLink}
                           className="h-14 px-6 rounded-2xl bg-accent text-accent-foreground font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
                         >
-                          {copied ? 'Copiado!' : 'Copiar Link'}
+                          {copied ? 'Copiado!' : 'Copiar link'}
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground italic px-2">
-                        ⚠️ Atenção: Quem tiver acesso a este link poderá ver suas estatísticas gerais de estudo (XP, Streak e quantidade de questões resolvidas). Você pode gerar um novo link a qualquer momento para invalidar o anterior.
+                        ⚠️ Atenção: Quem tiver acesso a este link poderá ver suas estatísticas gerais de estudo (XP, dias seguidos de estudo e quantidade de questões resolvidas). Você pode gerar um novo link a qualquer momento para invalidar o anterior.
                       </p>
                       <Button 
                         variant="ghost" 
@@ -501,13 +501,13 @@ export default function SettingsPage() {
                         disabled={generatingToken}
                         className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold underline p-0 h-auto"
                       >
-                        {generatingToken ? 'Gerando novo link...' : 'Resetar / Gerar Novo Link'}
+                        {generatingToken ? 'Gerando novo link...' : 'Criar um link novo (o atual para de funcionar)'}
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center py-6 space-y-4">
                       <p className="text-slate-600 font-semibold text-sm">
-                        Nenhum link ativo gerado. Compartilhe seu progresso para ter mais apoio nos estudos!
+                        Você ainda não criou um link. Com ele, seus responsáveis acompanham seu progresso sem precisar de login.
                       </p>
                       <Button 
                         onClick={handleGenerateGuardianToken}
@@ -583,7 +583,7 @@ export default function SettingsPage() {
                     <p className="text-base font-black text-primary italic flex items-center gap-2 flex-wrap">
                       {subscribed ? "Notificações ativadas" : "Notificações desativadas"}
                       <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-wider h-4 px-1.5 border-slate-200 bg-slate-50 text-slate-500">
-                        Navegador: {permission}
+                        Navegador: {permission === "granted" ? "permitido" : permission === "default" ? "não perguntado" : permission}
                       </Badge>
                     </p>
                     <p className="text-xs font-medium text-muted-foreground mt-0.5">

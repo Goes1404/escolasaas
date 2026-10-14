@@ -49,6 +49,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { StudentRoomTracker } from "@/components/secretary/StudentRoomTracker";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from "@/components/EmptyState";
 
 type AttendanceStatus = "presente" | "ausente" | "justificado";
 type AttendanceMethod = "app" | "manual" | "override";
@@ -189,7 +191,7 @@ export default function SecretaryAttendancePage() {
       const { data, error } = await supabase.from("class_sessions").insert(payload).select().single();
       if (error) throw error;
 
-      toast({ title: "Sessão de Aula Criada!" });
+      toast({ title: "Aula criada" });
       setSessions(prev => [data, ...prev]);
       setCreateOpen(false);
 
@@ -340,7 +342,7 @@ export default function SecretaryAttendancePage() {
     if (!selectedSession) return;
     const toAdd = students.filter(s => !records[s.id]);
     if (toAdd.length === 0) {
-      toast({ title: "Todos os alunos já estão na lista." });
+      toast({ title: "Todos os alunos já estão na lista" });
       return;
     }
     setAddingAll(true);
@@ -363,7 +365,7 @@ export default function SecretaryAttendancePage() {
         });
         return next;
       });
-      toast({ title: `${toAdd.length} alunos adicionados à lista.` });
+      toast({ title: `${toAdd.length} alunos adicionados à lista` });
       setShowAddPanel(false);
     } catch (err: any) {
       toast({ title: "Erro ao adicionar todos", description: err.message, variant: "destructive" });
@@ -400,7 +402,7 @@ export default function SecretaryAttendancePage() {
   const persistAttendance = async (overrideIds: string[]) => {
     if (!selectedSession || !user) return;
     if (overrideIds.length > 0 && !overrideReason.trim()) {
-      toast({ title: "Motivo obrigatório", description: "Justifique a sobrescrita para registrar no audit log.", variant: "destructive" });
+      toast({ title: "Motivo obrigatório", description: "Explique a alteração para ficar no registro de auditoria.", variant: "destructive" });
       return;
     }
     setSavingAttendance(true);
@@ -459,9 +461,9 @@ export default function SecretaryAttendancePage() {
       }
 
       toast({
-        title: "Frequência atualizada!",
+        title: "Frequência salva",
         description: overrideIds.length > 0
-          ? `${overrideIds.length} sobrescrita${overrideIds.length > 1 ? "s" : ""} registrada${overrideIds.length > 1 ? "s" : ""} no audit log.`
+          ? `${overrideIds.length} sobrescrita${overrideIds.length > 1 ? "s" : ""} registrada${overrideIds.length > 1 ? "s" : ""} no registro de auditoria.`
           : undefined,
       });
       setOverrideOpen(false);
@@ -496,7 +498,7 @@ export default function SecretaryAttendancePage() {
       if (updateErr) throw updateErr;
       setSelectedSession((prev: any) => ({ ...prev, paper_photo_url: urlData.publicUrl }));
       setSessions(prev => prev.map(s => s.id === selectedSession.id ? { ...s, paper_photo_url: urlData.publicUrl } : s));
-      toast({ title: "Foto da chamada salva!" });
+      toast({ title: "Foto da chamada salva" });
     } catch (err: any) {
       toast({ title: "Erro ao enviar foto", description: err.message, variant: "destructive" });
     } finally {
@@ -633,7 +635,7 @@ export default function SecretaryAttendancePage() {
 
       const skipped = importRows.filter(r => !r.matchedStudent?.id && !r.manualStudentId).length;
       toast({
-        title: `${toInsert.length} aluno(s) importados!`,
+        title: `${toInsert.length} aluno(s) importados`,
         description: skipped > 0 ? `${skipped} nome(s) ignorados por não terem sido vinculados.` : undefined,
       });
       setImportModalOpen(false);
@@ -667,65 +669,75 @@ export default function SecretaryAttendancePage() {
     ? sessions
     : sessions.filter(s => s.class_label === classFilter);
 
+  const notInRoster = students.filter((s) => !records[s.id]).length;
+  const SESSION_TYPE: Record<string, string> = { presencial: "Presencial", live: "Online" };
+  const STATUS_SHORT: Record<AttendanceStatus, { key: string; label: string; on: string }> = {
+    presente:    { key: "P", label: "Presente",    on: "bg-emerald-600 text-white" },
+    ausente:     { key: "A", label: "Ausente",     on: "bg-red-600 text-white" },
+    justificado: { key: "J", label: "Justificado", on: "bg-foreground text-background" },
+  };
+  const fieldCls = "h-11 bg-muted/30 border-none rounded-control text-sm";
+
+  const openCreate = () => {
+    setNewTitle("");
+    setNewDesc("");
+    setNewSubject("");
+    setNewTeacherId("");
+    setTitleTouched(false);
+    setCreateOpen(true);
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
+    <div className="space-y-6 pb-20">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">
-            Diário de Classe & Chamadas
-          </h1>
-          <p className="text-muted-foreground font-medium italic text-sm">
-            Agende aulas, defina professores responsáveis e gerencie o histórico de faltas/presenças.
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><ClipboardCheck className="h-3.5 w-3.5" /> Secretaria · frequência</p>
+          <h1 className="u-page-title text-3xl mt-1">Diário de classe</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            Agende aulas, defina o professor responsável e lance a chamada de cada turma.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 shrink-0">
           <Button
             onClick={() => setTrackerOpen(true)}
             variant="outline"
-            className="bg-white text-primary border-slate-200 font-black rounded-2xl shadow-sm h-12 px-5 gap-2 hover:bg-slate-50 transition-all"
+            className="rounded-control h-11 px-4 gap-2 font-bold"
           >
-            <MapPin className="h-4 w-4" /> Rastrear Sala
+            <MapPin className="h-4 w-4" /> Rastrear sala
           </Button>
           <Button
-            onClick={() => {
-              setNewTitle("");
-              setNewDesc("");
-              setNewSubject("");
-              setNewTeacherId("");
-              setTitleTouched(false);
-              setCreateOpen(true);
-            }}
-            className="bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 h-12 px-6 gap-2 hover:scale-[1.02] active:scale-95 transition-all border-none"
+            variant="arcade"
+            onClick={openCreate}
+            className="rounded-control h-11 px-5 gap-2 font-bold"
           >
-            <PlusCircle className="h-4 w-4" /> Nova Aula / Sessão
+            <PlusCircle className="h-4 w-4" /> Nova aula
           </Button>
         </div>
       </div>
 
       <StudentRoomTracker open={trackerOpen} onClose={() => setTrackerOpen(false)} />
 
-      {/* Lista de Sessões */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden p-6 space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-primary italic leading-none flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" /> Histórico de Aulas
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Histórico de aulas */}
+        <Card className="rounded-card shadow-none overflow-hidden p-5 sm:p-6 space-y-5 min-w-0">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-muted-foreground" /> Aulas registradas
             </h2>
-            <Badge className="bg-primary/5 text-primary border-none font-bold text-[10px] px-3">{visibleSessions.length} / {sessions.length}</Badge>
+            <span className="u-label shrink-0"><span className="u-num">{visibleSessions.length}</span> de <span className="u-num">{sessions.length}</span></span>
           </div>
 
-          {/* Filtro por turma */}
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Filtrar por Sala / Turma</Label>
+            <Label className="u-label ml-1">Filtrar por sala / turma</Label>
             <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold text-xs">
+              <SelectTrigger className={fieldCls}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-none shadow-2xl">
-                <SelectItem value="all" className="font-bold text-xs">Todas as turmas</SelectItem>
+              <SelectContent className="rounded-control">
+                <SelectItem value="all" className="text-sm">Todas as turmas</SelectItem>
                 {classOptions.map(c => (
-                  <SelectItem key={c} value={c} className="font-bold text-xs">{c}</SelectItem>
+                  <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -734,78 +746,93 @@ export default function SecretaryAttendancePage() {
           {loadingSessions ? (
             <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : visibleSessions.length === 0 ? (
-            <p className="py-16 text-center text-muted-foreground italic text-xs">Nenhuma aula nesta turma.</p>
+            <EmptyState
+              compact
+              icon={Calendar}
+              title={sessions.length === 0 ? "Nenhuma aula registrada ainda" : "Nenhuma aula nesta turma"}
+              description={sessions.length === 0 ? "Crie a primeira aula para começar a lançar a chamada." : "Escolha outra turma ou crie uma aula para esta."}
+              action={{ label: "Nova aula", onClick: openCreate, icon: PlusCircle }}
+              secondary={classFilter !== "all" ? { label: "Ver todas as turmas", onClick: () => setClassFilter("all") } : undefined}
+            />
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
               {visibleSessions.map(s => (
-                <div
+                <button
+                  type="button"
                   key={s.id}
                   onClick={() => handleOpenAttendance(s)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center group ${
+                  aria-pressed={selectedSession?.id === s.id}
+                  className={`w-full text-left p-3.5 rounded-control border transition-colors flex justify-between items-center gap-3 ${
                     selectedSession?.id === s.id
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50/50'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:bg-muted/40'
                   }`}
                 >
-                  <div className="min-w-0 flex-1 pr-4">
-                    <p className="font-bold text-sm text-slate-800 leading-none group-hover:text-primary transition-colors">{s.title}</p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-[9px] font-black uppercase text-slate-400">
-                        {format(new Date(s.session_date + "T12:00:00"), "dd 'de' MMM", { locale: ptBR })}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm leading-tight truncate">{txt(s.title, "Aula sem título")}</p>
+                    <div className="flex items-center gap-x-2 gap-y-1 mt-1.5 flex-wrap">
+                      <span className="text-xs text-muted-foreground">
+                        {fmtDate(s.session_date, "dd 'de' MMM")}
                       </span>
-                      <span className="text-[8px] font-bold text-slate-400">•</span>
-                      <span className="text-[9px] font-black uppercase text-slate-400">{s.teacher_name}</span>
+                      {s.teacher_name && (
+                        <>
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <span className="text-xs text-muted-foreground truncate">{s.teacher_name}</span>
+                        </>
+                      )}
                       {s.class_label && (
-                        <Badge className="text-[8px] font-black border-none uppercase bg-emerald-50 text-emerald-700">
+                        <Badge variant="outline" className="text-[10px] font-semibold px-1.5 h-5">
                           {s.class_label}
                         </Badge>
                       )}
                     </div>
                   </div>
-                  <Badge className={`text-[8px] font-black border-none uppercase ${s.session_type === 'live' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}`}>
-                    {s.session_type}
-                  </Badge>
-                </div>
+                  <span className="u-label shrink-0">
+                    {SESSION_TYPE[s.session_type] || txt(s.session_type, "")}
+                  </span>
+                </button>
               ))}
             </div>
           )}
         </Card>
 
-        {/* Lançamento / Detalhes de Chamada */}
-        <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden p-6 flex flex-col min-h-[400px]">
+        {/* Lançamento da chamada */}
+        <Card className="rounded-card shadow-none overflow-hidden p-5 sm:p-6 flex flex-col min-h-[400px] min-w-0">
           {selectedSession ? (
             <div className="space-y-5 flex-1 flex flex-col min-h-0">
-              <div className="flex justify-between items-start gap-4">
+              <div className="flex justify-between items-start gap-3">
                 <div className="min-w-0">
-                  <span className="text-[9px] uppercase font-black tracking-wider text-slate-400">Lançamento de Presença</span>
-                  <h3 className="font-extrabold text-slate-800 text-lg leading-snug truncate italic">{selectedSession.title}</h3>
-                  <p className="text-[10px] text-slate-400 font-bold mt-1">
-                    {format(new Date(selectedSession.session_date + "T12:00:00"), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} • {selectedSession.teacher_name}
+                  <span className="u-label">Lançamento de presença</span>
+                  <h3 className="font-bold text-lg leading-snug truncate mt-0.5">{txt(selectedSession.title, "Aula sem título")}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {fmtDate(selectedSession.session_date, "dd 'de' MMMM 'de' yyyy")}{selectedSession.teacher_name ? ` · ${selectedSession.teacher_name}` : ""}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => setSelectedSession(null)}>
+                <Button variant="ghost" size="icon" className="rounded-control shrink-0" onClick={() => setSelectedSession(null)} aria-label="Fechar chamada">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
-              {/* Foto da Chamada em Papel */}
-              <div className="p-3 rounded-2xl border border-amber-200 bg-amber-50/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Camera className="h-3.5 w-3.5 text-amber-600" />
-                    <span className="text-[10px] font-black uppercase text-amber-700 tracking-widest">Chamada em Papel</span>
+              {/* Chamada em papel */}
+              <div className="p-3 rounded-control border border-border space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Camera className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="u-label truncate">Chamada em papel</span>
                     {selectedSession.paper_photo_url && (
-                      <span className="text-[8px] font-black uppercase bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Enviada</span>
+                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full shrink-0">Enviada</span>
                     )}
                   </div>
-                  <button
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => photoInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="h-7 px-3 text-[10px] font-black rounded-xl bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center gap-1 shrink-0"
+                    className="h-8 px-3 text-xs font-bold rounded-control gap-1 shrink-0"
                   >
                     {uploadingPhoto ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
-                    {selectedSession.paper_photo_url ? "Trocar" : "Enviar Foto"}
-                  </button>
+                    {selectedSession.paper_photo_url ? "Trocar" : "Enviar foto"}
+                  </Button>
                   <input
                     ref={photoInputRef}
                     type="file"
@@ -824,12 +851,12 @@ export default function SecretaryAttendancePage() {
                     <img loading="lazy" decoding="async"
                       src={selectedSession.paper_photo_url}
                       alt="Lista de presença em papel"
-                      className="w-full rounded-xl object-cover max-h-40 border border-amber-200 hover:opacity-90 transition-opacity cursor-zoom-in"
+                      className="w-full rounded-control object-cover max-h-40 border border-border hover:opacity-90 transition-opacity cursor-zoom-in"
                     />
                   </a>
                 ) : (
-                  <p className="text-[9px] text-amber-600/80 font-medium italic">
-                    Fotografe a lista de presença em papel e envie para arquivamento. Será cruzada com os check-ins do app.
+                  <p className="text-xs text-muted-foreground">
+                    Fotografe a lista de presença em papel e envie para arquivar. Ela é comparada com os check-ins do app.
                   </p>
                 )}
               </div>
@@ -839,11 +866,11 @@ export default function SecretaryAttendancePage() {
               ) : (
                 <div className="space-y-4 flex-1 flex flex-col min-h-0">
                   <div className="flex gap-2 items-center">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                      <Input 
-                        placeholder="Filtrar aluno..." 
-                        className="h-9 pl-9 pr-3 rounded-xl bg-slate-50 border-none text-xs" 
+                    <div className="relative flex-1 min-w-0">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        placeholder="Filtrar aluno..."
+                        className="h-10 pl-9 pr-3 rounded-control bg-muted/30 border-none text-sm"
                         value={searchStudent}
                         onChange={e => setSearchStudent(e.target.value)}
                       />
@@ -851,20 +878,24 @@ export default function SecretaryAttendancePage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 h-9 rounded-xl font-bold text-xs border-slate-200"
+                      className="gap-1.5 h-10 rounded-control font-semibold text-xs shrink-0"
                       onClick={() => { setShowAddPanel((v) => !v); setAddSearch(""); }}
+                      title="Adicionar aluno"
+                      aria-label="Adicionar aluno"
                     >
-                      <UserPlus className="h-3.5 w-3.5 text-slate-500" />
-                      <span className="hidden sm:inline">Adicionar Aluno</span>
+                      <UserPlus className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Adicionar aluno</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 h-9 rounded-xl font-bold text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                      className="gap-1.5 h-10 rounded-control font-semibold text-xs shrink-0"
                       onClick={() => excelInputRef.current?.click()}
+                      title="Importar planilha"
+                      aria-label="Importar planilha"
                     >
                       <FileSpreadsheet className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Importar Planilha</span>
+                      <span className="hidden sm:inline">Importar planilha</span>
                     </Button>
                     <input
                       ref={excelInputRef}
@@ -880,60 +911,60 @@ export default function SecretaryAttendancePage() {
                   </div>
 
                   {showAddPanel && (
-                    <div className="border rounded-2xl p-4 bg-slate-50/50 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-slate-700">
+                    <div className="border border-border rounded-control p-3 sm:p-4 bg-muted/20 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold">
                           Adicionar à chamada
-                          {availableStudents.length < students.filter((s) => !records[s.id]).length && (
+                          {availableStudents.length < notInRoster && (
                             <span className="text-muted-foreground font-normal"> — {availableStudents.length} resultado(s)</span>
                           )}
                         </p>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="gap-2 text-[10px] text-muted-foreground font-bold hover:bg-slate-100 h-7"
+                          className="gap-2 text-xs text-muted-foreground font-semibold h-8"
                           onClick={handleAddAll}
-                          disabled={addingAll || students.filter((s) => !records[s.id]).length === 0}
+                          disabled={addingAll || notInRoster === 0}
                         >
                           {addingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <Users className="h-3 w-3" />}
-                          Adicionar todos ({students.filter((s) => !records[s.id]).length})
+                          Adicionar todos ({notInRoster})
                         </Button>
                       </div>
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                         <Input
-                          className="pl-9 h-8 text-xs bg-white rounded-lg border-slate-200"
+                          className="pl-9 h-9 text-sm bg-background rounded-control"
                           placeholder="Buscar aluno pelo nome..."
                           value={addSearch}
                           onChange={(e) => setAddSearch(e.target.value)}
                           autoFocus
                         />
                       </div>
-                      {students.filter((s) => !records[s.id]).length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-2 italic">
+                      {notInRoster === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-2">
                           Todos os alunos já estão na lista.
                         </p>
                       ) : availableStudents.length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-2 italic">
-                          Nenhum aluno encontrado para "{addSearch}".
+                        <p className="text-sm text-muted-foreground text-center py-2">
+                          Nenhum aluno encontrado para “{addSearch}”.
                         </p>
                       ) : (
                         <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
                           {availableStudents.map((student) => (
                             <div
                               key={student.id}
-                              className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-100 hover:border-slate-200 transition-colors"
+                              className="flex items-center justify-between gap-2 p-2 rounded-control bg-background border border-border"
                             >
                               <div className="min-w-0">
-                                <p className="text-xs font-bold text-slate-800 truncate">{student.name || "Sem nome"}</p>
-                                <p className="text-[9px] text-muted-foreground font-semibold">
-                                  {student.course || "Turma não definida"} • {student.institution || "Polo não definido"}
+                                <p className="text-sm font-semibold truncate">{student.name || "Sem nome"}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">
+                                  {student.course || "Turma não definida"} · {student.institution || "Polo não definido"}
                                 </p>
                               </div>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="gap-1 h-7 text-[10px] font-bold"
+                                className="gap-1 h-8 text-xs font-semibold rounded-control shrink-0"
                                 onClick={() => handleAddStudent(student.id)}
                                 disabled={addingId === student.id}
                               >
@@ -951,9 +982,19 @@ export default function SecretaryAttendancePage() {
                     </div>
                   )}
 
-                  <div className="flex-1 overflow-y-auto space-y-2 max-h-[300px] pr-1">
+                  <div className="flex-1 overflow-y-auto space-y-2 max-h-[360px] pr-1">
                     {filteredStudents.length === 0 ? (
-                      <p className="text-center py-10 text-xs text-muted-foreground italic">Nenhum aluno encontrado.</p>
+                      <EmptyState
+                        compact
+                        icon={Users}
+                        title={Object.keys(records).length === 0 ? "Nenhum aluno nesta chamada" : "Nenhum aluno com esse nome"}
+                        description={Object.keys(records).length === 0
+                          ? "Adicione alunos um a um, todos de uma vez ou importe uma planilha."
+                          : "Confira a grafia ou limpe o filtro."}
+                        action={Object.keys(records).length === 0
+                          ? { label: "Adicionar alunos", onClick: () => { setShowAddPanel(true); setAddSearch(""); }, icon: UserPlus }
+                          : { label: "Limpar filtro", onClick: () => setSearchStudent("") }}
+                      />
                     ) : (
                       filteredStudents.map(student => {
                         const rec = records[student.id];
@@ -963,103 +1004,106 @@ export default function SecretaryAttendancePage() {
                         return (
                           <div
                             key={student.id}
-                            className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${
+                            className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-control border transition-colors ${
                               isOverriding
                                 ? 'bg-red-50 border-red-300 ring-2 ring-red-200'
                                 : rec.status === 'presente'
-                                ? 'bg-green-50 border-green-200'
+                                ? 'bg-emerald-50 border-emerald-200'
                                 : rec.status === 'justificado'
-                                ? 'bg-amber-50 border-amber-200'
-                                : 'bg-slate-50/50 border-slate-100'
+                                ? 'bg-muted/50 border-border'
+                                : 'border-border'
                             }`}
                           >
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-bold text-xs text-slate-800 leading-tight truncate">{student.name}</p>
+                                <p className="font-semibold text-sm leading-tight truncate">{txt(student.name, "Sem nome")}</p>
                                 {checkedInViaApp && (
-                                  <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase px-1.5 h-4 shrink-0" title="Aluno fez check-in pelo app">
-                                    App ✓
+                                  <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] px-1.5 h-5 shrink-0" title="O aluno fez check-in pelo app">
+                                    <CheckCircle2 className="h-3 w-3 mr-0.5" /> Pelo app
                                   </Badge>
                                 )}
                                 {isOverriding && (
-                                  <Badge className="bg-red-600 text-white border-none font-black text-[8px] uppercase px-1.5 h-4 shrink-0">
-                                    Sobrescrita
+                                  <Badge className="bg-red-600 text-white border-none font-bold text-[10px] px-1.5 h-5 shrink-0">
+                                    Alterado
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-[9px] font-black uppercase text-slate-400 mt-0.5">{student.course || 'Sem Turma'}</p>
+                              <p className="u-label mt-1">{student.course || 'Sem turma'}</p>
                             </div>
 
                             <div className="flex flex-col items-end gap-1.5 w-full sm:w-auto">
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                              {rec.status === 'justificado' && (
-                                <Input
-                                  placeholder="Justificativa..."
-                                  value={rec.justification}
-                                  onChange={e => setJustification(student.id, e.target.value)}
-                                  className="h-7 text-[10px] flex-1 sm:w-24 sm:flex-none rounded-lg bg-white"
-                                />
-                              )}
-                              <div className="flex rounded-lg overflow-hidden border">
-                                {(["presente", "ausente", "justificado"] as AttendanceStatus[]).map((s) => (
-                                  <button
-                                    key={s}
-                                    onClick={() => setStatus(student.id, s)}
-                                    className={`px-2.5 py-1 text-[10px] font-black transition-colors ${
-                                      rec.status === s
-                                        ? s === "presente"
-                                          ? "bg-green-500 text-white"
-                                          : s === "justificado"
-                                          ? "bg-amber-500 text-white"
-                                          : "bg-red-500 text-white"
-                                        : "bg-white hover:bg-slate-100 text-slate-400"
-                                    }`}
-                                  >
-                                    {s === "presente" ? "P" : s === "ausente" ? "A" : "J"}
-                                  </button>
-                                ))}
-                              </div>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg shrink-0"
-                                title="Remover da chamada"
-                                onClick={() => handleRemoveStudent(student.id)}
-                                disabled={removingId === student.id}
-                              >
-                                {removingId === student.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <UserMinus className="h-3.5 w-3.5" />
-                                )}
-                              </Button>
-                            </div>
-
-                            {rec.status === 'presente' && (
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleLeftEarly(student.id)}
-                                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition-colors ${
-                                    rec.leftEarly
-                                      ? "bg-orange-100 text-orange-700"
-                                      : "bg-white border border-slate-200 text-slate-400 hover:text-orange-600 hover:border-orange-200"
-                                  }`}
-                                  title="Marcar saída antecipada"
-                                >
-                                  <LogOut className="h-3 w-3" />
-                                  Saiu antes
-                                </button>
-                                {rec.leftEarly && (
-                                  <input
-                                    type="time"
-                                    value={rec.leftEarlyTime}
-                                    onChange={e => setLeftEarlyTime(student.id, e.target.value)}
-                                    className="h-6 text-[10px] font-bold rounded-lg border border-orange-200 bg-white px-1.5 text-slate-700 outline-none focus:border-orange-400"
+                              <div className="flex items-center gap-2 w-full sm:w-auto">
+                                {rec.status === 'justificado' && (
+                                  <Input
+                                    placeholder="Justificativa..."
+                                    value={rec.justification}
+                                    onChange={e => setJustification(student.id, e.target.value)}
+                                    className="h-8 text-xs flex-1 min-w-0 sm:w-28 sm:flex-none rounded-control bg-background"
                                   />
                                 )}
+                                <div className="flex rounded-control overflow-hidden border border-border shrink-0 ml-auto sm:ml-0" role="group" aria-label="Situação na chamada">
+                                  {(["presente", "ausente", "justificado"] as AttendanceStatus[]).map((st) => (
+                                    <button
+                                      key={st}
+                                      type="button"
+                                      onClick={() => setStatus(student.id, st)}
+                                      title={STATUS_SHORT[st].label}
+                                      aria-label={STATUS_SHORT[st].label}
+                                      aria-pressed={rec.status === st}
+                                      className={`h-8 w-9 text-xs font-bold transition-colors ${
+                                        rec.status === st
+                                          ? STATUS_SHORT[st].on
+                                          : "bg-background hover:bg-muted text-muted-foreground"
+                                      }`}
+                                    >
+                                      {STATUS_SHORT[st].key}
+                                    </button>
+                                  ))}
+                                </div>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-control shrink-0"
+                                  title="Remover da chamada"
+                                  aria-label="Remover da chamada"
+                                  onClick={() => handleRemoveStudent(student.id)}
+                                  disabled={removingId === student.id}
+                                >
+                                  {removingId === student.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <UserMinus className="h-3.5 w-3.5" />
+                                  )}
+                                </Button>
                               </div>
-                            )}
+
+                              {rec.status === 'presente' && (
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleLeftEarly(student.id)}
+                                    aria-pressed={rec.leftEarly}
+                                    className={`flex items-center gap-1 h-7 px-2 rounded-control text-[11px] font-semibold transition-colors ${
+                                      rec.leftEarly
+                                        ? "bg-foreground text-background"
+                                        : "bg-background border border-border text-muted-foreground hover:text-foreground"
+                                    }`}
+                                    title="Marcar saída antecipada"
+                                  >
+                                    <LogOut className="h-3 w-3" />
+                                    Saiu antes
+                                  </button>
+                                  {rec.leftEarly && (
+                                    <input
+                                      type="time"
+                                      value={rec.leftEarlyTime}
+                                      onChange={e => setLeftEarlyTime(student.id, e.target.value)}
+                                      aria-label="Horário da saída"
+                                      className="h-7 text-xs font-semibold rounded-control border border-border bg-background px-1.5 outline-none focus:border-primary"
+                                    />
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -1068,70 +1112,72 @@ export default function SecretaryAttendancePage() {
                   </div>
 
                   <Button
+                    variant="arcade"
                     onClick={handleSaveAttendance}
                     disabled={savingAttendance}
-                    className="w-full h-12 bg-primary text-white font-black text-xs uppercase shadow-lg border-none mt-auto"
+                    className="w-full h-11 font-bold rounded-control mt-auto"
                   >
                     {savingAttendance ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserCheck className="mr-2" />}
-                    Confirmar Presenças
+                    Salvar chamada
                   </Button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
-              <ClipboardCheck className="h-14 w-14 text-slate-400 mb-4" />
-              <p className="font-bold text-slate-500 text-sm">Nenhuma aula selecionada</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-[240px]">Escolha uma aula no histórico à esquerda para lançar ou retificar a chamada.</p>
-            </div>
+            <EmptyState
+              className="flex-1 border-none bg-transparent"
+              icon={ClipboardCheck}
+              title="Nenhuma aula selecionada"
+              description="Escolha uma aula na lista para lançar ou corrigir a chamada."
+              secondary={{ label: "Criar nova aula", onClick: openCreate }}
+            />
           )}
         </Card>
       </div>
 
-      {/* Diálogo de Importação de Planilha */}
+      {/* Importação de planilha */}
       <Dialog open={importModalOpen} onOpenChange={(v) => { if (!v) { setImportModalOpen(false); setImportRows([]); } }}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-2xl">
-          <DialogHeader className="p-8 pb-4 bg-emerald-50 border-b border-emerald-100">
+        <DialogContent className="rounded-card p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-2xl">
+          <DialogHeader className="p-6 pb-4 border-b text-left">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white shadow shrink-0">
+              <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <FileSpreadsheet className="h-5 w-5" />
               </div>
-              <div>
-                <DialogTitle className="text-xl font-black italic text-emerald-800 leading-none uppercase tracking-tight">
-                  Importar Lista de Chamada
+              <div className="min-w-0">
+                <p className="u-label">Secretaria · frequência</p>
+                <DialogTitle className="u-page-title text-lg mt-0.5">
+                  Importar chamada
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5 font-medium text-muted-foreground">
-                  {importRows.filter(r => r.matchedStudent).length} encontrado(s) &nbsp;·&nbsp;{" "}
-                  <span className="text-amber-600 font-bold">{importRows.filter(r => !r.matchedStudent).length} não identificado(s)</span>
-                  &nbsp;·&nbsp; {importRows.length} total
+                <DialogDescription className="text-xs mt-0.5 text-muted-foreground">
+                  {importRows.filter(r => r.matchedStudent).length} encontrado(s) ·{" "}
+                  <span className="text-amber-700 font-semibold">{importRows.filter(r => !r.matchedStudent).length} não identificado(s)</span>
+                  {" "}· {importRows.length} no total
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-6 max-h-[60vh] overflow-y-auto space-y-2">
+          <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto space-y-2">
             {importRows.map((row, idx) => (
               <div
                 key={idx}
-                className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl border transition-all ${
+                className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-control border ${
                   row.matchedStudent
-                    ? "bg-green-50 border-green-200"
+                    ? "border-border"
                     : "bg-amber-50 border-amber-200"
                 }`}
               >
-                {/* Nome da planilha */}
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-800 truncate leading-tight">{row.rawName}</p>
+                  <p className="text-sm font-semibold truncate leading-tight">{row.rawName}</p>
                   {row.matchedStudent ? (
-                    <p className="text-[9px] font-black uppercase text-green-700 mt-0.5">
-                      Vinculado → {row.matchedStudent.name}
+                    <p className="text-xs text-emerald-700 mt-0.5 truncate">
+                      Vinculado a {txt(row.matchedStudent.name, "aluno")}
                     </p>
                   ) : (
-                    <p className="text-[9px] font-black uppercase text-amber-600 mt-0.5">Não encontrado</p>
+                    <p className="text-xs text-amber-700 mt-0.5">Não encontrado</p>
                   )}
                 </div>
 
-                {/* Se não encontrado: select manual */}
                 {!row.matchedStudent && (
                   <Select
                     value={row.manualStudentId}
@@ -1141,36 +1187,37 @@ export default function SecretaryAttendancePage() {
                       )
                     }
                   >
-                    <SelectTrigger className="h-8 w-48 rounded-xl bg-white border-amber-200 text-xs font-bold shrink-0">
+                    <SelectTrigger className="h-9 w-full sm:w-48 rounded-control bg-background border-amber-200 text-sm shrink-0">
                       <SelectValue placeholder="Vincular manualmente…" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-none shadow-2xl max-h-60">
+                    <SelectContent className="rounded-control max-h-60">
                       {students.map(s => (
-                        <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.name}</SelectItem>
+                        <SelectItem key={s.id} value={s.id} className="text-sm">{s.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 )}
 
-                {/* Toggle P / A */}
-                <div className="flex rounded-lg overflow-hidden border shrink-0">
+                <div className="flex rounded-control overflow-hidden border border-border shrink-0 self-end sm:self-auto" role="group" aria-label="Situação na chamada">
                   {(["presente", "ausente"] as const).map((st) => (
                     <button
                       key={st}
+                      type="button"
                       onClick={() =>
                         setImportRows(prev =>
                           prev.map((r, i) => i === idx ? { ...r, status: st } : r)
                         )
                       }
-                      className={`px-3 py-1.5 text-[10px] font-black transition-colors ${
+                      title={STATUS_SHORT[st].label}
+                      aria-label={STATUS_SHORT[st].label}
+                      aria-pressed={row.status === st}
+                      className={`h-8 w-10 text-xs font-bold transition-colors ${
                         row.status === st
-                          ? st === "presente"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                          : "bg-white hover:bg-slate-100 text-slate-400"
+                          ? STATUS_SHORT[st].on
+                          : "bg-background hover:bg-muted text-muted-foreground"
                       }`}
                     >
-                      {st === "presente" ? "P" : "A"}
+                      {STATUS_SHORT[st].key}
                     </button>
                   ))}
                 </div>
@@ -1178,54 +1225,56 @@ export default function SecretaryAttendancePage() {
             ))}
           </div>
 
-          <div className="p-6 pt-4 border-t border-slate-100 flex gap-3">
+          <div className="p-4 sm:p-6 pt-4 border-t border-border flex flex-col-reverse sm:flex-row gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-2xl font-black text-xs border-slate-200"
+              className="flex-1 h-11 rounded-control font-bold"
               onClick={() => { setImportModalOpen(false); setImportRows([]); }}
             >
               Cancelar
             </Button>
             <Button
+              variant="arcade"
               onClick={handleConfirmImport}
               disabled={importingExcel}
-              className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 border-none text-xs"
+              className="flex-1 h-11 rounded-control font-bold whitespace-normal"
             >
               {importingExcel ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />}
-              Confirmar Importação ({importRows.filter(r => r.matchedStudent?.id || r.manualStudentId).length} alunos)
+              Confirmar importação ({importRows.filter(r => r.matchedStudent?.id || r.manualStudentId).length} alunos)
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Diálogo Criar Sessão */}
+      {/* Nova aula */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
-          <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
+        <DialogContent className="rounded-card p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
+          <DialogHeader className="p-6 pb-4 border-b text-left">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center font-black text-white shadow shrink-0">
+              <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <PlusCircle className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-black italic text-primary leading-none uppercase tracking-tight">
-                  Agendar Aula
+                <p className="u-label">Secretaria · frequência</p>
+                <DialogTitle className="u-page-title text-lg mt-0.5">
+                  Nova aula
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5 font-medium text-muted-foreground">
-                  Crie uma nova sessão no diário de classe.
+                <DialogDescription className="text-xs mt-0.5 text-muted-foreground">
+                  Crie uma aula no diário de classe.
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-8 space-y-4">
+          <div className="p-6 space-y-4">
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between ml-1">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest">Título da Aula *</Label>
+              <div className="flex items-center justify-between gap-2 ml-1">
+                <Label className="u-label">Título da aula *</Label>
                 {titleTouched && (
                   <button
                     type="button"
                     onClick={() => { setTitleTouched(false); setNewTitle(generateSessionTitle(newDate, newClassLabel, newSubject)); }}
-                    className="text-[9px] font-black uppercase tracking-widest text-primary/50 hover:text-primary transition-colors"
+                    className="u-label !text-primary hover:underline"
                   >
                     Gerar automaticamente
                   </button>
@@ -1234,30 +1283,30 @@ export default function SecretaryAttendancePage() {
               <Input
                 value={newTitle}
                 onChange={e => { setNewTitle(e.target.value); setTitleTouched(true); }}
-                placeholder="Ex: Revisão - Funções Quadráticas"
-                className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm"
+                placeholder="Ex.: Revisão - Funções quadráticas"
+                className={`${fieldCls} font-semibold`}
               />
               {!titleTouched && newTitle && (
-                <p className="text-[9px] font-semibold text-slate-400 ml-1">
-                  Gerado automaticamente pela data, turma e matéria — edite se quiser.
+                <p className="text-xs text-muted-foreground ml-1">
+                  Gerado pela data, turma e matéria. Edite se quiser.
                 </p>
               )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Matéria (Opcional)</Label>
-                <Input value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Ex: Matemática" className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm" />
+                <Label className="u-label ml-1">Matéria (opcional)</Label>
+                <Input value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Ex.: Matemática" className={fieldCls} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Tipo</Label>
+                <Label className="u-label ml-1">Tipo</Label>
                 <Select value={newType} onValueChange={setNewType}>
-                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                  <SelectTrigger className={fieldCls}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="presencial" className="font-bold text-xs">Presencial</SelectItem>
-                    <SelectItem value="live" className="font-bold text-xs">Live / Online</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="presencial" className="text-sm">Presencial</SelectItem>
+                    <SelectItem value="live" className="text-sm">Ao vivo / online</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1265,24 +1314,24 @@ export default function SecretaryAttendancePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Data da Aula</Label>
-                <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm" />
+                <Label className="u-label ml-1">Data da aula</Label>
+                <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className={fieldCls} />
                 {newDate && newDate < format(new Date(), "yyyy-MM-dd") && (
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 ml-1 mt-1">
-                    <AlertCircle className="h-3 w-3 shrink-0" />
-                    Aula retroativa — o lançamento fica registrado no seu nome.
+                  <p className="flex items-start gap-1.5 text-xs font-semibold text-amber-700 ml-1 mt-1">
+                    <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
+                    Aula com data passada: o lançamento fica registrado no seu nome.
                   </p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Mentor / Professor *</Label>
+                <Label className="u-label ml-1">Professor *</Label>
                 <Select value={newTeacherId} onValueChange={setNewTeacherId}>
-                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                  <SelectTrigger className={fieldCls}>
                     <SelectValue placeholder="Escolha" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
+                  <SelectContent className="rounded-control">
                     {teachers.map(t => (
-                      <SelectItem key={t.id} value={t.id} className="font-bold text-xs">{t.name}</SelectItem>
+                      <SelectItem key={t.id} value={t.id} className="text-sm">{t.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -1290,87 +1339,88 @@ export default function SecretaryAttendancePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Sala / Turma *</Label>
+              <Label className="u-label ml-1">Sala / turma *</Label>
               <Select value={newClassLabel} onValueChange={setNewClassLabel}>
-                <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                <SelectTrigger className={fieldCls}>
                   <SelectValue placeholder="Selecionar turma..." />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-2xl">
+                <SelectContent className="rounded-control">
                   {classOptions.length === 0 ? (
-                    <SelectItem value="__none__" disabled className="font-bold text-xs">Nenhuma turma cadastrada</SelectItem>
+                    <SelectItem value="__none__" disabled className="text-sm">Nenhuma turma cadastrada</SelectItem>
                   ) : (
                     classOptions.map(c => (
-                      <SelectItem key={c} value={c} className="font-bold text-xs">{c}</SelectItem>
+                      <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
                     ))
                   )}
                 </SelectContent>
               </Select>
             </div>
 
-            <Button onClick={handleCreateSession} disabled={savingSession} className="w-full h-14 bg-primary hover:bg-primary/95 text-white font-black rounded-2xl shadow-xl mt-4 border-none">
+            <Button onClick={handleCreateSession} disabled={savingSession} className="w-full h-11 rounded-control font-bold mt-2">
               {savingSession ? <Loader2 className="animate-spin mr-2" /> : <ClipboardCheck className="mr-2" />}
-              Confirmar e Salvar no Diário
+              Criar aula e abrir chamada
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Diálogo de Sobrescrita (Audit) */}
+      {/* Confirmação de alteração de check-in feito pelo app (auditoria) */}
       <Dialog open={overrideOpen} onOpenChange={(v) => { if (!v) { setOverrideOpen(false); setOverrideReason(""); } }}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
-          <DialogHeader className="p-8 pb-4 bg-red-50 border-b-2 border-red-200">
+        <DialogContent className="rounded-card p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
+          <DialogHeader className="p-6 pb-4 border-b border-red-200 text-left">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-200">
-                <AlertCircle className="h-6 w-6 text-white" />
+              <div className="h-11 w-11 rounded-control bg-red-50 flex items-center justify-center shrink-0">
+                <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
-              <div>
-                <DialogTitle className="text-xl font-black text-red-700 italic uppercase tracking-tighter leading-none">
-                  Sobrescrever Check-in via App
+              <div className="min-w-0">
+                <p className="u-label !text-red-600">Auditoria</p>
+                <DialogTitle className="text-lg font-bold text-red-700 leading-snug mt-0.5">
+                  Alterar check-in feito pelo app?
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-1 font-bold text-red-600">
+                <DialogDescription className="text-xs mt-1 font-semibold text-red-600">
                   {pendingOverrides.length} aluno{pendingOverrides.length > 1 ? "s" : ""} com check-in digital ser{pendingOverrides.length > 1 ? "ão" : "á"} alterado{pendingOverrides.length > 1 ? "s" : ""}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-8 space-y-5">
-            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl">
-              <p className="text-xs font-bold text-red-700 leading-relaxed">
-                Estes alunos registraram presença pelo app com o token. Sua alteração será registrada no <strong>audit log</strong> com seu nome, data e motivo.
+          <div className="p-6 space-y-5">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-control">
+              <p className="text-sm text-red-700 leading-relaxed">
+                Estes alunos marcaram presença pelo app com o código da aula. A alteração fica no <strong>registro de auditoria</strong> com seu nome, a data e o motivo.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Motivo da sobrescrita *
+              <Label className="u-label ml-1">
+                Motivo da alteração *
               </Label>
               <Input
-                placeholder="Ex: lista de papel da sala confirma ausência"
+                placeholder="Ex.: a lista de papel da sala confirma a ausência"
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
-                className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                className={fieldCls}
               />
-              <p className="text-[10px] text-slate-400 font-medium">
-                Mínimo 5 caracteres. Será visível para auditoria.
+              <p className="text-xs text-muted-foreground">
+                Mínimo de 5 caracteres. Fica visível na auditoria.
               </p>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <Button
                 variant="outline"
                 onClick={() => { setOverrideOpen(false); setOverrideReason(""); setPendingOverrides([]); }}
-                className="flex-1 h-12 rounded-2xl font-black text-xs border-slate-200"
+                className="flex-1 h-11 rounded-control font-bold"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={() => persistAttendance(pendingOverrides)}
                 disabled={savingAttendance || overrideReason.trim().length < 5}
-                className="flex-1 h-12 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-200 border-none text-xs"
+                className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white rounded-control font-bold"
               >
                 {savingAttendance ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-                Confirmar Sobrescrita
+                Confirmar alteração
               </Button>
             </div>
           </div>

@@ -13,6 +13,7 @@ import {
   FileDown,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/EmptyState";
 
 type RankedStudent = {
   userId: string;
@@ -203,7 +204,7 @@ export default function ExamRankingPanel() {
         .toLowerCase();
       doc.save(`ranking-${slug || "prova"}.pdf`);
     } catch {
-      toast({ title: "Erro ao gerar PDF", description: "Tente novamente.", variant: "destructive" });
+      toast({ title: "Não deu para gerar o PDF", description: "Tente de novo em instantes.", variant: "destructive" });
     } finally {
       setExporting(false);
     }
@@ -211,8 +212,9 @@ export default function ExamRankingPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex flex-col items-center justify-center gap-3 py-20">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="u-label">Carregando ranking…</p>
       </div>
     );
   }
@@ -228,11 +230,12 @@ export default function ExamRankingPanel() {
 
   if (exams.length === 0) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl border border-slate-100 bg-white p-10 text-center shadow-sm">
-        <Trophy className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-        <p className="text-sm font-semibold text-slate-500">
-          Nenhuma prova com tentativas de alunos ainda. Assim que os alunos realizarem as provas, o ranking aparece aqui.
-        </p>
+      <div className="mx-auto max-w-md">
+        <EmptyState
+          icon={Trophy}
+          title="Ainda não há provas com ranking"
+          description="Assim que os alunos fizerem as provas, a classificação de cada uma aparece aqui."
+        />
       </div>
     );
   }
@@ -377,7 +380,7 @@ export default function ExamRankingPanel() {
             })}
 
             {filteredStudents.length === 0 && (
-              <p className="py-8 text-center text-sm font-semibold text-slate-400">Nenhum aluno encontrado.</p>
+              <EmptyState compact title="Nenhum aluno com esse nome" description="Confira a grafia ou busque só pelo primeiro nome." />
             )}
           </div>
         </div>

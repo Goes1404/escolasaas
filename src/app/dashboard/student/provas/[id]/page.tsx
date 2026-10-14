@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { trackAcao, trackFalha } from "@/lib/telemetry";
+import { pct as pctOf } from "@/lib/format";
 
 const InteractiveWorkbook = dynamic(
   () => import("@/components/InteractiveWorkbook").then((mod) => mod.InteractiveWorkbook),
@@ -41,7 +42,7 @@ const InteractiveWorkbook = dynamic(
       <div className="h-full flex flex-col items-center justify-center bg-[#0a0a0c] text-white gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-orange-400" />
         <p className="text-[10px] font-black uppercase tracking-widest animate-pulse">
-          Carregando Prova Digital...
+          Carregando prova…
         </p>
       </div>
     ),
@@ -140,7 +141,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
           .single();
 
         if (examError || !examData || !examData.pdf_url) {
-          toast({ title: "Erro", description: "Prova não encontrada ou sem PDF.", variant: "destructive" });
+          toast({ title: "Prova indisponível", description: "Esta prova não foi encontrada ou ainda não tem o PDF. Escolha outra na lista.", variant: "destructive" });
           router.push("/dashboard/student/provas");
           return;
         }
@@ -198,7 +199,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
             setAnswers(sp.answers);
             setCurrentIndex(Math.min(sp.currentIndex ?? 0, questions.length - 1));
             hasProgress = true;
-            toast({ title: "Progresso restaurado", description: `Voce ja tinha marcado ${Object.keys(sp.answers).length} resposta(s).` });
+            toast({ title: "Progresso restaurado", description: `Você já tinha marcado ${Object.keys(sp.answers).length} resposta(s).` });
           }
         }
       }
@@ -365,7 +366,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
         setResult({ score: correctCount, total: questions.length, triRange, durationSeconds, forfeited });
         setMobileTab("answers");
         if (!forfeited) {
-          toast({ title: "Prova Finalizada!", description: `Você acertou ${correctCount} questões.` });
+          toast({ title: "Prova entregue!", description: `Você acertou ${correctCount} questões.` });
         }
         trackAcao("prova_pdf_finalizada", {
           acertos: correctCount, total: questions.length,
@@ -433,7 +434,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
       <div className="h-screen flex flex-col items-center justify-center bg-[#0a0a0c] text-white gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-orange-400" />
         <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-          Carregando Prova e Gabarito...
+          Carregando prova e gabarito…
         </p>
       </div>
     );
@@ -445,7 +446,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
       return (
         <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#0a0a0c] text-white gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-orange-400" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">Preparando prova...</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">Preparando prova…</p>
         </div>
       );
     }
@@ -693,7 +694,7 @@ export default function InteractiveExamPage({ params }: { params: Promise<{ id: 
                     </p>
                     <div className="mt-3 pt-3 border-t border-white/10">
                       <p className="text-base font-black text-emerald-400 italic">
-                        {Math.round((result.score / result.total) * 100)}%
+                        {pctOf(result.score, result.total)}%
                       </p>
                       <p className="text-[8px] font-bold uppercase tracking-widest text-emerald-400/60 mt-0.5">
                         Aproveitamento

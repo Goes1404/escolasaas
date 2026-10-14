@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Users,
@@ -29,6 +28,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { subDays } from "date-fns";
 import { BarChartPremium } from "@/components/charts/premium";
+import { EmptyState } from "@/components/EmptyState";
+import { fmtNumber, fmtPct, txt } from "@/lib/format";
 
 export default function TeacherHomePage() {
   const { user, profile, userRole, loading: isUserLoading } = useAuth();
@@ -49,10 +50,12 @@ export default function TeacherHomePage() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
+  // Cor só como sinal: urgente = vermelho, importante = amarelo da marca (o
+  // idioma de "você precisa agir"), informativo = neutro.
   const priorityStyles: Record<'low' | 'medium' | 'high', { icon: any; color: string; bgColor: string; border: string; label: string }> = {
-    low: { icon: Info, color: 'text-blue-600', bgColor: 'bg-blue-50/50', border: 'border-blue-100', label: 'Informativo' },
-    medium: { icon: Megaphone, color: 'text-amber-600', bgColor: 'bg-amber-50/50', border: 'border-amber-100', label: 'Importante' },
-    high: { icon: AlertOctagon, color: 'text-red-600', bgColor: 'bg-red-50', border: 'border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.1)] animate-pulse-subtle', label: 'Urgente' },
+    low: { icon: Info, color: 'text-muted-foreground', bgColor: 'bg-card', border: 'border-border', label: 'Informativo' },
+    medium: { icon: Megaphone, color: 'text-foreground', bgColor: 'bg-brand-yellow/25', border: 'border-foreground/15', label: 'Importante' },
+    high: { icon: AlertOctagon, color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-500/10', border: 'border-red-200 dark:border-red-500/30', label: 'Urgente' },
   };
 
   // Guard de Papel
@@ -93,8 +96,10 @@ export default function TeacherHomePage() {
       const { data: scores } = await supabase.from('simulation_attempts').select('score, total_questions');
       let avgScore = 0;
       if (scores && scores.length > 0) {
-        const totalPoints = scores.reduce((acc, s) => acc + (s.score / s.total_questions), 0);
-        avgScore = Math.round((totalPoints / scores.length) * 100);
+        // Tentativa sem total de questões entraria como Infinity/NaN na média.
+        const validas = scores.filter(s => Number(s.total_questions) > 0);
+        const totalPoints = validas.reduce((acc, s) => acc + (Number(s.score) || 0) / Number(s.total_questions), 0);
+        avgScore = validas.length ? Math.round((totalPoints / validas.length) * 100) : 0;
       } else {
         avgScore = 0; // Fallback
       }
@@ -104,7 +109,8 @@ export default function TeacherHomePage() {
         eligibleStudents: eligible.length,
         myTrails: myTrails || 0,
         atRisk: atRisk,
-        avgScore: avgScore || 88 // Fallback aesthetic
+        // Sem simulados ainda: mostra "—", nunca um número inventado.
+        avgScore: scores && scores.length ? avgScore : (null as unknown as number)
       });
 
       setEligibleList(eligible.slice(0, 3));
@@ -114,12 +120,14 @@ export default function TeacherHomePage() {
         { name: "Inativos", value: atRisk, color: "#f43f5e" },
       ]);
 
-      // Mocks para avaliação do usuário no painel docente
-      setAnnouncements([
-        { id: '1', title: 'Reunião Pedagógica Extra', message: 'Alinhamento sobre os novos parâmetros do ENEM 2024 na próxima segunda.', priority: 'high' },
-        { id: '2', title: 'Atualização de Materiais', message: 'Novos bancos de questões de Exatas foram adicionados ao diretório.', priority: 'medium' },
-        { id: '3', title: 'Treinamento IA Aurora', message: 'Webinar disponível sobre como usar os diagnósticos preditivos com seus alunos.', priority: 'low' },
-      ]);
+      // Comunicados reais (antes eram três avisos de exemplo fixos no código).
+      const { data: avisos } = await supabase
+        .from('announcements')
+        .select('id, title, message, priority, created_at')
+        .neq('audience', 'guardians')
+        .order('created_at', { ascending: false })
+        .limit(3);
+      setAnnouncements(avisos || []);
 
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -140,12 +148,12 @@ export default function TeacherHomePage() {
       const response = await fetch('/api/health');
       const data = await response.json();
       if (response.status === 200) {
-        toast({ title: "Sistema Operacional", description: "Conexões estabilizadas com sucesso! ✅" });
+        toast({ title: "Tudo funcionando", description: "A conexão com o servidor está normal." });
       } else {
-        toast({ title: "Alerta de Rede", description: "Verifique o status do banco de dados.", variant: "destructive" });
+        toast({ title: "Problema na conexão", description: "O banco de dados não respondeu como esperado.", variant: "destructive" });
       }
     } catch (err) {
-      toast({ title: "Erro de Comunicação", variant: "destructive" });
+      toast({ title: "Não foi possível verificar a conexão", variant: "destructive" });
     } finally {
       setDiagLoading(false);
     }
@@ -154,8 +162,8 @@ export default function TeacherHomePage() {
   if (isUserLoading) {
     return (
       <div className="h-96 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="text-muted-foreground font-black uppercase text-[10px] tracking-widest animate-pulse">Sincronizando Gestão...</p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="u-label">Carregando…</p>
       </div>
     );
   }
@@ -167,198 +175,194 @@ export default function TeacherHomePage() {
 
   const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
   const firstName = (profile as any)?.name?.split(' ')[0] || (profile as any)?.full_name?.split(' ')[0] || 'Professor';
+  const avgLabel = fmtPct(stats.avgScore);
 
   return (
-    <div className="space-y-4 md:space-y-6 animate-in fade-in duration-500 pb-6 px-0.5">
+    <div className="space-y-4 md:space-y-6 pb-6 px-0.5">
 
-      {/* ── HERO ── */}
-      <div className="relative aurora-dark rounded-card p-5 md:p-8 shadow-xl overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
+      {/* ── CABEÇALHO (nível médio: superfície neutra, sombra dura só no CTA) ── */}
+      <section className="anim-rise u-surface p-5 md:p-8" style={{ "--i": 0 } as React.CSSProperties}>
+        <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse block" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/45">Professor</span>
-            </div>
-            <h1 className="text-[2.6rem] md:text-[3.5rem] font-black text-white italic tracking-tighter leading-none">
-              {firstName}<span className="text-primary">.</span>
-            </h1>
-            <p className="text-white/45 text-[10px] font-bold mt-2 capitalize tracking-wide">{today}</p>
+            <p className="u-label">Professor · início</p>
+            <h1 className="u-page-title text-3xl md:text-4xl mt-2 truncate">Olá, {firstName}</h1>
+            <p className="text-sm text-muted-foreground mt-1 capitalize">{today}</p>
           </div>
           <div className="flex gap-2.5 flex-wrap">
-            <Button asChild className="rounded-2xl h-11 bg-primary text-white font-black border-none px-5 text-xs uppercase tracking-wide active:scale-95 transition-all [touch-action:manipulation] shadow-lg shadow-primary/30">
+            <Button asChild variant="arcade" className="rounded-control h-11 px-5 text-sm font-bold [touch-action:manipulation]">
               <Link href="/dashboard/teacher/attendance/new">
                 <ClipboardCheck className="h-4 w-4 mr-1.5" />
-                Iniciar Chamada
+                Iniciar chamada
               </Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-2xl h-11 border-white/15 bg-white/5 text-white font-black px-5 text-xs uppercase hover:bg-white/10 active:scale-95 transition-all [touch-action:manipulation]">
+            <Button asChild variant="outline" className="rounded-control h-11 px-5 text-sm font-bold [touch-action:manipulation]">
               <Link href="/dashboard/teacher/live">
                 <MonitorPlay className="h-4 w-4 mr-1.5" />
-                Lives
+                Aulas ao vivo
               </Link>
             </Button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── KPI CARDS — numbers as heroes ── */}
+      {/* ── INDICADORES ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Alunos",       value: stats.totalStudents,   sub: "Total ativo",   icon: Users,      accent: "text-primary",    href: "/dashboard/teacher/students" },
-          { label: "Apoio Social", value: stats.eligibleStudents, sub: "Elegíveis",     icon: HandHeart,  accent: "text-emerald-600", href: "/dashboard/teacher/students" },
-          { label: "Em Risco",     value: stats.atRisk,           sub: "Inativos >7d",  icon: AlertCircle,accent: "text-red-500",     href: "/dashboard/teacher/students" },
-          { label: "Acerto Médio", value: `${stats.avgScore}%`,   sub: "Taxa global",   icon: TrendingUp, accent: "text-violet-600",  href: "/dashboard/teacher/analytics" },
+          { label: "Alunos",       value: fmtNumber(stats.totalStudents),    sub: "Total cadastrado", icon: Users,       accent: "text-primary",    num: "",              href: "/dashboard/teacher/students" },
+          { label: "Apoio social", value: fmtNumber(stats.eligibleStudents), sub: "Elegíveis",        icon: HandHeart,   accent: "text-emerald-600", num: "",              href: "/dashboard/teacher/students" },
+          { label: "Em risco",     value: fmtNumber(stats.atRisk),           sub: "Sem acesso há 7 dias", icon: AlertCircle, accent: "text-red-600", num: "text-red-600",   href: "/dashboard/teacher/students" },
+          { label: "Acerto médio", value: avgLabel,                          sub: "Todos os simulados", icon: TrendingUp, accent: "text-primary",    num: "",              href: "/dashboard/teacher/analytics" },
         ].map((stat, i) => (
-          <Link key={i} href={stat.href} className="block">
-            <div className="gradient-border bg-white rounded-2xl p-4 md:p-5 shadow-md border-none hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] transition-all [touch-action:manipulation] cursor-pointer">
-              <stat.icon className={`h-4 w-4 ${stat.accent} mb-3`} strokeWidth={1.5} />
+          <Link key={i} href={stat.href} className="block anim-rise" style={{ "--i": i + 1 } as React.CSSProperties}>
+            <div className="u-surface lift press p-4 md:p-5 h-full [touch-action:manipulation] cursor-pointer">
+              <stat.icon className={`h-4 w-4 ${stat.accent} mb-3`} strokeWidth={1.8} />
               {dataLoading ? (
-                <div className="h-8 w-16 bg-slate-100 animate-pulse rounded-lg mb-1" />
+                <div className="h-8 w-16 bg-muted animate-pulse rounded-control mb-1" />
               ) : (
-                <p className={`text-3xl md:text-4xl font-black italic leading-none tabular-nums ${stat.accent}`}>{stat.value}</p>
+                <p className={`u-num text-2xl md:text-3xl leading-none ${stat.num}`}>{stat.value}</p>
               )}
-              <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mt-2">{stat.label}</p>
-              <p className="text-[9px] text-slate-400 mt-0.5">{stat.sub}</p>
+              <p className="u-label mt-3">{stat.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stat.sub}</p>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* ── QUICK ACTIONS — horizontal scroll ── */}
-      <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+      {/* ── ATALHOS ── */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
         {[
-          { label: "Nova Trilha",  icon: PlayCircle,    href: "/dashboard/teacher/trails",        color: "from-violet-500 to-purple-600" },
-          { label: "Comunicado",   icon: Bell,           href: "/dashboard/teacher/communication",  color: "from-blue-500 to-indigo-600" },
-          { label: "Redações",     icon: FilePenLine,    href: "/dashboard/teacher/essays",         color: "from-emerald-500 to-green-600" },
-          { label: "Questões",     icon: Database,       href: "/dashboard/teacher/questions",      color: "from-amber-500 to-orange-500" },
-          { label: "Calendário",   icon: CalendarDays,   href: "/dashboard/teacher/calendar",       color: "from-pink-500 to-rose-500" },
-          { label: "Analytics",    icon: Activity,       href: "/dashboard/teacher/analytics",      color: "from-slate-600 to-slate-800" },
-        ].map((action) => (
-          <Link key={action.label} href={action.href} className="shrink-0">
-            <div className={`btn-shimmer flex flex-col items-center justify-center gap-2 bg-gradient-to-br ${action.color} rounded-2xl p-3.5 w-[88px] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all [touch-action:manipulation]`}>
-              <action.icon className="h-5 w-5 text-white" strokeWidth={1.5} />
-              <span className="text-[9px] font-bold text-white/90 uppercase tracking-wide text-center leading-tight">{action.label}</span>
+          { label: "Nova trilha",  icon: PlayCircle,    href: "/dashboard/teacher/trails" },
+          { label: "Comunicado",   icon: Bell,          href: "/dashboard/teacher/communication" },
+          { label: "Redações",     icon: FilePenLine,   href: "/dashboard/teacher/essays" },
+          { label: "Questões",     icon: Database,      href: "/dashboard/teacher/questions" },
+          { label: "Calendário",   icon: CalendarDays,  href: "/dashboard/teacher/calendar" },
+          { label: "Relatórios",   icon: Activity,      href: "/dashboard/teacher/analytics" },
+        ].map((action, i) => (
+          <Link key={action.label} href={action.href} className="block anim-rise" style={{ "--i": i + 5 } as React.CSSProperties}>
+            <div className="u-surface lift press flex flex-col items-center justify-center gap-2 p-3.5 h-full [touch-action:manipulation]">
+              <action.icon className="h-5 w-5 text-primary" strokeWidth={1.8} />
+              <span className="text-xs font-semibold text-foreground text-center leading-tight">{action.label}</span>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* ── CONTEÚDO ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
 
-        {/* LEFT — chart + announcements */}
         <div className="lg:col-span-2 space-y-4 md:space-y-5">
 
-          {/* Announcements */}
-          <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 p-4 md:p-7">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-sm text-slate-900 italic flex items-center gap-2">
-                <Megaphone className="h-4 w-4 text-amber-500" />
+          {/* Comunicados */}
+          <section className="anim-rise u-surface p-4 md:p-6" style={{ "--i": 11 } as React.CSSProperties}>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="font-bold text-base text-foreground flex items-center gap-2">
+                <Megaphone className="h-4 w-4 text-primary" />
                 Comunicados
               </h2>
-              <Link href="/dashboard/teacher/communication" className="text-[9px] font-black uppercase tracking-widest text-accent hover:text-primary transition-colors">
+              <Link href="/dashboard/teacher/communication" className="u-label hover:text-foreground transition-colors">
                 Ver tudo
               </Link>
             </div>
+            {announcements.length === 0 && !dataLoading && (
+              <EmptyState
+                compact
+                icon={Megaphone}
+                title="Nenhum comunicado publicado"
+                description="Os avisos da coordenação e os seus aparecem aqui."
+                action={{ label: "Criar comunicado", href: "/dashboard/teacher/communication" }}
+              />
+            )}
             <div className="space-y-2.5">
               {announcements.map((ann) => {
                 const styles = priorityStyles[ann.priority as keyof typeof priorityStyles] || priorityStyles.low;
                 const Icon = styles.icon;
                 return (
-                  <div key={ann.id} className={`flex items-start gap-3 p-3 rounded-xl ${styles.bgColor} border ${styles.border} relative overflow-hidden`}>
-                    {ann.priority === 'high' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-l-xl" />}
-                    <div className="h-9 w-9 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <div key={ann.id} className={`flex items-start gap-3 p-3 rounded-control ${styles.bgColor} border ${styles.border}`}>
+                    <div className="h-9 w-9 rounded-control bg-background border border-border flex items-center justify-center shrink-0">
                       <Icon className={`h-4 w-4 ${styles.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`text-[7px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${styles.border} ${styles.color}`}>{styles.label}</span>
-                      </div>
-                      <p className="font-black text-xs text-slate-900 truncate">{ann.title}</p>
-                      <p className="text-[11px] text-slate-500 line-clamp-1 italic mt-0.5">{ann.message}</p>
+                      <span className={`u-label !tracking-[0.16em] ${ann.priority === 'high' ? '!text-red-600' : ''}`}>{styles.label}</span>
+                      <p className="font-semibold text-sm text-foreground truncate mt-0.5">{ann.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ann.message}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </section>
 
-          {/* Engagement chart */}
-          <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 p-4 md:p-7">
+          {/* Engajamento */}
+          <section className="anim-rise u-surface p-4 md:p-6" style={{ "--i": 12 } as React.CSSProperties}>
             <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-accent" />
-              <h2 className="font-black text-sm text-slate-900 italic">Engajamento da Turma</h2>
+              <Activity className="h-4 w-4 text-primary" />
+              <h2 className="font-bold text-base text-foreground">Engajamento da turma</h2>
             </div>
             <div className="h-[180px] md:h-[260px] w-full">
               {dataLoading ? (
-                <div className="h-full w-full bg-slate-50 animate-pulse rounded-xl" />
+                <div className="h-full w-full bg-muted animate-pulse rounded-control" />
               ) : (
                 <BarChartPremium data={chartData} xKey="name" yKey="value" colorKey="color" barSize={80} />
               )}
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* RIGHT — busca ativa + diagnostic */}
         <div className="space-y-4">
 
-          {/* Busca Ativa */}
-          <div className="aurora-dark dot-grid rounded-2xl md:rounded-card p-5 md:p-7 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="relative z-10">
-              <h2 className="font-black text-sm text-white italic flex items-center gap-2 mb-3">
-                <Bell className="h-4 w-4 text-accent animate-pulse" />
-                Busca Ativa
-              </h2>
-              {eligibleList.length === 0 ? (
-                <p className="text-white/65 text-xs italic text-center py-5 border border-white/10 rounded-xl">
-                  Sem alertas pendentes ✅
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {eligibleList.map((aluno, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/8 border border-white/10">
-                      <div className="min-w-0">
-                        <p className="text-sm font-black text-white italic truncate max-w-[130px]">{aluno.name}</p>
-                        <p className="text-[8px] font-black text-accent uppercase tracking-widest">Elegível Isenção</p>
-                      </div>
-                      <Button asChild size="sm" className="h-8 text-[9px] font-black uppercase bg-accent/15 hover:bg-accent/25 text-accent border-none rounded-xl px-3 shrink-0 transition-all active:scale-95">
-                        <Link href={`/dashboard/chat/${aluno.id}`}>Orientar</Link>
-                      </Button>
+          {/* Busca ativa */}
+          <section className="anim-rise u-surface p-4 md:p-6" style={{ "--i": 13 } as React.CSSProperties}>
+            <h2 className="font-bold text-base text-foreground flex items-center gap-2 mb-3">
+              <Bell className="h-4 w-4 text-primary" />
+              Busca ativa
+            </h2>
+            {eligibleList.length === 0 ? (
+              <EmptyState
+                compact
+                icon={HandHeart}
+                title="Nenhum aluno para orientar agora"
+                description="Quem for elegível à isenção aparece aqui para você conversar."
+              />
+            ) : (
+              <div className="space-y-2">
+                {eligibleList.map((aluno, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-control border border-border">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{txt(aluno.name, 'Aluno sem nome')}</p>
+                      <p className="u-label !tracking-[0.16em] mt-0.5">Elegível à isenção</p>
                     </div>
-                  ))}
-                </div>
-              )}
-              <Button asChild className="w-full mt-4 h-11 rounded-xl bg-accent text-accent-foreground font-black text-xs uppercase border-none shadow-lg active:scale-95 transition-all [touch-action:manipulation]">
-                <Link href="/dashboard/teacher/students">Ver Todos Alunos</Link>
-              </Button>
-            </div>
-          </div>
+                    <Button asChild size="sm" variant="outline" className="h-8 text-xs font-bold rounded-control px-3 shrink-0">
+                      <Link href={`/dashboard/chat/${aluno.id}`}>Orientar</Link>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button asChild variant="outline" className="w-full mt-4 h-11 rounded-control font-bold text-sm [touch-action:manipulation]">
+              <Link href="/dashboard/teacher/students">Ver todos os alunos</Link>
+            </Button>
+          </section>
 
-          {/* Avg score pill */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
+          {/* Taxa de acerto */}
+          <div className="anim-rise u-surface p-4 flex items-center gap-4" style={{ "--i": 14 } as React.CSSProperties}>
+            <div className="h-12 w-12 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Taxa de Sucesso</p>
-              <p className="text-2xl font-black text-slate-900 italic leading-none">{stats.avgScore}%</p>
+              <p className="u-label">Taxa de acerto</p>
+              <p className="u-num text-2xl text-foreground leading-none mt-1">{avgLabel}</p>
             </div>
           </div>
 
-          {/* Diagnostic */}
+          {/* Diagnóstico */}
           <Button
             variant="outline"
             onClick={runDiagnostic}
             disabled={diagLoading}
-            className="btn-shimmer glow-orange-strong w-full rounded-xl h-11 border-accent/20 bg-accent/10 text-primary font-black text-xs uppercase tracking-wide active:scale-95 transition-all [touch-action:manipulation]"
+            className="w-full rounded-control h-11 font-bold text-sm [touch-action:manipulation]"
           >
-            {diagLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Activity className="h-4 w-4 mr-2 text-accent" />}
-            Diagnóstico de Rede
+            {diagLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Activity className="h-4 w-4 mr-2 text-primary" />}
+            Verificar conexão
           </Button>
         </div>
       </div>

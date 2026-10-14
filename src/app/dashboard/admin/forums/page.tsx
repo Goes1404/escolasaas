@@ -36,7 +36,6 @@ import {
 import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -59,6 +58,8 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 const FORUM_CATEGORIES = [
   "Dúvidas", 
@@ -127,9 +128,9 @@ export default function AdminForumModerationPage() {
       });
 
       setForums(prev => prev.filter(f => f.id !== id));
-      toast({ title: "Tópico Removido", description: "O debate e todas as suas mensagens foram excluídos." });
+      toast({ title: "Tópico excluído", description: "O tópico e todas as mensagens dele foram excluídos." });
     } catch (err: any) {
-      toast({ title: "Erro na Moderação", description: err.message, variant: "destructive" });
+      toast({ title: "Não foi possível excluir o tópico", description: err.message, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }
@@ -161,9 +162,9 @@ export default function AdminForumModerationPage() {
       if (error) throw error;
       
       setForums(prev => prev.map(f => f.id === configForum.id ? configForum : f));
-      toast({ title: "Configurações Salvas", description: "As permissões do fórum foram atualizadas." });
+      toast({ title: "Configurações salvas", description: "As permissões do fórum foram atualizadas." });
     } catch (err: any) {
-      toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
+      toast({ title: "Não foi possível salvar", description: err.message, variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
@@ -190,9 +191,9 @@ export default function AdminForumModerationPage() {
       setBannedUsers([...bannedUsers, { user_id: targetUser.id, profiles: targetUser }]);
       setUserSearch("");
       setSearchResults([]);
-      toast({ title: "Usuário Restrito", description: `${targetUser.name} não pode mais postar aqui.` });
+      toast({ title: "Usuário bloqueado", description: `${txt(targetUser.name, "O usuário")} não pode mais escrever neste fórum.` });
     } catch (err: any) {
-      toast({ title: "Ação já registrada", description: "Este usuário já está banido deste debate.", variant: "destructive" });
+      toast({ title: "Usuário já bloqueado", description: "Este usuário já está bloqueado neste fórum.", variant: "destructive" });
     }
   };
 
@@ -200,7 +201,7 @@ export default function AdminForumModerationPage() {
     const { error } = await supabase.from('forum_bans').delete().eq('id', banId);
     if (!error) {
       setBannedUsers(bannedUsers.filter(b => b.id !== banId));
-      toast({ title: "Acesso Restaurado" });
+      toast({ title: "Usuário desbloqueado" });
     }
   };
 
@@ -217,251 +218,279 @@ export default function AdminForumModerationPage() {
     return matchesSearch && matchesCategory && matchesVisibility;
   });
 
+  const rowActions = (f: any) => (
+    <div className="flex items-center justify-end gap-1">
+      <Button variant="ghost" size="icon" className="rounded-control h-10 w-10" asChild title="Abrir fórum" aria-label="Abrir fórum">
+        <Link href={`/dashboard/forum/${f.id}`} target="_blank"><ExternalLink className="h-4 w-4" /></Link>
+      </Button>
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon" className="rounded-control h-10 w-10" title="Configurar" aria-label="Configurar fórum" onClick={() => handleOpenConfig(f)}>
+            <Settings2 className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="rounded-card p-6 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-foreground">Configurações do fórum</DialogTitle>
+          </DialogHeader>
+
+          {configForum && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="u-label">Título do fórum</Label>
+                    <Input
+                      value={configForum.name}
+                      onChange={e => setConfigForum({...configForum, name: e.target.value})}
+                      className="h-11 rounded-control text-sm"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-control bg-muted/30 border">
+                    <div className="space-y-0.5">
+                      <Label className="font-semibold text-sm text-foreground">Só professores escrevem</Label>
+                      <p className="text-xs text-muted-foreground leading-tight">Alunos apenas leem</p>
+                    </div>
+                    <Switch
+                      checked={configForum.is_teacher_only}
+                      onCheckedChange={v => setConfigForum({...configForum, is_teacher_only: v})}
+                    />
+                  </div>
+
+                  <Button onClick={updateForumSettings} disabled={isUpdating} className="w-full h-11 font-bold rounded-control text-sm mt-2">
+                    {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar configurações"}
+                  </Button>
+                </div>
+
+                <div className="space-y-3 relative">
+                  <Label className="u-label flex items-center gap-2">
+                    <UserX className="h-3 w-3" /> Bloquear participantes
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      placeholder="Buscar aluno para bloquear..."
+                      className="h-11 rounded-control pr-10 text-sm"
+                      value={userSearch}
+                      onChange={e => { setUserSearch(e.target.value); searchUserToBan(); }}
+                    />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  </div>
+
+                  {searchResults.length > 0 && (
+                    <div className="bg-popover border rounded-control shadow-xl p-2 absolute z-50 left-0 right-0">
+                      {searchResults.map(u => (
+                        <button
+                          key={u.id}
+                          onClick={() => banUserFromForum(u)}
+                          className="w-full text-left p-2 hover:bg-red-50 rounded-control flex items-center justify-between gap-2"
+                        >
+                          <span className="text-sm font-semibold text-foreground truncate">{txt(u.name, "Usuário")}</span>
+                          <Badge className="bg-red-100 text-red-700 border-none text-[10px] font-bold uppercase shrink-0">Bloquear</Badge>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                    <p className="u-label px-1">Bloqueados neste fórum</p>
+                    {bannedUsers.length === 0 ? (
+                      <p className="text-xs text-muted-foreground p-3 text-center border border-dashed rounded-control">Ninguém bloqueado neste fórum.</p>
+                    ) : (
+                      bannedUsers.map(b => (
+                        <div key={b.id} className="flex items-center justify-between gap-2 p-2.5 bg-red-50 rounded-control border border-red-100">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-red-800 leading-none truncate">{txt(b.profiles?.name, "Usuário")}</p>
+                            {b.profiles?.profile_type && <p className="text-[10px] font-semibold text-red-600 uppercase mt-1">{b.profiles.profile_type}</p>}
+                          </div>
+                          <Button variant="ghost" size="icon" title="Desbloquear" aria-label="Desbloquear" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-card rounded-control shrink-0" onClick={() => liftBan(b.id)}>
+                            <Unlock className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="icon" title="Excluir tópico" aria-label="Excluir tópico" className="rounded-control h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50">
+            {deletingId === f.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent className="rounded-card p-8 max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-foreground">Excluir este tópico?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Esta ação remove o tópico <strong className="text-red-600">"{f.name}"</strong> e todas as mensagens dele.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 mt-6">
+            <AlertDialogCancel className="rounded-control font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleDeleteForum(f.id, f.name)}
+              className="rounded-control font-bold bg-red-600 hover:bg-red-700 text-white px-6"
+            >
+              Excluir tópico
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+
+  const topicTags = (f: any) => (
+    <div className="flex items-center gap-2 mt-1 flex-wrap">
+      {f.category && <Badge variant="outline" className="text-[10px] font-bold uppercase">{f.category}</Badge>}
+      {f.is_teacher_only && <Badge className="bg-muted text-foreground text-[10px] font-bold uppercase border-none gap-1"><Lock className="h-2.5 w-2.5" /> Só professores</Badge>}
+    </div>
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black text-primary italic leading-none">Moderação de Comunidade</h1>
-            <Gavel className="h-6 w-6 text-accent" />
-          </div>
-          <p className="text-muted-foreground font-medium italic">Gestão de tópicos, permissões de fala e restrições de usuários.</p>
+    <div className="space-y-6 pb-20 px-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><Gavel className="h-3.5 w-3.5" /> Coordenação · fóruns</p>
+          <h1 className="u-page-title text-3xl mt-1">Moderação dos fóruns</h1>
+          <p className="text-muted-foreground text-sm mt-2">Gerencie tópicos, quem pode escrever e quem está bloqueado.</p>
         </div>
-        <div className="relative w-full md:w-80 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors" />
-          <Input 
-            placeholder="Pesquisar tópico ou autor..." 
-            className="pl-12 h-14 bg-white border-none shadow-xl rounded-2xl italic font-medium focus-visible:ring-accent"
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar tópico ou autor..."
+            className="pl-9 h-11 rounded-control"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-2 tracking-widest flex items-center gap-2">
-            <Filter className="h-3 w-3" /> Filtrar por Matéria
+          <Label className="u-label flex items-center gap-2">
+            <Filter className="h-3 w-3" /> Matéria
           </Label>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold italic">
-              <SelectValue placeholder="Todas as Categorias" />
+            <SelectTrigger className="h-11 rounded-control">
+              <SelectValue placeholder="Todas as matérias" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
-              <SelectItem value="all" className="font-bold">Todas as Matérias</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todas as matérias</SelectItem>
               {FORUM_CATEGORIES.map(cat => (
-                <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-2 tracking-widest flex items-center gap-2">
-            <Eye className="h-3 w-3" /> Nível de Visibilidade
+          <Label className="u-label flex items-center gap-2">
+            <Eye className="h-3 w-3" /> Quem pode escrever
           </Label>
           <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold italic">
-              <SelectValue placeholder="Todos os Status" />
+            <SelectTrigger className="h-11 rounded-control">
+              <SelectValue placeholder="Todos os tópicos" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
-              <SelectItem value="all" className="font-bold">Todos os Tópicos</SelectItem>
-              <SelectItem value="public" className="font-bold">Apenas Públicos</SelectItem>
-              <SelectItem value="staff" className="font-bold">Apenas Somente Staff</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todos os tópicos</SelectItem>
+              <SelectItem value="public">Só tópicos abertos</SelectItem>
+              <SelectItem value="staff">Só tópicos de professores</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="h-12 w-12 animate-spin text-accent" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Escaneando Redes de Debate...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-50 border-b border-muted/10">
-                  <TableRow className="border-none h-16">
-                    <TableHead className="px-8 font-black uppercase text-[10px] tracking-widest text-primary/40">Tópico / Status</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest text-primary/40">Autor</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest text-primary/40">Data</TableHead>
-                    <TableHead className="text-right px-8 font-black uppercase text-[10px] tracking-widest text-primary/40">Ações de Gestão</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((f) => (
-                    <TableRow key={f.id} className="border-b last:border-0 hover:bg-accent/5 transition-colors group h-24">
-                      <TableCell className="px-8">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center shadow-inner">
-                            {f.is_teacher_only ? <Lock className="h-5 w-5 text-accent" /> : <MessageSquare className="h-5 w-5" />}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-black text-primary text-sm italic group-hover:text-accent transition-colors">{f.name}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge className="bg-muted/50 text-[7px] font-black uppercase text-primary/40 border-none">{f.category}</Badge>
-                              {f.is_teacher_only && <Badge className="bg-red-50 text-red-600 text-[7px] font-black uppercase border-none">Somente Staff</Badge>}
+      {loading ? (
+        <Card className="rounded-card">
+          <CardContent className="py-20 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="u-label">Carregando tópicos…</p>
+          </CardContent>
+        </Card>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={MessageSquare}
+          title={forums.length === 0 ? "Nenhum tópico criado ainda" : "Nenhum tópico encontrado"}
+          description={forums.length === 0
+            ? "Quando alunos ou professores abrirem tópicos no fórum, eles aparecem aqui."
+            : "Tente outra busca, outra matéria ou outro filtro."}
+          action={forums.length === 0
+            ? { label: "Abrir o fórum", href: "/dashboard/forum" }
+            : { label: "Limpar filtros", onClick: () => { setSearchTerm(""); setCategoryFilter("all"); setVisibilityFilter("all"); } }}
+        />
+      ) : (
+        <>
+          <div className="sm:hidden space-y-3">
+            {filtered.map((f) => (
+              <Card key={f.id} className="rounded-card">
+                <CardContent className="p-4 space-y-2">
+                  <p className="font-semibold text-sm text-foreground break-words">{txt(f.name, "Sem título")}</p>
+                  {topicTags(f)}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <span className="text-xs text-muted-foreground truncate min-w-0">
+                      {txt(f.author_name, "Autor desconhecido")} · {fmtDate(f.created_at, "dd/MM/yy")}
+                    </span>
+                    {rowActions(f)}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden sm:block rounded-card overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="px-6 u-label">Tópico</TableHead>
+                      <TableHead className="u-label">Autor</TableHead>
+                      <TableHead className="u-label">Data</TableHead>
+                      <TableHead className="text-right px-6 u-label">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((f) => (
+                      <TableRow key={f.id} className="hover:bg-muted/20">
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-control bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                              {f.is_teacher_only ? <Lock className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-foreground text-sm">{txt(f.name, "Sem título")}</span>
+                              {topicTags(f)}
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs font-bold text-primary/70">{f.author_name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(new Date(f.created_at), "dd/MM/yy")}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right px-8">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 text-primary" asChild>
-                            <Link href={`/dashboard/forum/${f.id}`} target="_blank"><ExternalLink className="h-4 w-4" /></Link>
-                          </Button>
-                          
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 text-accent" onClick={() => handleOpenConfig(f)}>
-                                <Settings2 className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="rounded-card border-none shadow-2xl p-6 max-w-2xl bg-white">
-                              <DialogHeader>
-                                <DialogTitle className="text-xl font-black italic text-primary">Configurações de Debate</DialogTitle>
-                              </DialogHeader>
-                              
-                              {configForum && (
-                                <div className="space-y-4 py-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                      <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-black uppercase opacity-40">Título do Fórum</Label>
-                                        <Input 
-                                          value={configForum.name} 
-                                          onChange={e => setConfigForum({...configForum, name: e.target.value})}
-                                          className="h-10 rounded-xl bg-muted/30 border-none font-bold text-sm"
-                                        />
-                                      </div>
-                                      
-                                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 shadow-inner">
-                                        <div className="space-y-0.5">
-                                          <Label className="font-black text-xs italic text-primary">Somente Professores</Label>
-                                          <p className="text-[9px] font-bold text-muted-foreground uppercase leading-tight">Alunos apenas leem</p>
-                                        </div>
-                                        <Switch 
-                                          checked={configForum.is_teacher_only}
-                                          onCheckedChange={v => setConfigForum({...configForum, is_teacher_only: v})}
-                                        />
-                                      </div>
-
-                                      <Button onClick={updateForumSettings} disabled={isUpdating} className="w-full h-10 bg-primary text-white font-black rounded-xl shadow-lg text-sm mt-2">
-                                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Gravar Preferências"}
-                                      </Button>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                      <Label className="text-[9px] font-black uppercase opacity-40 flex items-center gap-2">
-                                        <UserX className="h-3 w-3" /> Restringir Participantes
-                                      </Label>
-                                      <div className="relative">
-                                        <Input 
-                                          placeholder="Buscar aluno para banir..."
-                                          className="h-10 rounded-xl bg-muted/30 border-none pr-10 italic text-sm"
-                                          value={userSearch}
-                                          onChange={e => { setUserSearch(e.target.value); searchUserToBan(); }}
-                                        />
-                                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-20" />
-                                      </div>
-
-                                      {searchResults.length > 0 && (
-                                        <div className="bg-white border rounded-xl shadow-xl p-2 absolute z-50 w-[240px] -mt-1 animate-in fade-in zoom-in-95">
-                                          {searchResults.map(u => (
-                                            <button 
-                                              key={u.id}
-                                              onClick={() => banUserFromForum(u)}
-                                              className="w-full text-left p-2 hover:bg-red-50 rounded-lg flex items-center justify-between group"
-                                            >
-                                              <span className="text-xs font-bold text-primary italic">{u.name}</span>
-                                              <Badge className="bg-red-100 text-red-600 border-none text-[7px] font-black uppercase">Banir</Badge>
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
-
-                                      <div className="space-y-2 max-h-[150px] overflow-y-auto pr-2">
-                                        <p className="text-[8px] font-black uppercase text-primary/30 tracking-widest px-1">Banidos deste fórum</p>
-                                        {bannedUsers.length === 0 ? (
-                                          <p className="text-[10px] italic text-muted-foreground p-3 text-center border-2 border-dashed rounded-xl opacity-40">Nenhum banimento específico.</p>
-                                        ) : (
-                                          bannedUsers.map(b => (
-                                            <div key={b.id} className="flex items-center justify-between p-2.5 bg-red-50 rounded-xl border border-red-100 group">
-                                              <div>
-                                                <p className="text-xs font-black text-red-800 italic leading-none">{b.profiles?.name}</p>
-                                                <p className="text-[7px] font-bold text-red-600 uppercase mt-0.5">{b.profiles?.profile_type}</p>
-                                              </div>
-                                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-white rounded-lg" onClick={() => liftBan(b.id)}>
-                                                <Unlock className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                          ))
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </DialogContent>
-                          </Dialog>
-                          
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 text-red-400 hover:text-red-600 hover:bg-red-50">
-                                {deletingId === f.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-2xl font-black italic text-primary">Banir Tópico?</AlertDialogTitle>
-                                <AlertDialogDescription className="font-medium text-sm">
-                                  Esta ação removerá o debate <strong className="text-red-600">"{f.name}"</strong> e todas as mensagens vinculadas.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter className="gap-3 mt-6">
-                                <AlertDialogCancel className="rounded-xl font-bold border-none bg-muted/30">Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteForum(f.id, f.name)} 
-                                  className="rounded-xl font-black bg-red-600 hover:bg-red-700 text-white px-8"
-                                >
-                                  Remover Agora
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filtered.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-64 text-center py-20">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
-                        <p className="font-black italic text-xl text-primary/40 uppercase tracking-widest">Nenhuma discussão localizada</p>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm text-foreground">{txt(f.author_name, "Desconhecido")}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground tabular-nums">{fmtDate(f.created_at, "dd/MM/yy")}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right px-6">{rowActions(f)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

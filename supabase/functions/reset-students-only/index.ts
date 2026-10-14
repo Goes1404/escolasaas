@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 type ResetStudentsOnlyRequest = {
   emails: string[];
   profileType?: string; // default: "student"
-  password?: string; // default: "compromisso2026"
+  password?: string; // obrigatória (sem valor padrão no código)
 };
 
 // GUARD: roda com SERVICE ROLE e é destrutiva (apaga perfis do tipo escolhido
@@ -92,7 +92,10 @@ Deno.serve(async (req: Request) => {
   }
 
   const profileType = body?.profileType ?? "student";
-  const password = body?.password ?? "compromisso2026";
+  const password = body?.password;
+  if (!password || String(password).length < 8) {
+    return new Response(JSON.stringify({ error: "Informe password (8+ caracteres) no corpo." }), { status: 400, headers: { "Content-Type": "application/json" } });
+  }
 
   // 1) Remove profiles only for students
   const { error: profilesErr } = await supabase

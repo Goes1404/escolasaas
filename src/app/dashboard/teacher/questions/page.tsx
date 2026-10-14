@@ -31,6 +31,7 @@ import { useExtraction, ParsedQuestion, Subject, ImgItem, UploadRecord } from '@
 import { extractPdfContent } from '@/lib/pdf-extract';
 import { EXAM_TYPES } from '@/lib/exam-types';
 import { parseAnswerKey, applyAnswerKey } from '@/lib/answer-key';
+import { fmtLocale, pct } from '@/lib/format';
 
 type MicroTopic = { id: string; name: string; subject_id?: string };
 type QuestionOption = { key: string; text: string };
@@ -103,7 +104,7 @@ export default function QuestionBankPage() {
                     setBulkSubjectId(uncat.id);
                 }
             } else {
-                toast({ title: 'Base Vazia', description: 'Nenhuma disciplina cadastrada.', variant: 'destructive' });
+                toast({ title: 'Nenhuma matéria cadastrada', description: 'Cadastre as matérias antes de importar questões.', variant: 'destructive' });
             }
         });
     }, [toast]);
@@ -231,9 +232,9 @@ export default function QuestionBankPage() {
             setRawText((prev: string) => prev ? prev + '\n' + combinedText.trim() : combinedText.trim());
             setAutoImageQueue((prev: ImgItem[]) => [...prev, ...tempImages]);
             const imgMsg = tempImages.length > 0 ? ` ${tempImages.length} imagens detectadas.` : '';
-            toast({ title: 'Upload concluído!', description: `${files.length} arquivo(s) lido(s).${imgMsg}` });
+            toast({ title: 'Arquivo lido', description: `${files.length} arquivo(s) lido(s).${imgMsg}` });
         } else {
-            toast({ title: 'Aviso', description: 'Texto insuficiente extraído dos arquivos.', variant: 'destructive' });
+            toast({ title: 'Pouco texto no arquivo', description: 'Não foi possível ler texto suficiente dos arquivos.', variant: 'destructive' });
         }
 
         setIsReadingFile(false);
@@ -362,9 +363,9 @@ export default function QuestionBankPage() {
                 if (examErr) throw examErr;
                 const examQs = inserted.map((q, i) => ({ exam_id: examData.id, question_id: q.id, order_index: i }));
                 await supabase.from('exam_questions').insert(examQs);
-                toast({ title: 'Prova criada!', description: `"${examTitle}" com ${inserted.length} questões.` });
+                toast({ title: 'Prova criada', description: `"${examTitle}" com ${inserted.length} questões.` });
             } else if (failed.length === 0) {
-                toast({ title: 'Banco Atualizado!', description: `${inserted.length} questões gravadas.` });
+                toast({ title: 'Questões salvas', description: `${inserted.length} questões gravadas.` });
             }
 
             setExtractedQuestions([]);
@@ -395,7 +396,7 @@ export default function QuestionBankPage() {
             if (manualQuestion.target_audience !== 'all') insertData.target_audience = manualQuestion.target_audience;
             const { error } = await supabase.from('questions').insert([insertData]);
             if (error) throw error;
-            toast({ title: 'Questão Salva!' });
+            toast({ title: 'Questão salva' });
             setManualQuestion(prev => ({ ...prev, question_text: '', explanation: '', micro_topic_id: '' }));
             setManualOptions({ A: '', B: '', C: '', D: '', E: '' });
         } catch (err: any) {
@@ -425,7 +426,7 @@ export default function QuestionBankPage() {
 
     const formatDate = (iso: string) => {
         try {
-            return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            return fmtLocale(iso, 'datetime', 'pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
         } catch { return iso; }
     };
 
@@ -437,63 +438,57 @@ export default function QuestionBankPage() {
 
     // ---------- JSX ----------
     return (
-        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-24 px-1">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl rotate-3">
-                        <Database className="h-7 w-7" />
-                    </div>
-                    <div className="space-y-1">
-                        <h1 className="text-3xl font-black text-primary italic leading-none">Banco de Questões</h1>
-                        <p className="text-muted-foreground font-medium italic">Gestão estratégica de avaliações e simulados.</p>
-                    </div>
-                </div>
+        <div className="max-w-6xl mx-auto space-y-6 pb-24 px-1">
+            <header className="min-w-0">
+                <p className="u-label flex items-center gap-2"><Database className="h-3.5 w-3.5" /> Professor · banco de questões</p>
+                <h1 className="u-page-title text-3xl mt-1">Banco de questões</h1>
+                <p className="text-sm text-muted-foreground mt-1">Importe provas, revise as questões e monte simulados.</p>
             </header>
 
             <QuestionsDashboard />
 
-            <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
-                <CardHeader className="bg-slate-50/50 border-b border-dashed p-6">
-                    <div className="flex flex-wrap bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl border w-fit mx-auto md:mx-0 shadow-sm">
+            <Card className="rounded-card overflow-hidden">
+                <CardHeader className="border-b border-border p-4 md:p-6">
+                    <div className="grid grid-cols-2 sm:inline-flex gap-1 bg-muted p-1 rounded-control w-full sm:w-fit">
                         <Button variant={entryMode === 'bulk' ? 'default' : 'ghost'} onClick={() => setEntryMode('bulk')}
-                            className={`rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-6 ${entryMode === 'bulk' ? 'bg-primary text-white shadow-lg' : ''}`}>
-                            <ListChecks className="h-4 w-4 mr-2" /> Carga em Massa
+                            className={`rounded-control font-semibold text-sm h-10 px-4 ${entryMode === 'bulk' ? '' : 'text-muted-foreground'}`}>
+                            <ListChecks className="h-4 w-4 mr-2" /> Importar prova
                         </Button>
                         <Button variant={entryMode === 'manual' ? 'default' : 'ghost'} onClick={() => setEntryMode('manual')}
-                            className={`rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-6 ${entryMode === 'manual' ? 'bg-primary text-white shadow-lg' : ''}`}>
-                            <PlusCircle className="h-4 w-4 mr-2" /> Manual
+                            className={`rounded-control font-semibold text-sm h-10 px-4 ${entryMode === 'manual' ? '' : 'text-muted-foreground'}`}>
+                            <PlusCircle className="h-4 w-4 mr-2" /> Uma questão
                         </Button>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                     {/* ---- BULK MODE ---- */}
                     {entryMode === 'bulk' && (
-                        <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
+                        <div className="space-y-4">
 
                             {/* Upload history */}
                             {uploadHistory.length > 0 && (
-                                <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 overflow-hidden">
+                                <div className="rounded-control border border-border overflow-hidden">
                                     <button
                                         onClick={() => setShowHistory(v => !v)}
-                                        className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-slate-100 transition-colors"
+                                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
                                     >
-                                        <div className="flex items-center gap-2 text-xs font-black text-slate-500 uppercase tracking-widest">
+                                        <div className="flex items-center gap-2 u-label">
                                             <History className="h-4 w-4" />
-                                            Histórico de Uploads ({uploadHistory.length})
+                                            Arquivos enviados ({uploadHistory.length})
                                         </div>
                                         {showHistory ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
                                     </button>
                                     {showHistory && (
                                         <div className="px-4 pb-4 space-y-2">
                                             {uploadHistory.map(r => (
-                                                <div key={r.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100">
-                                                    <div>
-                                                        <p className="text-xs font-bold text-slate-700 truncate max-w-[200px]">{r.filename}</p>
+                                                <div key={r.id} className="flex items-center justify-between gap-3 bg-card rounded-control px-4 py-2.5 border border-border">
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">{r.filename}</p>
                                                         <p className="text-[10px] text-muted-foreground">{formatDate(r.timestamp)}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${statusColors[r.status]}`}>
+                                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-control whitespace-nowrap ${statusColors[r.status]}`}>
                                                             {r.questionCount} questões
                                                         </span>
                                                     </div>
@@ -505,15 +500,15 @@ export default function QuestionBankPage() {
                             )}
 
                             {/* Upload hint */}
-                            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-2xl border border-blue-100">
-                                <FileText className="h-5 w-5 text-blue-500 shrink-0" />
-                                <p className="text-xs font-bold text-blue-700 flex-1">
-                                    Cole o texto da prova abaixo <span className="font-black">ou</span> faça upload de um arquivo <span className="font-black">.txt / .pdf</span> com texto selecionável.
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-control border border-border bg-muted/40">
+                                <FileText className="h-5 w-5 text-primary shrink-0 hidden sm:block" />
+                                <p className="text-sm text-muted-foreground flex-1">
+                                    Cole o texto da prova abaixo <span className="font-bold text-foreground">ou</span> envie um arquivo <span className="font-bold text-foreground">.txt / .pdf</span> com texto selecionável.
                                 </p>
                                 <input ref={fileInputRef} type="file" accept=".txt,.pdf,text/plain,application/pdf" className="hidden" multiple onChange={handleFileUpload} />
                                 <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReadingFile}
-                                    className="shrink-0 h-9 rounded-xl border-blue-200 text-blue-600 font-black text-xs hover:bg-blue-100">
-                                    {isReadingFile ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Lendo...</> : <><Upload className="h-4 w-4 mr-1" />Upload</>}
+                                    className="shrink-0 h-9 rounded-control font-bold text-xs">
+                                    {isReadingFile ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Lendo...</> : <><Upload className="h-4 w-4 mr-1" />Enviar arquivo</>}
                                 </Button>
                             </div>
 
@@ -521,24 +516,24 @@ export default function QuestionBankPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 <div className={`${pdfUrl ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-4`}>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Texto Bruto da Prova</Label>
+                                        <Label className="u-label">Texto da prova</Label>
                                         <Textarea
                                             placeholder="Cole aqui o texto copiado de um PDF ou documento..."
-                                            className="min-h-[250px] rounded-2xl bg-muted/30 border-none p-4 font-medium text-sm leading-relaxed italic"
+                                            className="min-h-[250px] rounded-control p-4 text-sm leading-relaxed"
                                             value={rawText}
                                             onChange={e => setRawText(e.target.value)}
                                         />
-                                        <div className="flex justify-between items-center px-2">
+                                        <div className="flex justify-between items-center gap-2 px-1">
                                             {rawText && (
-                                                <p className="text-[10px] text-muted-foreground font-medium">
+                                                <p className="text-xs text-muted-foreground">
                                                     {rawText.length.toLocaleString('pt-BR')} caracteres · {rawText.split('\n').length} linhas
                                                 </p>
                                             )}
                                             {rawText && (
                                                 <Button variant="ghost" size="sm"
                                                     onClick={() => { clearExtraction(); setPdfUrl(null); }}
-                                                    className="h-6 text-[8px] font-black text-red-400 hover:text-red-600 uppercase">
-                                                    Limpar Tudo
+                                                    className="h-7 text-xs font-bold text-muted-foreground hover:text-red-600">
+                                                    Limpar tudo
                                                 </Button>
                                             )}
                                         </div>
@@ -546,10 +541,11 @@ export default function QuestionBankPage() {
                                     <Button
                                         onClick={() => startExtraction({ text: rawText, imageQueue: autoImageQueue, subjects, bulkSubjectId, filename: currentFilename })}
                                         disabled={isAnalyzing || !rawText.trim()}
-                                        className="w-full h-12 rounded-2xl bg-primary text-white font-black text-base shadow-xl hover:scale-[1.02] transition-all active:scale-95 mt-2">
+                                        variant="arcade"
+                                        className="w-full h-12 rounded-control font-bold text-sm mt-2">
                                         {isAnalyzing
-                                            ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Analisando com Aurora IA...</>
-                                            : <><BrainCircuit className="h-5 w-5 mr-2" />Extrair Questões com Aurora IA</>}
+                                            ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Analisando com a Aurora IA...</>
+                                            : <><BrainCircuit className="h-5 w-5 mr-2" />Extrair questões com a Aurora IA</>}
                                     </Button>
                                 </div>
 
@@ -557,13 +553,13 @@ export default function QuestionBankPage() {
                                 {pdfUrl && (
                                     <div className="lg:col-span-5 flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
-                                            <Badge className="bg-primary text-white border-none text-[8px] font-black uppercase px-3">PDF Original</Badge>
+                                            <span className="u-label">PDF original</span>
                                             <Button variant="ghost" size="sm" onClick={() => setPdfUrl(null)}
-                                                className="h-7 w-7 p-0 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500">
+                                                aria-label="Fechar PDF" className="h-8 w-8 p-0 rounded-control text-muted-foreground hover:text-red-600">
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
-                                        <div className="h-[380px] bg-slate-900 rounded-card overflow-hidden border-4 border-slate-800 shadow-2xl">
+                                        <div className="h-[380px] bg-muted rounded-card overflow-hidden border border-border">
                                             <iframe src={pdfUrl} className="w-full h-full border-none" />
                                         </div>
                                     </div>
@@ -572,40 +568,40 @@ export default function QuestionBankPage() {
 
                             {/* Progress overlay */}
                             {isAnalyzing && (
-                                <div className="mt-4 p-6 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 space-y-5 animate-in fade-in duration-500">
+                                <div className="mt-4 p-4 md:p-6 rounded-card border border-border space-y-5">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+                                        <div className="h-12 w-12 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+                                            <Sparkles className="h-6 w-6 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="font-black text-primary italic text-base leading-tight">Aurora está analisando a prova...</p>
-                                            <p className="text-xs text-muted-foreground font-medium">Você pode navegar para outras páginas — a extração continua em segundo plano.</p>
+                                            <p className="font-bold text-foreground text-base leading-tight">A Aurora está analisando a prova...</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">Você pode navegar para outras páginas — a extração continua em segundo plano.</p>
                                         </div>
                                     </div>
                                     {progress.totalChunks > 0 && (
                                         <div className="space-y-2">
-                                            <div className="flex justify-between items-center text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                                            <div className="flex justify-between items-center u-label">
                                                 <span>Parte {progress.currentChunk} de {progress.totalChunks}</span>
-                                                <span>{Math.round((progress.currentChunk / progress.totalChunks) * 100)}%</span>
+                                                <span className="u-num">{pct(progress.currentChunk, progress.totalChunks)}%</span>
                                             </div>
                                             <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                                                <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700"
-                                                    style={{ width: `${Math.max(5, (progress.currentChunk / progress.totalChunks) * 100)}%` }} />
+                                                <div className="h-full rounded-full bg-primary transition-all duration-700"
+                                                    style={{ width: `${Math.max(5, pct(progress.currentChunk, progress.totalChunks))}%` }} />
                                             </div>
                                         </div>
                                     )}
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-                                            <p className="text-2xl font-black text-primary">{progress.questionsFound}</p>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Questões encontradas</p>
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                        <div className="rounded-control border border-border p-3 text-center">
+                                            <p className="u-num text-2xl">{progress.questionsFound}</p>
+                                            <p className="u-label !tracking-[0.14em] mt-1">Questões encontradas</p>
                                         </div>
-                                        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-                                            <p className="text-2xl font-black text-accent">{progress.totalChunks > 0 ? progress.totalChunks : '—'}</p>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Partes do texto</p>
+                                        <div className="rounded-control border border-border p-3 text-center">
+                                            <p className="u-num text-2xl">{progress.totalChunks > 0 ? progress.totalChunks : '—'}</p>
+                                            <p className="u-label !tracking-[0.14em] mt-1">Partes do texto</p>
                                         </div>
-                                        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-                                            <p className="text-2xl font-black text-slate-600">{progress.elapsedSeconds}s</p>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Tempo decorrido</p>
+                                        <div className="rounded-control border border-border p-3 text-center">
+                                            <p className="u-num text-2xl">{progress.elapsedSeconds}s</p>
+                                            <p className="u-label !tracking-[0.14em] mt-1">Tempo decorrido</p>
                                         </div>
                                     </div>
                                 </div>
@@ -613,18 +609,18 @@ export default function QuestionBankPage() {
 
                             {/* Image gallery */}
                             {autoImageQueue.length > 0 && (
-                                <div className="mt-6 p-6 bg-slate-50 rounded-card border border-dashed border-slate-200 animate-in fade-in duration-500">
+                                <div className="mt-6 p-4 md:p-6 rounded-card border border-dashed border-border">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                         <div>
-                                            <Label className="text-sm font-black uppercase text-primary flex items-center gap-2">
-                                                <ImageIcon className="h-4 w-4" /> Fila de Imagens Detectadas ({autoImageQueue.length})
+                                            <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                                                <ImageIcon className="h-4 w-4 text-primary" /> Imagens encontradas ({autoImageQueue.length})
                                             </Label>
-                                            <p className="text-[10px] text-muted-foreground mt-1">
+                                            <p className="text-xs text-muted-foreground mt-1">
                                                 Arraste para reordenar ou solte uma imagem diretamente em uma questão.
                                             </p>
                                         </div>
                                         <Button variant="ghost" size="sm" onClick={() => setAutoImageQueue([])}
-                                            className="h-8 text-[10px] font-black text-red-400 hover:bg-red-50 hover:text-red-600 uppercase">
+                                            className="h-8 text-xs font-bold text-muted-foreground hover:bg-red-50 hover:text-red-600">
                                             <Trash2 className="h-3 w-3 mr-1" /> Limpar
                                         </Button>
                                     </div>
@@ -640,12 +636,12 @@ export default function QuestionBankPage() {
                                                     q.splice(draggedImgIndex, 1); q.splice(idx, 0, item);
                                                     setAutoImageQueue(q); setDraggedImgIndex(null);
                                                 }}
-                                                className="relative w-32 h-32 shrink-0 rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary cursor-grab active:cursor-grabbing group shadow-sm bg-white">
-                                                <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-lg z-10 shadow-md">
+                                                className="relative w-32 h-32 shrink-0 rounded-control overflow-hidden border-2 border-border hover:border-primary cursor-grab active:cursor-grabbing group bg-card">
+                                                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-control z-10">
                                                     {img.questionNumber != null ? `Q${img.questionNumber}` : `#${idx + 1}`}
                                                 </div>
                                                 <button onClick={() => setAutoImageQueue(prev => prev.filter((_, i) => i !== idx))}
-                                                    className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                    aria-label="Remover imagem" className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-control opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
                                                     <Trash2 className="h-3 w-3" />
                                                 </button>
                                                 <Image src={img.url} alt={`Img ${idx}`} fill className="object-contain p-2" />
@@ -659,17 +655,17 @@ export default function QuestionBankPage() {
 
                     {/* ---- MANUAL MODE ---- */}
                     {entryMode === 'manual' && (
-                        <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
+                        <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Enunciado da Questão</Label>
-                                <Textarea placeholder="Digite o texto da pergunta..." className="rounded-2xl bg-muted/30 border-none min-h-[80px] p-4 font-medium italic text-sm"
+                                <Label className="u-label">Enunciado</Label>
+                                <Textarea placeholder="Digite o texto da pergunta..." className="rounded-control min-h-[80px] p-4 text-sm"
                                     value={manualQuestion.question_text} onChange={e => setManualQuestion(p => ({ ...p, question_text: e.target.value }))} />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {['A', 'B', 'C', 'D', 'E'].map(key => (
                                     <div key={key} className="space-y-1.5">
-                                        <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Opção {key}</Label>
-                                        <Input placeholder={`Texto da alternativa ${key}...`} className="h-10 rounded-xl bg-muted/30 border-none font-medium pl-4 text-sm"
+                                        <Label className="u-label">Alternativa {key}</Label>
+                                        <Input placeholder={`Texto da alternativa ${key}...`} className="h-10 rounded-control pl-4 text-sm"
                                             value={manualOptions[key as keyof typeof manualOptions]}
                                             onChange={e => setManualOptions(p => ({ ...p, [key]: e.target.value }))} />
                                     </div>
@@ -677,80 +673,81 @@ export default function QuestionBankPage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Gabarito</Label>
+                                    <Label className="u-label">Gabarito</Label>
                                     <Select value={manualQuestion.correct_answer} onValueChange={val => setManualQuestion(p => ({ ...p, correct_answer: val }))}>
-                                        <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold text-sm"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                                        <SelectContent className="rounded-xl border-none shadow-2xl">
+                                        <SelectTrigger className="h-10 rounded-control text-sm"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                                        <SelectContent className="rounded-control">
                                             {['A', 'B', 'C', 'D', 'E'].map(k => <SelectItem key={k} value={k} className="font-bold">Alternativa {k}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Disciplina</Label>
+                                    <Label className="u-label">Matéria</Label>
                                     <Select value={manualQuestion.subject_id} onValueChange={val => setManualQuestion(p => ({ ...p, subject_id: val }))}>
-                                        <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold text-sm"><SelectValue placeholder="Matéria" /></SelectTrigger>
-                                        <SelectContent className="rounded-xl border-none shadow-2xl">
+                                        <SelectTrigger className="h-10 rounded-control text-sm"><SelectValue placeholder="Matéria" /></SelectTrigger>
+                                        <SelectContent className="rounded-control">
                                             {subjects.map(s => <SelectItem key={s.id} value={s.id} className="font-bold text-sm">{s.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 {manualMicroTopics.length > 0 && (
                                     <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Micro-tópico</Label>
+                                        <Label className="u-label">Micro-tópico</Label>
                                         <Select value={manualQuestion.micro_topic_id || '_none'}
                                             onValueChange={val => setManualQuestion(p => ({ ...p, micro_topic_id: val === '_none' ? '' : val }))}>
-                                            <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold text-sm"><SelectValue placeholder="Selecionar tópico" /></SelectTrigger>
-                                            <SelectContent className="rounded-xl border-none shadow-2xl">
-                                                <SelectItem value="_none" className="font-bold text-sm">Nenhum (Geral)</SelectItem>
+                                            <SelectTrigger className="h-10 rounded-control text-sm"><SelectValue placeholder="Selecionar tópico" /></SelectTrigger>
+                                            <SelectContent className="rounded-control">
+                                                <SelectItem value="_none" className="font-bold text-sm">Nenhum (geral)</SelectItem>
                                                 {manualMicroTopics.map(mt => <SelectItem key={mt.id} value={mt.id} className="font-bold text-sm">{mt.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 )}
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Público Alvo</Label>
+                                    <Label className="u-label">Público</Label>
                                     <Select value={manualQuestion.target_audience} onValueChange={val => setManualQuestion(p => ({ ...p, target_audience: val }))}>
-                                        <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold text-sm"><SelectValue placeholder="Turma" /></SelectTrigger>
-                                        <SelectContent className="rounded-xl border-none shadow-2xl">
-                                            <SelectItem value="all" className="font-bold text-sm">Todos (Geral)</SelectItem>
-                                            <SelectItem value="etec" className="font-bold text-sm">Foco ETEC / FATEC</SelectItem>
-                                            <SelectItem value="enem" className="font-bold text-sm">Foco ENEM</SelectItem>
+                                        <SelectTrigger className="h-10 rounded-control text-sm"><SelectValue placeholder="Turma" /></SelectTrigger>
+                                        <SelectContent className="rounded-control">
+                                            <SelectItem value="all" className="font-bold text-sm">Todos</SelectItem>
+                                            <SelectItem value="etec" className="font-bold text-sm">ETEC / FATEC</SelectItem>
+                                            <SelectItem value="enem" className="font-bold text-sm">ENEM</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase opacity-40 ml-2">Ano Referência</Label>
-                                    <Input type="number" className="h-10 rounded-xl bg-muted/30 border-none font-black text-center text-sm"
+                                    <Label className="u-label">Ano de referência</Label>
+                                    <Input type="number" className="h-10 rounded-control text-center text-sm"
                                         value={manualQuestion.year} onChange={e => setManualQuestion(p => ({ ...p, year: parseInt(e.target.value, 10) }))} />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Explicação Pedagógica (Opcional)</Label>
-                                <Textarea placeholder="Justifique a resposta correta..." className="rounded-2xl bg-muted/30 border-none min-h-[60px] p-4 font-medium italic text-sm"
+                                <Label className="u-label">Explicação da resposta (opcional)</Label>
+                                <Textarea placeholder="Justifique a resposta correta..." className="rounded-control min-h-[60px] p-4 text-sm"
                                     value={manualQuestion.explanation}
                                     onChange={e => setManualQuestion(p => ({ ...p, explanation: e.target.value }))} />
                             </div>
                             <Button onClick={handleSaveSingle} disabled={isSaving || !manualQuestion.question_text}
-                                className="w-full h-12 bg-primary text-white font-black text-base rounded-2xl shadow-xl transition-all active:scale-95 mt-2">
+                                variant="arcade"
+                                className="w-full h-12 font-bold text-sm rounded-control mt-2">
                                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
-                                Salvar no Repositório
+                                Salvar questão
                             </Button>
                         </div>
                     )}
 
                     {/* ---- CURATION AREA ---- */}
                     {extractedQuestions.length > 0 && (
-                        <div className="mt-12 pt-12 border-t border-dashed space-y-6 animate-in slide-in-from-bottom-8">
+                        <div className="mt-10 pt-10 border-t border-dashed border-border space-y-6">
 
                             {/* Curation controls (STICKY) */}
-                            <div className="md:sticky md:top-4 z-40 bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-muted/20 shadow-xl space-y-4 mb-8">
+                            <div className="md:sticky md:top-4 z-40 bg-card p-4 md:p-6 rounded-card border border-border shadow-xl space-y-4 mb-8">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div>
-                                        <h3 className="text-xl font-black text-primary italic flex items-center gap-2">
-                                            Área de Curadoria ({extractedQuestions.length})
-                                            {lastSaved && <span className="text-[10px] font-bold text-muted-foreground flex items-center bg-slate-100 px-2 py-1 rounded-lg not-italic"><Clock className="h-3 w-3 mr-1" /> Rascunho salvo às {lastSaved.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>}
+                                        <h3 className="text-lg font-bold text-foreground flex flex-wrap items-center gap-2">
+                                            Revisão das questões <span className="u-num text-base">({extractedQuestions.length})</span>
+                                            {lastSaved && <span className="text-[11px] font-semibold text-muted-foreground flex items-center bg-muted px-2 py-1 rounded-control"><Clock className="h-3 w-3 mr-1" /> Rascunho salvo às {fmtLocale(lastSaved, 'time', 'pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>}
                                         </h3>
-                                        <p className="text-xs text-muted-foreground font-medium">Matérias detectadas pela IA. Ajuste se necessário.</p>
+                                        <p className="text-xs text-muted-foreground">A IA sugeriu as matérias. Ajuste se precisar.</p>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3">
                                         <Button variant="outline" size="sm" onClick={() => {
@@ -761,46 +758,46 @@ export default function QuestionBankPage() {
                                             document.body.appendChild(downloadNode);
                                             downloadNode.click();
                                             downloadNode.remove();
-                                        }} className="h-10 rounded-xl font-bold text-xs bg-white shadow-sm border-slate-200 hover:border-primary">
+                                        }} className="h-10 rounded-control font-bold text-xs">
                                             <Download className="h-4 w-4 mr-2" /> Exportar JSON
                                         </Button>
                                         <Select value={bulkTargetAudience} onValueChange={setBulkTargetAudience}>
-                                            <SelectTrigger className="w-full md:w-40 h-10 rounded-xl bg-white border-none shadow-md font-bold text-xs"><SelectValue placeholder="Público Alvo" /></SelectTrigger>
-                                            <SelectContent className="rounded-xl border-none shadow-2xl">
+                                            <SelectTrigger className="w-full md:w-40 h-10 rounded-control font-semibold text-xs"><SelectValue placeholder="Público" /></SelectTrigger>
+                                            <SelectContent className="rounded-control">
                                                 <SelectItem value="all" className="font-bold text-xs">Todos</SelectItem>
                                                 <SelectItem value="etec" className="font-bold text-xs">ETEC/FATEC</SelectItem>
                                                 <SelectItem value="enem" className="font-bold text-xs">ENEM</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <div className="text-xs text-muted-foreground font-medium">Fallback matéria:</div>
+                                        <div className="text-xs text-muted-foreground">Matéria padrão:</div>
                                         <Select value={bulkSubjectId} onValueChange={setBulkSubjectId}>
-                                            <SelectTrigger className="w-full md:w-44 h-10 rounded-xl bg-white border-none shadow-md font-bold text-xs"><SelectValue placeholder="Matéria padrão" /></SelectTrigger>
-                                            <SelectContent className="rounded-xl border-none shadow-2xl">
+                                            <SelectTrigger className="w-full md:w-44 h-10 rounded-control font-semibold text-xs"><SelectValue placeholder="Matéria padrão" /></SelectTrigger>
+                                            <SelectContent className="rounded-control">
                                                 {subjects.map(s => <SelectItem key={s.id} value={s.id} className="font-bold text-xs">{s.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-dashed">
+                                <div className="flex items-center gap-3 p-4 rounded-control border border-dashed border-border">
                                     <Switch id="create-exam" checked={createExam} onCheckedChange={setCreateExam} />
-                                    <Label htmlFor="create-exam" className="font-black text-sm text-primary cursor-pointer flex items-center gap-2">
-                                        <Scroll className="h-4 w-4 text-accent" /> Criar também como Prova Completa
+                                    <Label htmlFor="create-exam" className="font-semibold text-sm text-foreground cursor-pointer flex items-center gap-2">
+                                        <Scroll className="h-4 w-4 text-primary" /> Criar também como prova completa
                                     </Label>
                                 </div>
 
                                 {createExam && (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 animate-in slide-in-from-top-2 duration-300">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <div className="md:col-span-1 space-y-1">
-                                            <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Título da Prova</Label>
-                                            <Input placeholder="Ex: ENEM 2023 — 1ª Aplicação" className="h-10 rounded-xl bg-white border-none shadow-md font-bold text-xs"
+                                            <Label className="u-label">Título da prova</Label>
+                                            <Input placeholder="Ex.: ENEM 2023 — 1ª Aplicação" className="h-10 rounded-control font-semibold text-xs"
                                                 value={examTitle} onChange={e => setExamTitle(e.target.value)} />
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Tipo</Label>
+                                            <Label className="u-label">Tipo</Label>
                                             <Select value={examType} onValueChange={setExamType}>
-                                                <SelectTrigger className="h-10 rounded-xl bg-white border-none shadow-md font-bold text-xs"><SelectValue /></SelectTrigger>
-                                                <SelectContent className="rounded-xl border-none shadow-2xl">
+                                                <SelectTrigger className="h-10 rounded-control font-semibold text-xs"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-control">
                                                     {EXAM_TYPES.map(t => (
                                                         <SelectItem key={t} value={t} className="font-bold text-xs">{t.toUpperCase()}</SelectItem>
                                                     ))}
@@ -808,31 +805,31 @@ export default function QuestionBankPage() {
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Ano</Label>
-                                            <Input type="number" className="h-10 rounded-xl bg-white border-none shadow-md font-black text-center text-xs"
+                                            <Label className="u-label">Ano</Label>
+                                            <Input type="number" className="h-10 rounded-control text-center text-xs"
                                                 value={examYear} onChange={e => setExamYear(parseInt(e.target.value, 10))} />
                                         </div>
                                     </div>
                                 )}
 
                                 <Button onClick={handlePreSave} disabled={isSaving || !bulkSubjectId || (createExam && !examTitle.trim())}
-                                    className="w-full h-12 rounded-xl bg-primary text-white font-black shadow-lg relative overflow-hidden">
+                                    className="w-full h-12 rounded-control font-bold relative overflow-hidden">
                                     {saveProgress && (
                                         <div 
                                             className="absolute top-0 left-0 h-full bg-accent transition-all duration-300 z-0" 
-                                            style={{ width: `${(saveProgress.current / saveProgress.total) * 100}%`, opacity: 0.2 }}
+                                            style={{ width: `${pct(saveProgress.current, saveProgress.total)}%`, opacity: 0.2 }}
                                         />
                                     )}
                                     <div className="relative z-10 flex items-center justify-center">
-                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2 text-accent" />}
-                                        {saveProgress ? `Salvando... (${saveProgress.current}/${saveProgress.total})` : isSaving ? 'Verificando...' : `Validar e Salvar Tudo (${extractedQuestions.length} questões)`}
+                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                                        {saveProgress ? `Salvando... (${saveProgress.current}/${saveProgress.total})` : isSaving ? 'Verificando...' : `Revisar e salvar tudo (${extractedQuestions.length} questões)`}
                                     </div>
                                 </Button>
                             </div>
 
                             {/* Gabarito em lote — provas como a da FUVEST publicam o gabarito
                                 num PDF separado, então as questões saem da extração sem resposta. */}
-                            <Card className="border-none shadow-lg bg-white p-5 rounded-card">
+                            <Card className="p-4 md:p-5 rounded-card">
                                 <button
                                     type="button"
                                     onClick={() => setShowAnswerKeyPanel(v => !v)}
@@ -840,11 +837,11 @@ export default function QuestionBankPage() {
                                 >
                                     <div className="flex items-center gap-2 min-w-0">
                                         <ClipboardList className="h-4 w-4 text-primary shrink-0" />
-                                        <span className="text-xs font-black uppercase tracking-widest text-slate-800">
+                                        <span className="text-sm font-bold text-foreground">
                                             Aplicar gabarito em lote
                                         </span>
                                         {filterCounts.needs_gabarito > 0 && (
-                                            <span className="shrink-0 rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest">
+                                            <span className="shrink-0 rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-[11px] font-bold">
                                                 {filterCounts.needs_gabarito} sem resposta
                                             </span>
                                         )}
@@ -854,7 +851,7 @@ export default function QuestionBankPage() {
 
                                 {showAnswerKeyPanel && (
                                     <div className="mt-4 space-y-3">
-                                        <p className="text-[10px] font-semibold text-muted-foreground leading-relaxed">
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
                                             Cole o gabarito oficial. Entende <b>1-A 2-B 3-C</b>, <b>1. A</b>, <b>01) A</b> ou só as letras
                                             (<b>A B C D</b>). Com numeração, casa pelo número impresso da questão — questão faltando não desalinha.
                                         </p>
@@ -862,10 +859,10 @@ export default function QuestionBankPage() {
                                             value={answerKeyText}
                                             onChange={e => setAnswerKeyText(e.target.value)}
                                             placeholder={"1-A 2-B 3-C 4-D 5-E ..."}
-                                            className="min-h-[110px] rounded-2xl bg-slate-50 border-none font-mono text-xs"
+                                            className="min-h-[110px] rounded-control font-mono text-xs"
                                         />
                                         {answerKeyPreview && (
-                                            <div className={`rounded-2xl p-3 text-[10px] font-bold ${answerKeyPreview.applied > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                            <div className={`rounded-control p-3 text-xs font-semibold ${answerKeyPreview.applied > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-brand-yellow/25 text-foreground'}`}>
                                                 {answerKeyPreview.total === 0 ? (
                                                     <>Nenhuma resposta reconhecida no texto colado.</>
                                                 ) : (
@@ -881,7 +878,7 @@ export default function QuestionBankPage() {
                                         <Button
                                             onClick={handleApplyAnswerKey}
                                             disabled={!answerKeyPreview || answerKeyPreview.applied === 0}
-                                            className="h-11 rounded-2xl font-black text-xs uppercase tracking-widest"
+                                            className="h-11 rounded-control font-bold text-sm"
                                         >
                                             <Save className="h-4 w-4 mr-2" />
                                             Aplicar aos {answerKeyPreview?.applied ?? 0} itens
@@ -893,25 +890,25 @@ export default function QuestionBankPage() {
                             {/* Filter toolbar */}
                             <div className="flex flex-wrap gap-2">
                                 {([
-                                    { key: 'all' as const, label: 'Todas', count: filterCounts.all, color: 'bg-slate-700' },
-                                    { key: 'needs_image' as const, label: 'Precisam de Imagem', count: filterCounts.needs_image, color: 'bg-amber-500' },
-                                    { key: 'no_subject' as const, label: 'Sem Matéria', count: filterCounts.no_subject, color: 'bg-red-500' },
-                                    { key: 'dubious_answer' as const, label: 'Gabarito Duvidoso', count: filterCounts.dubious_answer, color: 'bg-purple-500' },
-                                    { key: 'needs_gabarito' as const, label: 'Gabarito Pendente', count: filterCounts.needs_gabarito, color: 'bg-rose-600' },
+                                    { key: 'all' as const, label: 'Todas', count: filterCounts.all, color: 'bg-foreground text-background' },
+                                    { key: 'needs_image' as const, label: 'Precisam de imagem', count: filterCounts.needs_image, color: 'bg-brand-yellow text-foreground' },
+                                    { key: 'no_subject' as const, label: 'Sem matéria', count: filterCounts.no_subject, color: 'bg-red-600 text-white' },
+                                    { key: 'dubious_answer' as const, label: 'Gabarito duvidoso', count: filterCounts.dubious_answer, color: 'bg-brand-yellow text-foreground' },
+                                    { key: 'needs_gabarito' as const, label: 'Sem gabarito', count: filterCounts.needs_gabarito, color: 'bg-red-600 text-white' },
                                 ] as const).map(f => (
                                     <button key={f.key} onClick={() => setFilterMode(f.key)}
-                                        className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${filterMode === f.key ? `${f.color} text-white border-transparent shadow-md` : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-control text-xs font-semibold transition-colors border ${filterMode === f.key ? `${f.color} border-transparent` : 'bg-card text-muted-foreground border-border hover:text-foreground'}`}>
                                         {f.label}
-                                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${filterMode === f.key ? 'bg-white/20' : 'bg-slate-100'}`}>{f.count}</span>
+                                        <span className={`text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-md ${filterMode === f.key ? 'bg-black/10' : 'bg-muted'}`}>{f.count}</span>
                                     </button>
                                 ))}
                             </div>
 
                             {/* Questions grid (paginated) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 {paginatedQuestions.map((q: ParsedQuestion & { _confirmed_answer?: boolean }, i: number) => (
                                     <Card key={q._tempId}
-                                        className={`border-none shadow-lg bg-white p-6 rounded-card relative group transition-all duration-300 ${dragOverId === q._tempId ? 'ring-4 ring-primary bg-primary/5 scale-[1.02] z-10' : 'hover:shadow-xl'}`}
+                                        className={`p-4 md:p-6 rounded-card relative group transition-colors ${dragOverId === q._tempId ? 'ring-4 ring-primary bg-primary/5 z-10' : ''}`}
                                         onPaste={(e: React.ClipboardEvent) => {
                                             for (let j = 0; j < e.clipboardData.items.length; j++) {
                                                 if (e.clipboardData.items[j].type.includes('image')) {
@@ -943,74 +940,74 @@ export default function QuestionBankPage() {
                                         </div>
 
                                         {q._uploadingImage && (
-                                            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center rounded-card animate-in fade-in">
-                                                <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
-                                                <span className="text-xs font-black text-primary uppercase tracking-widest">Anexando Imagem...</span>
+                                            <div className="absolute inset-0 bg-card/80 z-50 flex flex-col items-center justify-center rounded-card">
+                                                <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+                                                <span className="u-label">Anexando imagem…</span>
                                             </div>
                                         )}
                                         <button onClick={() => {
                                             const url = q.image_url;
                                             setExtractedQuestions(prev => prev.filter(item => item._tempId !== q._tempId));
                                             if (url) deleteImageFromStorage(url);
-                                        }} className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-50 text-red-400 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-red-50 shadow-sm">
+                                        }} aria-label="Remover questão" className="absolute top-4 right-4 h-8 w-8 rounded-control text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-50 hover:text-red-600">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
 
-                                        <div className="flex items-center gap-2 mb-4 flex-wrap pl-8">
-                                            <Badge className="bg-primary/5 text-primary border-none font-black text-[8px] uppercase px-3">
-                                                Q {(currentPage - 1) * ITEMS_PER_PAGE + i + 1}
+                                        <div className="flex items-center gap-1.5 mb-4 flex-wrap pl-8 pr-8">
+                                            <Badge variant="outline" className="font-bold text-[11px] px-2">
+                                                Questão {(currentPage - 1) * ITEMS_PER_PAGE + i + 1}
                                             </Badge>
                                             {q.options.length < 2 && (
-                                                <Badge className="bg-red-50 text-red-600 border-red-200 font-black text-[8px] uppercase px-3">⚠️ Opções Incompletas</Badge>
+                                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-bold text-[11px] px-2">Alternativas incompletas</Badge>
                                             )}
                                             {!q.correct_answer && (
-                                                <Badge className="bg-rose-100 text-rose-700 border-rose-200 font-black text-[8px] uppercase px-3 animate-pulse">Gabarito Pendente</Badge>
+                                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-bold text-[11px] px-2">Sem gabarito</Badge>
                                             )}
-                                            <Badge className="bg-accent/10 text-accent border-none font-black text-[8px] uppercase px-3">{q.year}</Badge>
+                                            {q.year ? <Badge variant="outline" className="font-bold text-[11px] px-2 text-muted-foreground">{q.year}</Badge> : null}
                                             {q.subject_name && (
-                                                <Badge className="bg-green-50 text-green-600 border-none font-black text-[8px] uppercase px-3">IA: {q.subject_name}</Badge>
+                                                <Badge variant="outline" className="font-bold text-[11px] px-2 text-muted-foreground">Sugestão da IA: {q.subject_name}</Badge>
                                             )}
                                             <Button variant="ghost" size="sm"
-                                                className="h-6 text-[8px] font-black uppercase text-slate-400 hover:text-accent"
+                                                className="h-7 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
                                                 onClick={() => {
                                                     const cur = q.question_text;
                                                     const upd = cur.includes('[IMAGEM_PENDENTE]') ? cur.replace('[IMAGEM_PENDENTE]', '') : cur + ' [IMAGEM_PENDENTE]';
                                                     setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, question_text: upd } : item));
                                                 }}>
-                                                <ImageIcon className="h-3 w-3 mr-1" /> Marcar Imagem
+                                                <ImageIcon className="h-3 w-3 mr-1" /> Marcar imagem
                                             </Button>
                                         </div>
 
                                         <div className="space-y-3 mb-4">
                                             {q.supporting_text !== undefined && (
                                                 <div className="space-y-1">
-                                                    <Label className="text-[9px] font-black uppercase opacity-40 ml-1">Texto de Apoio</Label>
+                                                    <Label className="u-label">Texto de apoio</Label>
                                                     <Textarea value={q.supporting_text}
                                                         onChange={e => setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, supporting_text: e.target.value } : item))}
-                                                        className="text-[11px] bg-amber-50/50 border-amber-100 rounded-xl min-h-[60px] font-medium leading-relaxed italic" />
+                                                        className="text-xs bg-muted/40 rounded-control min-h-[60px] leading-relaxed" />
                                                 </div>
                                             )}
 
                                             <div className="space-y-1 relative">
-                                                <Label className="text-[9px] font-black uppercase opacity-40 ml-1 flex items-center justify-between">
+                                                <Label className="u-label flex items-center justify-between">
                                                     Enunciado
                                                 </Label>
-                                                <div className={`relative rounded-xl border-2 transition-all overflow-hidden ${dragOverId === q._tempId
+                                                <div className={`relative rounded-control border-2 transition-colors overflow-hidden ${dragOverId === q._tempId
                                                         ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
                                                         : (q.question_text.includes('[IMAGEM_PENDENTE]') || q.supporting_text?.includes('[IMAGEM_PENDENTE]')) && !q.image_url
-                                                            ? 'border-amber-300 border-dashed bg-amber-50'
-                                                            : 'border-transparent bg-slate-50/50'
+                                                            ? 'border-foreground/30 border-dashed bg-brand-yellow/15'
+                                                            : 'border-border bg-muted/30'
                                                     }`}>
                                                     <Textarea value={q.question_text}
                                                         onChange={e => setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, question_text: e.target.value } : item))}
-                                                        className="text-xs font-bold text-primary italic leading-relaxed min-h-[80px] bg-transparent border-none rounded-none resize-y relative z-10" />
+                                                        className="text-sm text-foreground leading-relaxed min-h-[80px] bg-transparent border-none rounded-none resize-y relative z-10" />
 
                                                     {/* Overlay Drop Target Indicator for Textarea */}
                                                     {(q.question_text.includes('[IMAGEM_PENDENTE]') || q.supporting_text?.includes('[IMAGEM_PENDENTE]')) && !q.image_url && (
                                                         <div className="absolute bottom-2 right-2 z-20">
-                                                            <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all shadow-sm ${dragOverId === q._tempId ? 'bg-primary text-white shadow-md scale-105' : 'bg-amber-400 text-white hover:bg-amber-500 hover:shadow-md'}`}>
+                                                            <label className={`flex items-center gap-2 px-3 py-1.5 rounded-control cursor-pointer transition-colors ${dragOverId === q._tempId ? 'bg-primary text-primary-foreground' : 'bg-brand-yellow text-foreground hover:bg-brand-yellow/80'}`}>
                                                                 <Upload className="h-3 w-3" />
-                                                                <span className="text-[10px] font-black uppercase tracking-widest">{dragOverId === q._tempId ? 'Solte a Imagem' : 'Anexar Imagem'}</span>
+                                                                <span className="text-xs font-bold">{dragOverId === q._tempId ? 'Solte a imagem' : 'Anexar imagem'}</span>
                                                                 <input type="file" accept="image/*" className="hidden"
                                                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                                         const f = e.target.files?.[0];
@@ -1023,9 +1020,9 @@ export default function QuestionBankPage() {
 
                                                 {/* Image Preview if uploaded */}
                                                 {q.image_url && (
-                                                    <div className="mt-3 relative aspect-video rounded-xl overflow-hidden border-2 border-green-200 bg-white group/img shadow-sm">
-                                                        <div className="absolute top-2 left-2 z-10 bg-green-500 text-white px-2 py-1 rounded-md text-[10px] font-black uppercase flex items-center gap-1 shadow-sm">
-                                                            <CheckCircle2 className="h-3 w-3" /> Imagem Anexada
+                                                    <div className="mt-3 relative aspect-video rounded-control overflow-hidden border-2 border-emerald-200 bg-card group/img">
+                                                        <div className="absolute top-2 left-2 z-10 bg-emerald-600 text-white px-2 py-1 rounded-control text-[11px] font-bold flex items-center gap-1">
+                                                            <CheckCircle2 className="h-3 w-3" /> Imagem anexada
                                                         </div>
                                                         <Image src={q.image_url} alt="Questão" fill className="object-contain" />
                                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center z-20">
@@ -1033,7 +1030,7 @@ export default function QuestionBankPage() {
                                                                 const url = q.image_url;
                                                                 setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, image_url: undefined } : item));
                                                                 if (url) await deleteImageFromStorage(url);
-                                                            }} className="font-black text-xs h-8"><Trash2 className="h-4 w-4 mr-2" /> Remover Imagem</Button>
+                                                            }} className="font-bold text-xs h-8"><Trash2 className="h-4 w-4 mr-2" /> Remover imagem</Button>
                                                         </div>
                                                     </div>
                                                 )}
@@ -1042,27 +1039,27 @@ export default function QuestionBankPage() {
 
                                         <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             <div>
-                                                <Label className="text-[9px] font-black uppercase opacity-40 ml-1 mb-1 block">Disciplina</Label>
+                                                <Label className="u-label mb-1 block">Matéria</Label>
                                                 <Select value={q.subject_id || ''}
                                                     onValueChange={val => setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, subject_id: val, micro_topic_id: undefined } : item))}>
-                                                    <SelectTrigger className="h-9 rounded-xl bg-slate-50 border-none font-bold text-xs w-full">
+                                                    <SelectTrigger className="h-9 rounded-control text-xs w-full">
                                                         <SelectValue placeholder="Selecionar matéria..." />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-none shadow-2xl">
+                                                    <SelectContent className="rounded-control">
                                                         {subjects.map(s => <SelectItem key={s.id} value={s.id} className="font-bold text-xs">{s.name}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             {/* Sem micro-tópico a questão não aparece no "Treino Específico". */}
                                             <div>
-                                                <Label className="text-[9px] font-black uppercase opacity-40 ml-1 mb-1 block">Micro-tópico</Label>
+                                                <Label className="u-label mb-1 block">Micro-tópico</Label>
                                                 <Select value={q.micro_topic_id || ''}
                                                     disabled={!q.subject_id}
                                                     onValueChange={val => setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, micro_topic_id: val } : item))}>
-                                                    <SelectTrigger className="h-9 rounded-xl bg-slate-50 border-none font-bold text-xs w-full">
+                                                    <SelectTrigger className="h-9 rounded-control text-xs w-full">
                                                         <SelectValue placeholder={q.subject_id ? 'Opcional...' : 'Escolha a matéria'} />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-none shadow-2xl">
+                                                    <SelectContent className="rounded-control">
                                                         {allMicroTopics.filter(mt => mt.subject_id === q.subject_id)
                                                             .map(mt => <SelectItem key={mt.id} value={mt.id} className="font-bold text-xs">{mt.name}</SelectItem>)}
                                                     </SelectContent>
@@ -1076,8 +1073,8 @@ export default function QuestionBankPage() {
                                                 return (
                                                     <div key={opt.key}
                                                         onClick={() => setExtractedQuestions(prev => prev.map(item => item._tempId === q._tempId ? { ...item, correct_answer: opt.key, _confirmed_answer: true } : item))}
-                                                        className={`flex items-center gap-3 p-3 rounded-xl border text-[10px] font-medium cursor-pointer transition-colors ${q.correct_answer === opt.key ? 'bg-green-50 border-green-200 text-green-700' : 'bg-slate-50 border-transparent text-muted-foreground hover:bg-slate-100 hover:border-slate-200'} ${isDubious && q.correct_answer === opt.key ? 'animate-pulse border-orange-400 bg-orange-50 text-orange-700' : ''}`}>
-                                                        <span className="font-black italic">{opt.key})</span>
+                                                        className={`flex items-center gap-3 p-3 rounded-control border text-xs cursor-pointer transition-colors ${q.correct_answer === opt.key ? (isDubious ? 'bg-brand-yellow/25 border-foreground/30 text-foreground' : 'bg-emerald-50 border-emerald-200 text-emerald-800') : 'bg-muted/30 border-transparent text-muted-foreground hover:bg-muted hover:border-border'}`}>
+                                                        <span className="font-bold">{opt.key})</span>
                                                         <span className="truncate">{opt.text}</span>
                                                     </div>
                                                 )
@@ -1089,9 +1086,9 @@ export default function QuestionBankPage() {
 
                             {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="flex items-center justify-center gap-2 pt-4">
+                                <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
                                     <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                                        className="h-9 w-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center disabled:opacity-30 hover:bg-primary hover:text-white hover:border-transparent transition-all shadow-sm">
+                                        className="h-9 w-9 rounded-control bg-card border border-border flex items-center justify-center disabled:opacity-30 hover:bg-muted transition-colors">
                                         <ChevronLeft className="h-4 w-4" />
                                     </button>
 
@@ -1103,21 +1100,21 @@ export default function QuestionBankPage() {
                                         }, [])
                                         .map((p, idx) =>
                                             p === 'ellipsis' ? (
-                                                <span key={`e-${idx}`} className="text-slate-400 font-black text-xs px-1">···</span>
+                                                <span key={`e-${idx}`} className="text-muted-foreground font-bold text-xs px-1">···</span>
                                             ) : (
                                                 <button key={p} onClick={() => setCurrentPage(p as number)}
-                                                    className={`h-9 w-9 rounded-xl text-xs font-black transition-all shadow-sm ${currentPage === p ? 'bg-primary text-white border-transparent shadow-md' : 'bg-white border border-slate-200 hover:border-primary hover:text-primary'}`}>
+                                                    className={`h-9 w-9 rounded-control text-xs font-bold tabular-nums transition-colors ${currentPage === p ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:bg-muted'}`}>
                                                     {p}
                                                 </button>
                                             )
                                         )}
 
                                     <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                                        className="h-9 w-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center disabled:opacity-30 hover:bg-primary hover:text-white hover:border-transparent transition-all shadow-sm">
+                                        className="h-9 w-9 rounded-control bg-card border border-border flex items-center justify-center disabled:opacity-30 hover:bg-muted transition-colors">
                                         <ChevronRightIcon className="h-4 w-4" />
                                     </button>
 
-                                    <span className="text-[10px] text-muted-foreground font-bold ml-2">
+                                    <span className="text-xs text-muted-foreground ml-2 tabular-nums">
                                         {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredQuestions.length)} de {filteredQuestions.length}
                                     </span>
                                 </div>
@@ -1126,15 +1123,15 @@ export default function QuestionBankPage() {
                     )}
 
                     {selectedQuestions.length > 0 && (
-                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-4 animate-in slide-in-from-bottom-10">
+                        <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] sm:w-auto max-w-4xl bg-slate-900 text-white px-4 py-3 rounded-card shadow-2xl z-50 flex flex-wrap items-center gap-2 sm:gap-3">
                             <span className="text-sm font-bold">{selectedQuestions.length} selecionadas</span>
-                            <div className="h-6 w-px bg-slate-700 mx-2" />
+                            <div className="h-6 w-px bg-slate-700 mx-1 hidden sm:block" />
                             <Select onValueChange={(val) => {
                                 setExtractedQuestions(prev => prev.map(q => selectedQuestions.includes(q._tempId!) ? { ...q, subject_id: val, micro_topic_id: undefined } : q));
-                                toast({ title: 'Matéria atribuída em lote!' });
+                                toast({ title: 'Matéria aplicada às selecionadas' });
                             }}>
-                                <SelectTrigger className="h-8 bg-slate-800 border-none text-xs font-bold text-white w-40"><SelectValue placeholder="Atribuir Matéria" /></SelectTrigger>
-                                <SelectContent className="border-none shadow-xl rounded-xl">
+                                <SelectTrigger className="h-8 bg-slate-800 border-none text-xs font-bold text-white w-40"><SelectValue placeholder="Definir matéria" /></SelectTrigger>
+                                <SelectContent className="rounded-control">
                                     {subjects.map(s => <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -1143,10 +1140,10 @@ export default function QuestionBankPage() {
                             {bulkSelectionMicroTopics.length > 0 && (
                                 <Select onValueChange={(val) => {
                                     setExtractedQuestions(prev => prev.map(q => selectedQuestions.includes(q._tempId!) ? { ...q, micro_topic_id: val } : q));
-                                    toast({ title: 'Micro-tópico atribuído em lote!' });
+                                    toast({ title: 'Micro-tópico aplicado às selecionadas' });
                                 }}>
                                     <SelectTrigger className="h-8 bg-slate-800 border-none text-xs font-bold text-white w-44"><SelectValue placeholder="Micro-tópico" /></SelectTrigger>
-                                    <SelectContent className="border-none shadow-xl rounded-xl">
+                                    <SelectContent className="rounded-control">
                                         {bulkSelectionMicroTopics.map(mt => <SelectItem key={mt.id} value={mt.id} className="text-xs font-bold">{mt.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -1154,10 +1151,10 @@ export default function QuestionBankPage() {
 
                             <Select onValueChange={(val) => {
                                 setExtractedQuestions(prev => prev.map(q => selectedQuestions.includes(q._tempId!) ? { ...q, target_audience: val } : q));
-                                toast({ title: 'Público-alvo alterado em lote!' });
+                                toast({ title: 'Público aplicado às selecionadas' });
                             }}>
-                                <SelectTrigger className="h-8 bg-slate-800 border-none text-xs font-bold text-white w-32"><SelectValue placeholder="Público-Alvo" /></SelectTrigger>
-                                <SelectContent className="border-none shadow-xl rounded-xl">
+                                <SelectTrigger className="h-8 bg-slate-800 border-none text-xs font-bold text-white w-32"><SelectValue placeholder="Público" /></SelectTrigger>
+                                <SelectContent className="rounded-control">
                                     <SelectItem value="all" className="text-xs font-bold">Todos</SelectItem>
                                     <SelectItem value="etec" className="text-xs font-bold">ETEC</SelectItem>
                                     <SelectItem value="enem" className="text-xs font-bold">ENEM</SelectItem>
@@ -1167,89 +1164,88 @@ export default function QuestionBankPage() {
                             <Button variant="ghost" size="sm" onClick={() => {
                                 setExtractedQuestions(prev => prev.filter(q => !selectedQuestions.includes(q._tempId!)));
                                 setSelectedQuestions([]);
-                                toast({ title: 'Questões excluídas em lote!' });
-                            }} className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-8 px-4 rounded-xl text-xs font-black">
-                                <Trash2 className="h-4 w-4 mr-2" /> Excluir Lote
+                                toast({ title: 'Questões selecionadas removidas' });
+                            }} className="text-red-300 hover:text-red-200 hover:bg-red-400/20 h-8 px-3 rounded-control text-xs font-bold">
+                                <Trash2 className="h-4 w-4 mr-2" /> Remover selecionadas
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setSelectedQuestions([])} className="h-8 w-8 rounded-full hover:bg-slate-800 text-slate-400">
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedQuestions([])} aria-label="Limpar seleção" className="h-8 w-8 rounded-control hover:bg-slate-800 text-slate-400">
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
                     )}
 
                     <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
-                        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl">
+                        <DialogContent className="sm:max-w-md rounded-card">
                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-black italic text-primary">Resumo da Importação</DialogTitle>
+                                <DialogTitle className="text-lg font-bold text-foreground">Resumo da importação</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-3 py-4">
-                                <div className="flex items-center justify-between p-4 bg-green-50 text-green-700 rounded-2xl border border-green-100">
-                                    <span className="font-bold text-sm">Questões Prontas ✓</span>
-                                    <span className="font-black text-xl">{extractedQuestions.length - filterCounts.no_subject - filterCounts.needs_image - filterCounts.needs_gabarito}</span>
+                                <div className="flex items-center justify-between gap-3 p-4 bg-emerald-50 text-emerald-800 rounded-control border border-emerald-200">
+                                    <span className="font-semibold text-sm">Prontas para salvar</span>
+                                    <span className="u-num text-xl">{Math.max(0, extractedQuestions.length - filterCounts.no_subject - filterCounts.needs_image - filterCounts.needs_gabarito)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100">
-                                    <span className="font-bold text-sm">Sem Matéria ⚠</span>
+                                <div className="flex items-center justify-between gap-3 p-4 bg-red-50 text-red-700 rounded-control border border-red-200">
+                                    <span className="font-semibold text-sm">Sem matéria</span>
                                     <div className="flex items-center gap-4">
-                                        <span className="font-black text-xl">{filterCounts.no_subject}</span>
+                                        <span className="u-num text-xl">{filterCounts.no_subject}</span>
                                         {filterCounts.no_subject > 0 && (
-                                            <Button size="sm" variant="outline" className="h-8 rounded-xl text-[10px] uppercase font-black border-red-200 hover:bg-red-100 text-red-700" onClick={() => { setShowSaveModal(false); setFilterMode('no_subject'); }}>Filtrar</Button>
+                                            <Button size="sm" variant="outline" className="h-8 rounded-control text-xs font-bold border-red-200 hover:bg-red-100 text-red-700" onClick={() => { setShowSaveModal(false); setFilterMode('no_subject'); }}>Filtrar</Button>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between p-4 bg-amber-50 text-amber-600 rounded-2xl border border-amber-100">
-                                    <span className="font-bold text-sm">Precisam de Imagem ⚠</span>
+                                <div className="flex items-center justify-between gap-3 p-4 bg-brand-yellow/25 text-foreground rounded-control border border-foreground/15">
+                                    <span className="font-semibold text-sm">Precisam de imagem</span>
                                     <div className="flex items-center gap-4">
-                                        <span className="font-black text-xl">{filterCounts.needs_image}</span>
+                                        <span className="u-num text-xl">{filterCounts.needs_image}</span>
                                         {filterCounts.needs_image > 0 && (
-                                            <Button size="sm" variant="outline" className="h-8 rounded-xl text-[10px] uppercase font-black border-amber-200 hover:bg-amber-100 text-amber-700" onClick={() => { setShowSaveModal(false); setFilterMode('needs_image'); }}>Filtrar</Button>
+                                            <Button size="sm" variant="outline" className="h-8 rounded-control text-xs font-bold border-foreground/20 text-foreground" onClick={() => { setShowSaveModal(false); setFilterMode('needs_image'); }}>Filtrar</Button>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between p-4 bg-rose-50 text-rose-600 rounded-2xl border border-rose-100">
-                                    <span className="font-bold text-sm">Gabarito Pendente ⚠</span>
+                                <div className="flex items-center justify-between gap-3 p-4 bg-red-50 text-red-700 rounded-control border border-red-200">
+                                    <span className="font-semibold text-sm">Sem gabarito</span>
                                     <div className="flex items-center gap-4">
-                                        <span className="font-black text-xl">{filterCounts.needs_gabarito}</span>
+                                        <span className="u-num text-xl">{filterCounts.needs_gabarito}</span>
                                         {filterCounts.needs_gabarito > 0 && (
-                                            <Button size="sm" variant="outline" className="h-8 rounded-xl text-[10px] uppercase font-black border-rose-200 hover:bg-rose-100 text-rose-700" onClick={() => { setShowSaveModal(false); setFilterMode('needs_gabarito'); }}>Filtrar</Button>
+                                            <Button size="sm" variant="outline" className="h-8 rounded-control text-xs font-bold border-red-200 hover:bg-red-100 text-red-700" onClick={() => { setShowSaveModal(false); setFilterMode('needs_gabarito'); }}>Filtrar</Button>
                                         )}
                                     </div>
                                 </div>
                             </div>
                             <DialogFooter className="flex-col sm:flex-row gap-3">
-                                <Button variant="ghost" onClick={() => setShowSaveModal(false)} className="rounded-xl font-bold h-12">Revisar Mais</Button>
-                                <Button onClick={() => { setShowSaveModal(false); handleDuplicateCheck(); }} className="rounded-xl font-black bg-primary text-white shadow-lg h-12 px-8">Verificar e Salvar</Button>
+                                <Button variant="ghost" onClick={() => setShowSaveModal(false)} className="rounded-control font-bold h-11">Continuar revisando</Button>
+                                <Button onClick={() => { setShowSaveModal(false); handleDuplicateCheck(); }} className="rounded-control font-bold h-11 px-6">Verificar e salvar</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
 
                     <Dialog open={!!duplicateWarning} onOpenChange={(open) => !open && setDuplicateWarning(null)}>
-                        <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl">
+                        <DialogContent className="sm:max-w-md rounded-card">
                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-black italic text-red-600 flex items-center gap-3">
-                                    <AlertTriangle className="h-6 w-6" /> Atenção: Duplicatas
+                                <DialogTitle className="text-lg font-bold text-red-700 flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5" /> Questões repetidas
                                 </DialogTitle>
                             </DialogHeader>
-                            <div className="p-5 bg-red-50 text-red-800 rounded-2xl font-medium text-sm leading-relaxed border border-red-100 mt-2">
-                                Identificamos que <strong className="font-black text-base">{duplicateWarning?.existing} questões</strong> já existem no banco de dados com enunciados idênticos.
+                            <div className="p-4 bg-red-50 text-red-800 rounded-control text-sm leading-relaxed border border-red-200 mt-2">
+                                Encontramos <strong className="font-bold">{duplicateWarning?.existing} questões</strong> que já estão no banco com o mesmo enunciado.
                             </div>
                             <DialogFooter className="flex-col sm:flex-row gap-3 mt-6">
-                                <Button variant="ghost" onClick={() => setDuplicateWarning(null)} className="rounded-xl font-bold h-12">Cancelar</Button>
+                                <Button variant="ghost" onClick={() => setDuplicateWarning(null)} className="rounded-control font-bold h-11">Cancelar</Button>
                                 <Button onClick={() => {
                                     const uniqueItems = duplicateWarning!.newItems.filter(q => !duplicateWarning!.existingTexts.includes(q.question_text.trim()));
                                     setDuplicateWarning(null);
                                     handleSaveProcessed(uniqueItems);
-                                }} className="rounded-xl font-black bg-red-600 text-white hover:bg-red-700 h-12 shadow-lg">Ignorar Duplicadas e Salvar</Button>
+                                }} className="rounded-control font-bold bg-red-600 text-white hover:bg-red-700 h-11">Pular as repetidas e salvar</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </CardContent>
             </Card>
 
-            <section className="pt-8">
-                <div className="flex items-center justify-between px-2 mb-6">
-                    <h2 className="text-2xl font-black text-primary italic flex items-center gap-3">
-                        <ArrowRight className="h-6 w-6 text-accent" /> Histórico do Repositório
-                    </h2>
+            <section className="pt-6">
+                <div className="mb-4">
+                    <p className="u-label">Banco de questões</p>
+                    <h2 className="text-lg font-bold text-foreground mt-1">Questões cadastradas</h2>
                 </div>
                 <QuestionsList />
             </section>

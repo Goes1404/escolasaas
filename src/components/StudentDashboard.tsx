@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
+import { fmtLocale } from '@/lib/format';
 
 // ──────────────────────────────────────────────
 // Tipagens (espelham as tabelas do Supabase)
@@ -366,10 +367,7 @@ export default function StudentDashboard() {
                           {essay.theme}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {new Date(essay.created_at).toLocaleDateString(
-                            "pt-BR",
-                            { day: "2-digit", month: "short", year: "numeric" }
-                          )}
+                          {fmtLocale(essay.created_at, 'date', "pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
 

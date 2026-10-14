@@ -20,7 +20,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function resetAdminPassword() {
   const userId = 'f63ab716-d2a5-4e89-b870-9f58064f8e70'; // ID de adm@compromisso.com
-  const newPassword = 'compromisso2026';
+  // Nunca fixa no código: passe a nova senha na linha de comando.
+  //   node scripts/reset_admin_password.mjs 'NovaSenhaForte!'
+  const newPassword = process.argv[2];
+  if (!newPassword || newPassword.length < 10) {
+    console.error('Uso: node scripts/reset_admin_password.mjs <nova-senha com 10+ caracteres>');
+    process.exit(1);
+  }
 
   console.log(`Redefinindo senha para o usuário ${userId}...`);
 
@@ -34,7 +40,7 @@ async function resetAdminPassword() {
     process.exit(1);
   }
 
-  console.log('Senha redefinida com sucesso para: compromisso2026');
+  console.log('Senha redefinida com sucesso.');
 }
 
 resetAdminPassword();

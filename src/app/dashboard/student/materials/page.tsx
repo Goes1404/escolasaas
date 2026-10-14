@@ -18,6 +18,8 @@ import { trackAcao, trackFalha } from '@/lib/telemetry';
 import { medirCarregamentoDeTela } from '@/lib/perf';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { fmtDate } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type ClassMaterial = {
   id: string;
@@ -252,7 +254,7 @@ export default function StudentMaterialsPage() {
     if (!error) {
       setViewedIds(prev => { const s = new Set(prev); s.delete(materialId); return s; });
     } else {
-      toast({ title: 'Erro ao desmarcar', description: error.message, variant: 'destructive' });
+      toast({ title: 'Não deu para desmarcar', description: 'Confira sua internet e tente de novo.', variant: 'destructive' });
     }
     setToggling(null);
   }
@@ -272,7 +274,7 @@ export default function StudentMaterialsPage() {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (
-        !m.title.toLowerCase().includes(q) &&
+        !(m.title || '').toLowerCase().includes(q) &&
         !(m.description?.toLowerCase().includes(q)) &&
         !(m.subject?.toLowerCase().includes(q)) &&
         !(m.teacher_name?.toLowerCase().includes(q))
@@ -337,7 +339,7 @@ export default function StudentMaterialsPage() {
         {!loading && materials.length > 0 && (
           <div className="relative z-10 mt-6 space-y-1.5">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/65">
-              <span className="flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> Progresso Geral</span>
+              <span className="flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> Seu progresso</span>
               <span>{totalStudied} / {materials.length} materiais</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
@@ -363,13 +365,13 @@ export default function StudentMaterialsPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
-                placeholder="Buscar por título, professor, matéria..."
+                placeholder="Buscar por título, professor ou matéria…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-10 pl-10 pr-8 rounded-xl bg-slate-50 focus:bg-white border border-transparent focus:border-primary/20 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                <button onClick={() => setSearchQuery('')} aria-label="Limpar busca" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
@@ -469,26 +471,22 @@ export default function StudentMaterialsPage() {
           {Array(4).fill(0).map((_, i) => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-24 text-center flex flex-col items-center gap-4">
-          <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
-            <FolderOpen className="h-9 w-9 text-slate-300" />
-          </div>
-          <div>
-            <p className="u-display text-primary text-lg">Nenhum material encontrado</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {hasActiveFilters ? 'Tente ajustar os filtros.' : 'Nenhum material disponível ainda.'}
-            </p>
-          </div>
-          {hasActiveFilters && (
-            <Button
-              onClick={() => { setSearchQuery(''); setFilterSubject('all'); setStatusFilter('all'); }}
-              variant="outline"
-              className="rounded-2xl font-black text-xs uppercase tracking-wider"
-            >
-              Limpar filtros
-            </Button>
-          )}
-        </div>
+        hasActiveFilters ? (
+          <EmptyState
+            icon={Search}
+            title={statusFilter === 'pending' && !searchQuery && filterSubject === 'all' ? 'Você já estudou todos os materiais' : 'Nenhum material com esses filtros'}
+            description={statusFilter === 'pending' && !searchQuery && filterSubject === 'all' ? 'Quando um professor compartilhar algo novo, ele aparece aqui.' : 'Tente outra matéria, outro status ou uma palavra diferente.'}
+            action={{ label: 'Limpar filtros', onClick: () => { setSearchQuery(''); setFilterSubject('all'); setStatusFilter('all'); } }}
+          />
+        ) : (
+          <EmptyState
+            icon={FolderOpen}
+            title="Seus professores ainda não compartilharam materiais"
+            description="Slides, PDFs, links e vídeos das aulas aparecem aqui assim que forem publicados. Enquanto isso, a biblioteca tem apostilas para estudar."
+            action={{ label: 'Ver a biblioteca', href: '/dashboard/library' }}
+            secondary={{ label: 'Atualizar', onClick: fetchData }}
+          />
+        )
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {filtered.map((m, idx) => {
@@ -567,7 +565,7 @@ export default function StudentMaterialsPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-start gap-2">
                       <h3 className={`font-black text-base leading-snug tracking-tight flex-1 transition-colors duration-200 ${isViewed ? 'text-slate-400' : 'text-slate-800 group-hover:text-primary'}`}>
-                        {m.title}
+                        {m.title || 'Material sem título'}
                       </h3>
                       {!isViewed && (
                         <span className="shrink-0 mt-0.5 flex items-center gap-1 text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
@@ -593,7 +591,7 @@ export default function StudentMaterialsPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold text-slate-600 truncate">{m.teacher_name || 'Professor'}</p>
                       <p className="text-[9px] text-slate-400 font-medium">
-                        {format(new Date(m.created_at), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                        {fmtDate(m.created_at, "dd 'de' MMM, yyyy")}
                       </p>
                     </div>
 
@@ -637,7 +635,7 @@ export default function StudentMaterialsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h4 className={`font-bold text-sm truncate ${isViewed ? 'text-slate-400' : 'text-slate-800'}`}>
-                      {m.title}
+                      {m.title || 'Material sem título'}
                     </h4>
                     {m.subject && (
                       <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${subjectColor(m.subject)}`}>
@@ -654,7 +652,7 @@ export default function StudentMaterialsPage() {
                   <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium mt-0.5">
                     <span className="truncate">{m.teacher_name || 'Professor'}</span>
                     <span className="shrink-0">·</span>
-                    <span className="shrink-0">{format(new Date(m.created_at), "dd/MM/yy", { locale: ptBR })}</span>
+                    <span className="shrink-0">{fmtDate(m.created_at, "dd/MM/yy")}</span>
                   </div>
                 </div>
 

@@ -43,6 +43,8 @@ import { FlameEmberCanvas } from "@/components/FlameEmberCanvas";
 import { computeTriResult } from "@/lib/tri-solver";
 import { allowedExamTypesFor, examTypeStyles, type ExamType } from "@/lib/exam-types";
 import { TrendingUp } from "lucide-react";
+import { fmtLocale } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 const EvolutionChart = dynamic(
   () => import("@/components/provas/EvolutionChart").then((m) => m.EvolutionChart),
@@ -350,7 +352,7 @@ export default function ProvasCompletasPage() {
       setPageState("list");
       medirCarregamentoDeTela("provas", inicioCarga);
     } catch (e: any) {
-      setErrorMsg(e.message || "Erro ao carregar provas.");
+      setErrorMsg("Não deu para carregar as provas. Confira sua internet e tente de novo.");
       setPageState("error");
     }
   }, [user, profile]);
@@ -423,19 +425,19 @@ export default function ProvasCompletasPage() {
         if (attemptNo < reportLimit) {
           toast({ title: `${attemptNo}ª tentativa`, description: `Conta para o boletim (as ${reportLimit} primeiras contam).` });
         } else if (attemptNo === reportLimit) {
-          toast({ title: `${attemptNo}ª tentativa`, description: "Ultima tentativa que conta para o boletim do 2º semestre." });
+          toast({ title: `${attemptNo}ª tentativa`, description: "Última tentativa que conta para o boletim do 2º semestre." });
         } else {
-          toast({ title: `${attemptNo}ª tentativa (treino)`, description: "Nao conta para o boletim, mas entra no seu grafico de evolucao." });
+          toast({ title: `${attemptNo}ª tentativa (treino)`, description: "Não conta para o boletim, mas entra no seu gráfico de evolução." });
         }
       } else {
-        toast({ title: "Retomando prova", description: `Voce parou na questao ${Math.min(validSaved.currentIndex + 1, qs.length)}.` });
+        toast({ title: "Retomando prova", description: `Você parou na questão ${Math.min(validSaved.currentIndex + 1, qs.length)}.` });
       }
 
       setPageState("active");
       trackAcao("prova_iniciada", { tipo: exam.exam_type, questoes: qs.length, tentativa: attemptNo });
     } catch (e: any) {
       trackFalha("prova_falha_iniciar", e, { tipo: exam.exam_type });
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Não deu para abrir a prova", description: "Confira sua internet e tente de novo.", variant: "destructive" });
       setPageState("list");
     }
   };
@@ -634,7 +636,7 @@ export default function ProvasCompletasPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-orange-400" />
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">
-          Sintonizando provas...
+          Carregando provas…
         </p>
       </div>
     );
@@ -677,7 +679,7 @@ export default function ProvasCompletasPage() {
               Provas completas
             </h1>
             <p className="text-muted-foreground text-xs font-semibold mt-1.5 max-w-md leading-relaxed">
-              Treine resistência e gestão de tempo com provas anteriores sob simulado real.
+              Faça provas anteriores com tempo de verdade e treine o fôlego para o dia do exame.
             </p>
 
             {/* O número fica na mesma fonte e tamanho do rótulo, só em negrito:
@@ -731,17 +733,12 @@ export default function ProvasCompletasPage() {
 
         {/* Empty state */}
         {visibleGroups.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-card">
-            <BookOpen className="h-9 w-9 mx-auto mb-2 text-slate-300" />
-            <p className="u-label">
-              {exams.length === 0
-                ? "Nenhuma prova cadastrada"
-                : `Nenhuma prova de ${examTypeStyles(typeFilter).label}`}
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium mt-1.5 max-w-xs mx-auto">
-              A equipe pedagógica disponibilizará provas em breve.
-            </p>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title={exams.length === 0 ? "Ainda não há provas para você" : `Ainda não há provas de ${examTypeStyles(typeFilter).label}`}
+            description="Quando a equipe pedagógica publicar provas anteriores, elas aparecem aqui. Enquanto isso, dá para treinar com simulados por matéria."
+            action={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {visibleGroups.map((group, gi) => {
@@ -939,7 +936,7 @@ export default function ProvasCompletasPage() {
             tri: h.triScore,
             pct: h.total > 0 ? Math.round((h.score / h.total) * 100) : 0,
             countsForReport: h.countsForReport,
-            date: new Date(h.completedAt).toLocaleDateString("pt-BR"),
+            date: fmtLocale(h.completedAt, 'date', "pt-BR"),
           }));
           const useTri = points.some((p) => p.tri != null);
           const best = useTri
@@ -1186,7 +1183,7 @@ export default function ProvasCompletasPage() {
             )}
 
             <p className="text-base font-bold text-primary italic leading-relaxed">
-              {currentQuestion.question_text.replace("[IMAGEM_PENDENTE]", "")}
+              {(currentQuestion.question_text ?? "").replace("[IMAGEM_PENDENTE]", "")}
             </p>
 
             <RadioGroup

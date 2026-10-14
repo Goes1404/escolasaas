@@ -37,24 +37,19 @@ import {
   HelpCircle,
   Users as UsersIcon,
 } from "lucide-react";
-import Image from "next/image";
+import { ContentCover } from "@/components/ContentCover";
+import { EmptyState } from "@/components/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { fmtPct } from "@/lib/format";
 import { trackAcao, trackFalha } from "@/lib/telemetry";
 import { medirCarregamentoDeTela } from "@/lib/perf";
-import { getTrailCoverUrl, isPlaceholderImage } from "@/lib/trail-cover";
 
 const TRAIL_CATEGORIES = ["Todos", "Matemática", "Linguagens", "Física", "Biologia", "História", "Geografia", "Atualidades", "Literatura", "Química", "Filosofia", "Sociologia"];
-
-function getSafeTrailImage(url: string | null | undefined, title: string, category: string) {
-  if (!url || isPlaceholderImage(url)) {
-    return getTrailCoverUrl(title, category);
-  }
-  return url;
-}
 
 const SUBJECT_CONFIGS: Record<string, { color: string, bg: string, border: string, glow: string, icon: any }> = {
   "Matemática": { 
@@ -147,9 +142,9 @@ function getSubjectConfig(subject: string) {
 }
 
 const AUDIENCE_FILTERS = [
-  { id: "all", label: "Toda a Comunidade" },
-  { id: "etec", label: "Perfil ETEC" },
-  { id: "uni", label: "Perfil Enem e Vestibulares" }
+  { id: "all", label: "Todos os públicos" },
+  { id: "etec", label: "ETEC" },
+  { id: "uni", label: "ENEM e vestibulares" }
 ];
 
 export default function LearningTrailsPage() {
@@ -247,7 +242,7 @@ export default function LearningTrailsPage() {
         // In a complex app we'd use a 'pinned' column, but here progress is treated as 'active trails'.
         const { error } = await supabase.from('user_progress').delete().eq('user_id', user.id).eq('trail_id', trailId);
         if (error) throw error;
-        toast({ title: "Trilha Removida da Home 📌", description: "O item saiu da sua lista de acesso rápido." });
+        toast({ title: "Trilha tirada do início 📌", description: "Ela não aparece mais na sua página inicial." });
         trackAcao('trilha_desafixada');
       } else {
         // Pin: Upsert the record
@@ -260,8 +255,8 @@ export default function LearningTrailsPage() {
         if (error) throw error;
 
         toast({
-          title: "Trilha Fixada! 📌",
-          description: "Acesse rapidamente pela Página Inicial."
+          title: "Trilha fixada! 📌",
+          description: "Agora ela aparece na sua página inicial."
         });
         trackAcao('trilha_fixada');
       }
@@ -336,9 +331,14 @@ export default function LearningTrailsPage() {
 
   if (loading && !dataFetchedRef.current) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="u-label mt-6 text-primary animate-pulse">Sintonizando estúdio…</p>
+      <div className="space-y-8 pb-20 px-1 md:px-4" aria-busy="true" aria-label="Carregando trilhas">
+        <Skeleton className="h-56 md:h-80 w-full rounded-card" />
+        <Skeleton className="h-16 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -349,7 +349,7 @@ export default function LearningTrailsPage() {
       <section className="aurora-dark relative overflow-hidden rounded-card px-5 py-8 sm:p-8 md:p-16 text-white shadow-2xl text-center border border-white/5">
         <div className="absolute inset-0 dot-grid-dark opacity-20 pointer-events-none rounded-card" />
         <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
-          <Badge className="bg-primary/10 text-primary border border-primary/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider shadow-xl">PLATAFORMA EAD</Badge>
+          <Badge className="bg-primary/10 text-primary border border-primary/20 font-black text-[9px] px-4 py-1.5 uppercase tracking-wider shadow-xl">TRILHAS DE ESTUDO</Badge>
           {/* A Boldonse é larga e em caixa alta encosta palavra em palavra e
               linha em linha; o respiro extra devolve a leitura. */}
           {/* Tamanho fluido: "PERFORMANCE" inteira numa linha mesmo em 320px.
@@ -358,7 +358,7 @@ export default function LearningTrailsPage() {
             Sua rota de <br /><span className="text-accent">alta performance</span>
           </h1>
           <p className="text-sm md:text-xl text-gray-400 font-medium italic leading-relaxed max-w-xl mx-auto">
-            Escolha um dos eixos temáticos e inicie sua jornada guiada rumo ao sucesso acadêmico.
+            Escolha uma matéria e siga as aulas na ordem, no seu ritmo.
           </p>
         </div>
       </section>
@@ -372,13 +372,13 @@ export default function LearningTrailsPage() {
           <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-accent" />
             <Input
-              placeholder="Pesquisar trilha..."
+              placeholder="Buscar trilha…"
               className="pl-11 h-11 bg-slate-50 border-none shadow-none rounded-xl text-sm font-medium focus-visible:ring-accent focus-visible:bg-white transition-colors"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+              <button onClick={() => setSearchTerm("")} aria-label="Limpar busca" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -417,11 +417,11 @@ export default function LearningTrailsPage() {
                     ${activeAudience !== 'all' ? 'bg-primary text-white hover:bg-primary/90' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" />
-                  {AUDIENCE_FILTERS.find(f => f.id === activeAudience)?.label ?? 'Perfil'}
+                  {AUDIENCE_FILTERS.find(f => f.id === activeAudience)?.label ?? 'Público'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-none shadow-2xl">
-                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest opacity-40 px-3 py-2">Público-Alvo</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest opacity-40 px-3 py-2">Para quem é</DropdownMenuLabel>
                 {AUDIENCE_FILTERS.map(filter => (
                   <DropdownMenuItem
                     key={filter.id}
@@ -492,7 +492,7 @@ export default function LearningTrailsPage() {
                 {activeCategory}
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
-                Visualizando todas as trilhas contidas nesta pasta.
+                Todas as trilhas desta matéria.
               </p>
             </div>
           </div>
@@ -518,15 +518,22 @@ export default function LearningTrailsPage() {
       {/* Folder or Trails Grid */}
       {activeCategory === "Todos" && !searchTerm ? (
         subjectFolders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-            <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
-              <BookOpen className="h-9 w-9 text-slate-300" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-lg font-black text-primary italic">Nenhuma trilha cadastrada</p>
-              <p className="text-sm text-muted-foreground">Novas aulas estarão disponíveis em breve.</p>
-            </div>
-          </div>
+          hasActiveFilters ? (
+            <EmptyState
+              icon={Search}
+              title="Nenhuma trilha para esse filtro"
+              description="Troque o tipo de aula ou o público para ver mais trilhas."
+              action={{ label: "Limpar filtros", onClick: clearFilters }}
+            />
+          ) : (
+            <EmptyState
+              icon={BookOpen}
+              title="Ainda não há trilhas publicadas"
+              description="Quando os professores publicarem aulas, elas aparecem aqui separadas por matéria. Enquanto isso, você pode treinar com questões."
+              action={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+              secondary={{ label: "Ver a biblioteca", href: "/dashboard/library" }}
+            />
+          )
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {subjectFolders.map((folder, fi) => {
@@ -569,7 +576,7 @@ export default function LearningTrailsPage() {
 
                     <div className="relative z-10 pt-4 border-t border-slate-100 mt-auto">
                       <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
-                        <span>Progresso Médio</span>
+                        <span>Seu progresso</span>
                         <span className={config.color}>{folder.avgProgress}%</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
@@ -588,18 +595,12 @@ export default function LearningTrailsPage() {
       ) : (
         /* Trails Grid */
         filteredTrails.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-            <div className="h-20 w-20 rounded-card bg-slate-100 flex items-center justify-center">
-              <BookOpen className="h-9 w-9 text-slate-300" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-lg font-black text-primary italic">Nenhuma trilha encontrada</p>
-              <p className="text-sm text-muted-foreground">Tente ajustar os filtros ou pesquisar outro termo.</p>
-            </div>
-            <Button onClick={clearFilters} variant="outline" className="rounded-2xl font-black text-xs uppercase tracking-wider mt-2">
-              Limpar filtros
-            </Button>
-          </div>
+          <EmptyState
+            icon={Search}
+            title={searchTerm ? `Nenhuma trilha com "${searchTerm}"` : "Nenhuma trilha nesta matéria ainda"}
+            description={searchTerm ? "Tente outra palavra ou procure em todas as matérias." : "Quando os professores publicarem aulas desta matéria, elas aparecem aqui."}
+            action={{ label: "Ver todas as trilhas", onClick: clearFilters }}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
             {filteredTrails.map((trail, ti) => {
@@ -619,21 +620,19 @@ export default function LearningTrailsPage() {
                 >
                 <Card className="lift gradient-border group overflow-hidden border-none shadow-xl hover:shadow-2xl hover:glow-orange transition-[transform,box-shadow] duration-300 bg-white rounded-card flex flex-col h-full">
                   <div className="relative aspect-video overflow-hidden shrink-0">
-                    <Image
-                      src={getSafeTrailImage(trail.image_url, trail.title, trail.category)}
-                      alt={trail.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = getTrailCoverUrl(trail.title, trail.category);
-                      }}
+                    <ContentCover
+                      imageUrl={trail.image_url}
+                      subject={trail.category}
+                      title={trail.title}
+                      label=" "
+                      className="absolute inset-0"
+                      imgClassName="transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-60" />
                     <div className="absolute top-5 left-5 flex gap-2">
                       <Badge className="bg-white/95 backdrop-blur-md text-primary border-none shadow-lg px-4 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-2">
                         <Zap className="h-3.5 w-3.5 text-accent fill-accent" />
-                        {trail.category}
+                        {trail.category || "Geral"}
                       </Badge>
                       {trail.trail_type === 'serie' ? (
                         <Badge className="bg-purple-600/90 backdrop-blur-md text-white border-none shadow-lg px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
@@ -649,7 +648,7 @@ export default function LearningTrailsPage() {
                     <button
                       onClick={() => handlePinTrail(trail.id)}
                       disabled={pinningId === trail.id}
-                      aria-label={isPinned ? "Remover da Home" : "Fixar na Home"}
+                      aria-label={isPinned ? "Tirar da página inicial" : "Fixar na página inicial"}
                       className={`absolute top-5 right-5 h-10 w-10 rounded-full flex items-center justify-center transition-all shadow-xl active:scale-90 ${isPinned
                           ? 'bg-accent text-accent-foreground'
                           : 'bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-primary'
@@ -670,11 +669,11 @@ export default function LearningTrailsPage() {
                       <h3 className="text-2xl font-black text-primary italic leading-tight group-hover:text-accent transition-colors">
                         {/* O título é o alvo que o aluno tenta clicar primeiro. */}
                         <Link href={`/dashboard/classroom/${trail.id}`} className="hover:underline underline-offset-4 decoration-2">
-                          {trail.title}
+                          {trail.title || "Trilha sem título"}
                         </Link>
                       </h3>
                       <p className="text-sm text-muted-foreground font-medium italic line-clamp-3 opacity-80 leading-relaxed">
-                        {trail.description || "Inicie agora esta jornada técnica projetada para fortalecer sua base acadêmica e acelerar sua aprovação."}
+                        {trail.description || "Aulas em sequência para fortalecer sua base nesta matéria."}
                       </p>
                     </div>
 
@@ -682,7 +681,7 @@ export default function LearningTrailsPage() {
                       <div className="flex justify-between items-center text-[10px] font-black text-primary/40 uppercase tracking-widest">
                         <span className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-accent" />
-                          {percentage}% Evoluído
+                          {fmtPct(percentage, "0%")} concluído
                         </span>
                         <span>{percentage === 100 ? 'Finalizada' : percentage > 0 ? 'Em andamento' : 'Não iniciada'}</span>
                       </div>
@@ -707,8 +706,8 @@ export default function LearningTrailsPage() {
                           <span className="text-white font-black text-sm">{teacherInitial}</span>
                         </div>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className="text-[10px] font-black text-primary italic leading-none truncate">{trail.teacher_name || "Mentor da Rede"}</span>
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Especialista</span>
+                          <span className="text-[10px] font-black text-primary italic leading-none truncate">{trail.teacher_name || "Equipe pedagógica"}</span>
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Professor</span>
                         </div>
                       </div>
                       <Button asChild className="btn-shimmer w-full sm:w-auto bg-primary text-white font-black text-[10px] uppercase h-12 px-6 sm:px-8 rounded-2xl shadow-xl active:scale-95 transition-[transform,box-shadow] [touch-action:manipulation] group/btn border-none shrink-0">

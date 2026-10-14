@@ -55,7 +55,7 @@ const studentItems: NavItem[] = [
       { icon: FileText,    label: "Simulados por Matéria", href: "/dashboard/student/simulados",   id: "nav-simulados" },
       { icon: Scroll,      label: "Provas Completas",      href: "/dashboard/student/provas",      id: "nav-provas" },
       { icon: FilePenLine, label: "Treinar Redação",       href: "/dashboard/student/essays",      id: "nav-essays" },
-      { icon: Layers,      label: "Flash Cards",         href: "/dashboard/student/flashcards",  id: "nav-flashcards" },
+      { icon: Layers,      label: "Flashcards",         href: "/dashboard/student/flashcards",  id: "nav-flashcards" },
       { icon: BarChart3,   label: "Meu Desempenho",        href: "/dashboard/student/performance", id: "nav-performance" },
     ],
   },
@@ -139,8 +139,8 @@ const teacherItems: NavItem[] = [
       { icon: Bell,           label: "Mural de Avisos", href: "/dashboard/teacher/communication", id: "nav-teacher-communication" },
     ],
   },
-  { icon: MonitorPlay, label: "Gerenciar Lives", href: "/dashboard/teacher/live",      id: "nav-teacher-live" },
-  { icon: BarChart3,   label: "BI & Analytics",  href: "/dashboard/teacher/analytics", id: "nav-teacher-analytics" },
+  { icon: MonitorPlay, label: "Aulas ao Vivo", href: "/dashboard/teacher/live",      id: "nav-teacher-live" },
+  { icon: BarChart3,   label: "Desempenho das Turmas",  href: "/dashboard/teacher/analytics", id: "nav-teacher-analytics" },
   {
     icon: MessagesSquare, label: "Comunidade", id: "nav-teacher-comunidade",
     children: [
@@ -160,12 +160,13 @@ const teacherItems: NavItem[] = [
 
 /* ─── ADMIN ─────────────────────────────────────────────────── */
 const adminItems: NavItem[] = [
-  { icon: ShieldCheck, label: "Gestão 360", href: "/dashboard/admin/home", id: "nav-admin-home" },
+  { icon: ShieldCheck, label: "Painel", href: "/dashboard/admin/home", id: "nav-admin-home" },
   {
     icon: Users, label: "Usuários", id: "nav-admin-usuarios",
     children: [
       { icon: Users,       label: "Diretório",      href: "/dashboard/admin/users",      id: "nav-admin-users" },
       { icon: Database,    label: "Turmas",          href: "/dashboard/admin/students",   id: "nav-admin-students" },
+      { icon: Users,       label: "Contas Duplicadas", href: "/dashboard/secretary/duplicates", id: "nav-admin-duplicates" },
       { icon: AlertCircle, label: "Alunos em Risco", href: "/dashboard/teacher/students", id: "nav-admin-risk" },
     ],
   },
@@ -189,7 +190,7 @@ const adminItems: NavItem[] = [
   {
     icon: BarChart3, label: "Monitoramento", id: "nav-admin-monitoramento",
     children: [
-      { icon: BarChart3,      label: "BI & Analytics",     href: "/dashboard/teacher/analytics", id: "nav-admin-analytics" },
+      { icon: BarChart3,      label: "Desempenho das Turmas",     href: "/dashboard/teacher/analytics", id: "nav-admin-analytics" },
       { icon: MonitorSmartphone, label: "Onde o aluno para", href: "/dashboard/admin/uso",      id: "nav-admin-uso" },
       { icon: Trophy,         label: "Ranking por Prova",  href: "/dashboard/admin/ranking",     id: "nav-admin-ranking" },
       { icon: ClipboardCheck, label: "Frequência",          href: "/dashboard/admin/attendance",  id: "nav-admin-attendance" },
@@ -224,6 +225,7 @@ const secretaryItems: NavItem[] = [
       { icon: Users,       label: "Diretório de Alunos", href: "/dashboard/secretary/enrollments", id: "nav-secretary-enrollments" },
       { icon: TrendingUp,  label: "Renda Per Capita",    href: "/dashboard/secretary/income",      id: "nav-secretary-income" },
       { icon: Database,    label: "Gestão de Turmas",    href: "/dashboard/admin/students",        id: "nav-secretary-students" },
+      { icon: Users,       label: "Contas Duplicadas",   href: "/dashboard/secretary/duplicates",  id: "nav-secretary-duplicates" },
     ],
   },
   {

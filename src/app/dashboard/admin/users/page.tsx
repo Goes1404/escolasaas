@@ -54,6 +54,8 @@ import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { fmtNumber, txt } from "@/lib/format";
+import { EmptyState } from "@/components/EmptyState";
 
 // ────────────────────────────────────────────────
 // Modal de Gerar Link de Convite (Cadastro em Massa)
@@ -80,7 +82,7 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
       if (!res.ok) throw new Error(data.error);
       setLink(data.link);
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível gerar o link', description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -90,39 +92,39 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
     if (!link) return;
     await navigator.clipboard.writeText(link);
     setCopied(true);
-    toast({ title: 'Link de convite copiado!' });
+    toast({ title: 'Link de convite copiado' });
     setTimeout(() => setCopied(false), 3000);
   };
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-8 pb-4 bg-orange-50 border-b border-orange-100">
+      <DialogContent className="sm:max-w-md rounded-card p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-4 border-b">
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
-              <Link2 className="h-6 w-6 text-orange-600" />
+            <div className="h-11 w-11 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+              <Link2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black text-orange-700 leading-none italic uppercase tracking-tighter">
-                Link de Convite
+              <DialogTitle className="text-lg font-bold text-foreground leading-tight">
+                Link de convite
               </DialogTitle>
-              <DialogDescription className="text-xs mt-1 font-medium text-orange-600/60">
-                Cadastro em massa para novos alunos
+              <DialogDescription className="text-sm mt-0.5">
+                Para vários alunos se cadastrarem sozinhos
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-8 space-y-6">
+        <div className="p-6 space-y-6">
           {!link ? (
             <div className="space-y-6">
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                Este link permite que novos alunos se cadastrem sozinhos na plataforma. 
-                Eles serão registrados automaticamente como <strong className="text-primary italic uppercase">Estudantes</strong>.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Este link permite que novos alunos se cadastrem sozinhos na plataforma.
+                Eles entram automaticamente como <strong className="text-foreground">alunos</strong>.
               </p>
               
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Validade do Link (Dias)</Label>
+                <Label className="u-label ml-1">Validade do link (dias)</Label>
                 <div className="flex gap-2">
                   {[1, 3, 7, 15, 30].map(d => (
                     <Button
@@ -130,7 +132,8 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
                       type="button"
                       variant={expiryDays === d ? 'default' : 'outline'}
                       onClick={() => setExpiryDays(d)}
-                      className={`flex-1 h-11 rounded-xl font-black text-xs transition-all ${expiryDays === d ? 'bg-orange-600 shadow-lg shadow-orange-200 border-none' : 'bg-white border-slate-100 text-slate-400'}`}
+                      aria-pressed={expiryDays === d}
+                      className={`flex-1 min-w-0 px-0 h-11 rounded-control font-bold text-xs tabular-nums ${expiryDays === d ? '' : 'text-muted-foreground'}`}
                     >
                       {d}d
                     </Button>
@@ -141,34 +144,34 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
               <Button
                 onClick={generateInvite}
                 disabled={loading}
-                className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-2xl shadow-xl shadow-orange-200 uppercase tracking-widest text-xs transition-all active:scale-95"
+                className="w-full h-11 font-bold rounded-control text-sm"
               >
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                Gerar Link de Cadastro
+                Gerar link de cadastro
               </Button>
             </div>
           ) : (
-            <div className="space-y-6 animate-in zoom-in-95 duration-500">
-              <div className="bg-slate-50 border border-slate-100 rounded-card p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                   <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] uppercase px-3">Link Ativo</Badge>
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expira em {expiryDays} dias</span>
+            <div className="space-y-6">
+              <div className="bg-muted/30 border rounded-card p-5 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                   <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] uppercase px-3">Link ativo</Badge>
+                   <span className="u-label">Expira em {expiryDays} {expiryDays === 1 ? 'dia' : 'dias'}</span>
                 </div>
-                <p className="text-xs font-mono text-slate-400 break-all bg-white p-3 rounded-xl border border-slate-50">
+                <p className="text-xs font-mono text-muted-foreground break-all bg-card p-3 rounded-control border">
                   {link}
                 </p>
                 <Button
                   onClick={handleCopy}
-                  className="w-full h-12 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 gap-2"
+                  className="w-full h-11 font-bold rounded-control gap-2"
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? 'Copiado para o Clip!' : 'Copiar Link agora'}
+                  {copied ? 'Copiado' : 'Copiar link'}
                 </Button>
               </div>
               
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100 text-blue-700">
+              <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-control border text-muted-foreground">
                 <AlertCircle size={20} className="shrink-0" />
-                <p className="text-[10px] font-bold leading-tight uppercase tracking-tight">
+                <p className="text-xs leading-snug">
                   Envie este link para os grupos de WhatsApp. O aluno preencherá o próprio nome e curso.
                 </p>
               </div>
@@ -240,7 +243,7 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
       if (!res.ok) throw new Error(data.error);
       setLink(data.link);
     } catch (err: any) {
-      setLinkError(err.message || 'Falha ao gerar link. Tente novamente.');
+      setLinkError(err.message || 'Não foi possível gerar o link. Tente novamente.');
     } finally {
       setLinkLoading(false);
     }
@@ -250,7 +253,7 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
     if (!link) return;
     await navigator.clipboard.writeText(link);
     setCopied(true);
-    toast({ title: 'Link copiado para a área de transferência!' });
+    toast({ title: 'Link copiado' });
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -275,9 +278,9 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setDirectSuccess(true);
-      toast({ title: 'Senha redefinida!', description: `${user.name} precisará usar a nova senha no próximo login.` });
+      toast({ title: 'Senha redefinida', description: `${txt(user.name, 'O usuário')} vai usar a nova senha no próximo login.` });
     } catch (err: any) {
-      setDirectError(err.message || 'Falha ao redefinir senha. Tente novamente.');
+      setDirectError(err.message || 'Não foi possível redefinir a senha. Tente novamente.');
     } finally {
       setDirectLoading(false);
     }
@@ -285,15 +288,15 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 bg-slate-50 border-b border-slate-200">
+      <DialogContent className="sm:max-w-md rounded-card p-0 overflow-hidden max-h-[92vh] overflow-y-auto">
+        <DialogHeader className="p-6 pb-4 border-b">
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
               <KeyRound className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-base font-black text-primary leading-none">
-                Resetar Senha
+              <DialogTitle className="text-base font-bold text-foreground leading-tight">
+                Redefinir senha
               </DialogTitle>
               <DialogDescription className="text-xs mt-0.5">
                 {user?.name}
@@ -304,32 +307,34 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
 
         <div className="p-6 space-y-5">
           {/* E-mail do usuário */}
-          <div className="flex items-center gap-2.5 bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+          <div className="flex items-center gap-2.5 bg-muted/30 rounded-control border px-4 py-3">
             <Link2 size={15} className="text-muted-foreground shrink-0" />
-            <span className="text-xs font-mono font-bold text-primary truncate">{user?.email}</span>
+            <span className="text-xs font-mono font-bold text-foreground truncate">{user?.email}</span>
           </div>
 
           {/* Seletor de abas */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-control">
             <button
               onClick={() => setTab('link')}
-              className={`h-9 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              aria-pressed={tab === 'link'}
+              className={`h-9 rounded-control text-xs font-bold uppercase tracking-wider transition-colors ${
                 tab === 'link'
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Enviar Link
+              Enviar link
             </button>
             <button
               onClick={() => setTab('direct')}
-              className={`h-9 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              aria-pressed={tab === 'direct'}
+              className={`h-9 rounded-control text-xs font-bold uppercase tracking-wider transition-colors ${
                 tab === 'direct'
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Definir Senha
+              Definir senha
             </button>
           </div>
 
@@ -343,10 +348,10 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
                   </p>
                   <Button
                     onClick={generateLink}
-                    className="w-full h-11 bg-primary text-white font-bold rounded-2xl border-none shadow-md"
+                    className="w-full h-11 font-bold rounded-control"
                   >
                     <KeyRound size={16} className="mr-2" />
-                    Gerar Link de Reset
+                    Gerar link de redefinição
                   </Button>
                 </div>
               )}
@@ -354,17 +359,17 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
               {linkLoading && (
                 <div className="py-6 flex items-center justify-center gap-3 text-muted-foreground">
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-sm font-medium">Gerando link seguro...</span>
+                  <span className="text-sm">Gerando o link…</span>
                 </div>
               )}
 
               {linkError && !linkLoading && (
                 <div className="space-y-3">
-                  <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium">
+                  <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-200 rounded-control text-red-700 text-sm font-medium break-words">
                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                     {linkError}
                   </div>
-                  <Button variant="outline" onClick={generateLink} className="w-full h-10 rounded-xl font-bold border-muted/30 gap-2">
+                  <Button variant="outline" onClick={generateLink} className="w-full h-10 rounded-control font-bold gap-2">
                     <RefreshCw size={14} />
                     Tentar novamente
                   </Button>
@@ -383,21 +388,21 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
                       Link gerado
                     </span>
                   </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-3">
-                    <p className="text-[10px] font-mono text-slate-500 break-all leading-relaxed line-clamp-3">
+                  <div className="bg-muted/30 border rounded-card p-3 space-y-3">
+                    <p className="text-[11px] font-mono text-muted-foreground break-all leading-relaxed line-clamp-3">
                       {link}
                     </p>
                     <div className="flex gap-2">
-                      <Button onClick={handleCopy} className="flex-1 h-10 rounded-xl font-bold text-xs gap-2 bg-primary text-white border-none">
+                      <Button onClick={handleCopy} className="flex-1 h-10 rounded-control font-bold text-xs gap-2">
                         {copied ? <Check size={14} /> : <Copy size={14} />}
-                        {copied ? 'Copiado!' : 'Copiar Link'}
+                        {copied ? 'Copiado' : 'Copiar link'}
                       </Button>
-                      <Button variant="outline" onClick={generateLink} disabled={linkLoading} title="Gerar novo link" className="h-10 px-3 rounded-xl border-muted/30">
+                      <Button variant="outline" onClick={generateLink} disabled={linkLoading} title="Gerar novo link" aria-label="Gerar novo link" className="h-10 px-3 rounded-control">
                         <RefreshCw size={14} />
                       </Button>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Envie este link ao aluno via WhatsApp. Ele será redirecionado para criar uma nova senha.
                   </p>
                 </div>
@@ -410,14 +415,14 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
             <div className="space-y-4">
               {directSuccess ? (
                 <div className="py-4 space-y-3 text-center">
-                  <div className="h-14 w-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                  <div className="h-14 w-14 rounded-card bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-7 w-7 text-emerald-600" />
                   </div>
-                  <p className="font-black text-primary text-sm uppercase tracking-wide">Senha Redefinida!</p>
+                  <p className="font-bold text-foreground text-sm">Senha redefinida</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     O aluno precisará trocar a senha no próximo login.
                   </p>
-                  <Button variant="outline" onClick={onClose} className="w-full h-10 rounded-xl font-bold text-xs border-muted/30">
+                  <Button variant="outline" onClick={onClose} className="w-full h-10 rounded-control font-bold text-xs">
                     Fechar
                   </Button>
                 </div>
@@ -427,21 +432,22 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
                     Define uma senha temporária para o aluno. Ele será obrigado a alterá-la no próximo login.
                   </p>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">
-                      Nova Senha Temporária
+                    <Label className="u-label">
+                      Nova senha temporária
                     </Label>
                     <div className="relative">
                       <Input
                         type={showPwd ? 'text' : 'password'}
                         value={newPassword}
                         onChange={e => { setNewPassword(e.target.value); setDirectError(null); }}
-                        className="h-12 bg-slate-50 border-slate-200 rounded-xl font-mono font-bold pr-12"
+                        className="h-11 rounded-control font-mono font-bold pr-12"
                         placeholder="Mínimo 8 caracteres"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPwd(!showPwd)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                        aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         {showPwd ? <CheckCircle2 size={16} /> : <KeyRound size={16} />}
                       </button>
@@ -449,14 +455,14 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
                   </div>
 
                   {directError && (
-                    <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium">
+                    <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-200 rounded-control text-red-700 text-sm font-medium break-words">
                       <AlertCircle size={16} className="shrink-0 mt-0.5" />
                       {directError}
                     </div>
                   )}
 
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                    <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-control">
+                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
                       O aluno será redirecionado para trocar a senha obrigatoriamente no próximo acesso.
                     </p>
                   </div>
@@ -464,14 +470,14 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
                   <Button
                     onClick={handleDirectReset}
                     disabled={directLoading || !newPassword.trim()}
-                    className="w-full h-11 bg-primary text-white font-bold rounded-2xl border-none shadow-md disabled:opacity-40"
+                    className="w-full h-11 font-bold rounded-control disabled:opacity-40"
                   >
                     {directLoading ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
                       <>
                         <KeyRound size={16} className="mr-2" />
-                        Redefinir Senha Agora
+                        Redefinir senha
                       </>
                     )}
                   </Button>
@@ -565,7 +571,7 @@ export default function AdminUserDirectoryPage() {
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     if (id === currentUser?.id) {
-      toast({ title: "Ação Negada", description: "Você não pode suspender sua própria conta.", variant: "destructive" });
+      toast({ title: "Ação não permitida", description: "Você não pode suspender a própria conta.", variant: "destructive" });
       return;
     }
     setProcessingId(id);
@@ -576,7 +582,7 @@ export default function AdminUserDirectoryPage() {
       setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
       toast({ title: newStatus === 'active' ? 'Acesso reativado' : 'Usuário suspenso' });
     } catch (err: any) {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+      toast({ title: "Não foi possível alterar o acesso", description: err.message, variant: "destructive" });
     } finally {
       setProcessingId(null);
     }
@@ -584,7 +590,7 @@ export default function AdminUserDirectoryPage() {
 
   const handleDeleteUser = async (id: string, name: string) => {
     if (id === currentUser?.id) {
-      toast({ title: "Ação Negada", description: "Você não pode excluir sua própria conta.", variant: "destructive" });
+      toast({ title: "Ação não permitida", description: "Você não pode excluir a própria conta.", variant: "destructive" });
       return;
     }
     setProcessingId(id);
@@ -600,9 +606,9 @@ export default function AdminUserDirectoryPage() {
       if (!res.ok) throw new Error(data.error);
 
       setUsers(prev => prev.filter(u => u.id !== id));
-      toast({ title: 'Usuário excluído', description: `${name} foi removido da plataforma.` });
+      toast({ title: 'Usuário excluído', description: `${txt(name, 'O usuário')} foi removido da plataforma.` });
     } catch (err: any) {
-      toast({ title: 'Erro ao excluir', description: err.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível excluir', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingId(null);
     }
@@ -646,10 +652,10 @@ export default function AdminUserDirectoryPage() {
       const { error } = await supabase.from('profiles').update(updates).eq('id', editingUser.id);
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updates } : u));
-      toast({ title: "Dados atualizados com sucesso!" });
+      toast({ title: "Dados atualizados" });
       setEditingUser(null);
     } catch (err: any) {
-      toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
+      toast({ title: "Não foi possível salvar", description: err.message, variant: "destructive" });
     } finally {
       setEditIsSubmitting(false);
     }
@@ -688,73 +694,227 @@ export default function AdminUserDirectoryPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  const staffOf = (u: any) => {
+    const pType = (u.profile_type || '').toLowerCase();
+    const isStaff = u.role === 'admin' || u.role === 'teacher' ||
+      ['admin', 'staff', 'teacher', 'tecnico', 'técnico', 'coord', 'prof',
+        'psicóloga', 'apoio', 'assessor', 'secretaria', 'videomaker',
+        'administrador', 'agente'].some(k => pType.includes(k));
+    return { pType, isStaff };
+  };
+
+  const roleLabel = (u: any) =>
+    txt(u.profile_type, u.role === 'admin' ? 'Coordenação' : u.role === 'teacher' ? 'Professor' : 'Aluno');
+
+  const statusBadge = (u: any) => {
+    const isSuspended = u.status === 'suspended';
+    return (
+      <Badge variant="outline" className={`font-bold text-[10px] uppercase px-2.5 h-5 ${isSuspended ? 'text-red-700 border-red-200 bg-red-50' : 'text-emerald-700 border-emerald-200 bg-emerald-50'}`}>
+        {isSuspended ? 'Suspenso' : 'Ativo'}
+      </Badge>
+    );
+  };
+
+  const rowActions = (u: any) => {
+    const isSuspended = u.status === 'suspended';
+    const isProcessing = processingId === u.id;
+    const name = txt(u.name, 'Este usuário');
+    return (
+      <div className="flex items-center justify-end gap-1 flex-wrap">
+        {/* Editar dados */}
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Editar dados do usuário"
+          aria-label="Editar dados do usuário"
+          onClick={() => openEditModal(u)}
+          className="h-10 w-10 rounded-control"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+
+        {/* Reset de Senha */}
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Redefinir senha"
+          aria-label="Redefinir senha"
+          onClick={() => openResetModal(u)}
+          className="h-10 w-10 rounded-control"
+        >
+          <KeyRound className="h-4 w-4" />
+        </Button>
+
+        {/* Suspender / Reativar */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isProcessing || u.id === currentUser?.id}
+              title={isSuspended ? 'Reativar acesso' : 'Suspender acesso'}
+              aria-label={isSuspended ? 'Reativar acesso' : 'Suspender acesso'}
+              className="h-10 w-10 rounded-control"
+            >
+              {isProcessing
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : isSuspended
+                  ? <CheckCircle2 className="h-4 w-4" />
+                  : <Ban className="h-4 w-4" />
+              }
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="rounded-card">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-bold text-foreground">
+                {isSuspended ? 'Reativar acesso?' : 'Suspender acesso?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {isSuspended
+                  ? `${name} voltará a ter acesso à plataforma normalmente.`
+                  : `${name} não conseguirá mais entrar. Dá para desfazer depois.`
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-control font-bold">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleToggleStatus(u.id, u.status)}
+                className={`rounded-control font-bold border-none text-white ${isSuspended ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+              >
+                {isSuspended ? 'Reativar' : 'Suspender'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Chat */}
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Enviar mensagem"
+          aria-label="Enviar mensagem"
+          asChild
+          className="h-10 w-10 rounded-control"
+        >
+          <Link href={`/dashboard/chat/${u.id}`}>
+            <Send className="h-4 w-4" />
+          </Link>
+        </Button>
+
+        {/* Excluir Usuário */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isProcessing || u.id === currentUser?.id}
+              title="Excluir usuário"
+              aria-label="Excluir usuário"
+              className="h-10 w-10 rounded-control text-red-500 hover:bg-red-50 hover:text-red-600"
+            >
+              {isProcessing && processingId === u.id ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="rounded-card">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-bold text-red-600">
+                Excluir este usuário de vez?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação é <strong>irreversível</strong>. <strong>{name}</strong> será excluído do login e de todos os registros de perfil da plataforma.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-control font-bold">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleDeleteUser(u.id, u.name)}
+                className="rounded-control font-bold border-none bg-red-600 hover:bg-red-700 text-white"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
+  const avatar = (u: any) => (
+    <div className={`h-9 w-9 rounded-control flex items-center justify-center font-bold text-sm shrink-0 ${staffOf(u).isStaff ? 'bg-muted text-foreground' : 'bg-primary/10 text-primary'}`}>
+      {txt(u.name, '?').charAt(0).toUpperCase()}
+    </div>
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
+    <div className="space-y-6 pb-20 px-1">
 
       {/* ── Cabeçalho ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">
-            Diretório de Usuários
-            <span className="text-lg font-bold text-muted-foreground ml-2 not-italic">
-              ({filtered.length})
-            </span>
-          </h1>
-          <p className="text-muted-foreground font-medium italic text-sm">
-            Gestão completa de identidades e acessos da rede.
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><UserPlus className="h-3.5 w-3.5" /> Coordenação · usuários</p>
+          <h1 className="u-page-title text-3xl mt-1">Usuários</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            <span className="tabular-nums">{fmtNumber(filtered.length, 0, '0')}</span> {filtered.length === 1 ? 'pessoa' : 'pessoas'} · cadastro, senha e acesso de alunos e equipe.
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
           <Button
+            variant="outline"
             onClick={() => setInviteOpen(true)}
-            className="bg-white text-orange-600 border border-orange-100 font-black rounded-2xl shadow-md h-12 px-6 gap-2 hover:bg-orange-50 transition-all"
+            className="font-bold rounded-control h-11 px-5 gap-2"
           >
             <Link2 className="h-4 w-4" />
-            Link de Convite
+            Link de convite
           </Button>
           <Button
             asChild
-            className="bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 h-12 px-6 gap-2 hover:scale-[1.02] active:scale-95 transition-all border-none"
+            variant="arcade"
+            className="font-bold rounded-control h-11 px-5 gap-2"
           >
             <Link href="/dashboard/admin/users/new">
               <UserPlus className="h-4 w-4" />
-              Novo Usuário
+              Novo usuário
             </Link>
           </Button>
         </div>
       </div>
 
       {/* ── Filtros ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-1 relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nome..."
-            className="pl-11 h-12 bg-white border-none shadow-md rounded-2xl font-medium w-full"
+            className="pl-9 h-11 rounded-control w-full"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-1 tracking-widest">Papel</Label>
+          <Label className="u-label px-1">Papel</Label>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold">
+            <SelectTrigger className="h-11 rounded-control">
               <SelectValue placeholder="Papel" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="student">Estudantes</SelectItem>
-              <SelectItem value="staff">Equipe Profissional</SelectItem>
+              <SelectItem value="student">Alunos</SelectItem>
+              <SelectItem value="staff">Equipe</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-1 tracking-widest">Status</Label>
+          <Label className="u-label px-1">Situação</Label>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="h-11 rounded-control">
+              <SelectValue placeholder="Situação" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
@@ -774,219 +934,121 @@ export default function AdminUserDirectoryPage() {
         </div>
       </div>
 
-      {/* ── Tabela ── */}
-      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="h-10 w-10 animate-spin text-accent" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-20 text-center text-muted-foreground italic text-sm">
-              Nenhum usuário encontrado com os filtros atuais.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow className="h-12 md:h-14">
-                    <TableHead className="px-4 md:px-6 font-black uppercase text-[10px] tracking-widest min-w-[150px]">Identidade</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest hidden md:table-cell">E-mail</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest hidden sm:table-cell">Cargo</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest">Status</TableHead>
-                    <TableHead className="text-right px-4 md:px-6 font-black uppercase text-[10px] tracking-widest">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map(u => {
-                    const pType = (u.profile_type || '').toLowerCase();
-                    const isStaff = u.role === 'admin' || u.role === 'teacher' ||
-                      ['admin', 'staff', 'teacher', 'tecnico', 'técnico', 'coord', 'prof',
-                        'psicóloga', 'apoio', 'assessor', 'secretaria', 'videomaker',
-                        'administrador', 'agente'].some(k => pType.includes(k));
-                    const isSuspended = u.status === 'suspended';
-                    const isProcessing = processingId === u.id;
+      {/* ── Lista ── */}
+      {loading ? (
+        <Card className="rounded-card">
+          <CardContent className="py-20 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="u-label">Carregando usuários…</p>
+          </CardContent>
+        </Card>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title={users.length === 0 ? 'Nenhum usuário cadastrado' : 'Nenhum usuário encontrado'}
+          description={users.length === 0
+            ? 'Cadastre o primeiro usuário ou envie um link de convite para os alunos.'
+            : 'Nenhuma pessoa corresponde à busca e aos filtros escolhidos.'}
+          action={users.length === 0
+            ? { label: 'Novo usuário', href: '/dashboard/admin/users/new', icon: UserPlus }
+            : { label: 'Limpar filtros', onClick: () => { setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); } }}
+        />
+      ) : (
+        <>
+          {/* Celular: cartões empilhados */}
+          <div className="sm:hidden space-y-3">
+            {filtered.map(u => {
+              const isSuspended = u.status === 'suspended';
+              return (
+                <Card key={u.id} className="rounded-card">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {avatar(u)}
+                      <div className="min-w-0 flex-1">
+                        <p className={`font-semibold text-sm break-words ${isSuspended ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                          {txt(u.name)}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground truncate">
+                          {u.email || '@' + (u.username || 'usuario')}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <Badge variant="secondary" className="font-bold text-[10px] uppercase px-2.5 h-5">{roleLabel(u)}</Badge>
+                          {statusBadge(u)}
+                        </div>
+                      </div>
+                    </div>
+                    {rowActions(u)}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
-                    return (
-                      <TableRow
-                        key={u.id}
-                        className="h-16 hover:bg-muted/10 border-b last:border-0 transition-colors"
-                      >
-                        {/* Identidade */}
-                        <TableCell className="px-4 md:px-6">
-                          <div className="flex items-center gap-3">
-                            <div className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-sm shadow-sm shrink-0 ${isStaff ? 'bg-accent text-white' : 'bg-primary text-white'}`}>
-                              {u.name?.charAt(0)?.toUpperCase() || '?'}
+          <Card className="hidden sm:block rounded-card overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="px-4 md:px-6 u-label min-w-[150px]">Nome</TableHead>
+                      <TableHead className="u-label hidden md:table-cell">E-mail</TableHead>
+                      <TableHead className="u-label">Cargo</TableHead>
+                      <TableHead className="u-label">Situação</TableHead>
+                      <TableHead className="text-right px-4 md:px-6 u-label">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map(u => {
+                      const isSuspended = u.status === 'suspended';
+                      return (
+                        <TableRow key={u.id} className="hover:bg-muted/20">
+                          {/* Identidade */}
+                          <TableCell className="px-4 md:px-6 py-3">
+                            <div className="flex items-center gap-3">
+                              {avatar(u)}
+                              <div className="min-w-0">
+                                <p className={`font-semibold text-sm truncate ${isSuspended ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                  {txt(u.name)}
+                                </p>
+                                <p className="text-[11px] font-mono text-muted-foreground md:hidden truncate">
+                                  {u.email || '@' + (u.username || 'usuario')}
+                                </p>
+                                <p className="text-[11px] font-mono text-muted-foreground hidden md:block">
+                                  @{u.username || 'usuario'}
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className={`font-bold text-sm truncate ${isSuspended ? 'line-through opacity-40 text-slate-400' : 'text-primary italic'}`}>
-                                {u.name || '—'}
-                              </p>
-                              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 md:hidden truncate">
-                                {u.email || '@' + (u.username || 'user')}
-                              </p>
-                              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hidden md:block">
-                                @{u.username || 'user'}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
 
-                        {/* E-mail */}
-                        <TableCell className="hidden md:table-cell">
-                          <span className="text-xs font-mono text-muted-foreground truncate max-w-[160px] block">
-                            {u.email || '—'}
-                          </span>
-                        </TableCell>
+                          {/* E-mail */}
+                          <TableCell className="hidden md:table-cell">
+                            <span className="text-xs font-mono text-muted-foreground truncate max-w-[180px] block">
+                              {txt(u.email)}
+                            </span>
+                          </TableCell>
 
-                        {/* Cargo */}
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge className={`border-none font-bold text-[9px] uppercase px-2.5 h-5 ${
-                            isStaff
-                              ? pType.includes('admin') ? 'bg-indigo-100 text-indigo-700'
-                              : pType.includes('teacher') ? 'bg-purple-100 text-purple-700'
-                              : 'bg-orange-100 text-orange-700'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            {u.profile_type || (u.role === 'admin' ? 'Coordenação' : u.role === 'teacher' ? 'Professor' : 'Estudante')}
-                          </Badge>
-                        </TableCell>
+                          {/* Cargo */}
+                          <TableCell>
+                            <Badge variant="secondary" className="font-bold text-[10px] uppercase px-2.5 h-5">
+                              {roleLabel(u)}
+                            </Badge>
+                          </TableCell>
 
-                        {/* Status */}
-                        <TableCell>
-                          <Badge variant="outline" className={`font-bold text-[9px] uppercase px-2.5 h-5 ${isSuspended ? 'text-red-500 border-red-200 bg-red-50' : 'text-emerald-600 border-emerald-200 bg-emerald-50'}`}>
-                            {isSuspended ? 'Suspenso' : 'Ativo'}
-                          </Badge>
-                        </TableCell>
+                          {/* Status */}
+                          <TableCell>{statusBadge(u)}</TableCell>
 
-                        {/* Ações */}
-                        <TableCell className="text-right px-4 md:px-6">
-                          <div className="flex items-center justify-end gap-1">
-                            {/* Editar dados */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Editar dados do usuário"
-                              onClick={() => openEditModal(u)}
-                              className="h-10 w-10 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-
-                            {/* Reset de Senha */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Gerar link de reset de senha"
-                              onClick={() => openResetModal(u)}
-                              className="h-10 w-10 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-colors"
-                            >
-                              <KeyRound className="h-4 w-4" />
-                            </Button>
-
-                            {/* Suspender / Reativar */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={isProcessing || u.id === currentUser?.id}
-                                  title={isSuspended ? 'Reativar acesso' : 'Suspender acesso'}
-                                  className={`h-10 w-10 rounded-lg transition-colors ${isSuspended ? 'hover:bg-emerald-50 hover:text-emerald-600' : 'hover:bg-amber-50 hover:text-amber-600'}`}
-                                >
-                                  {isProcessing
-                                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                                    : isSuspended
-                                      ? <CheckCircle2 className="h-4 w-4" />
-                                      : <Ban className="h-4 w-4" />
-                                  }
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="font-black text-primary">
-                                    {isSuspended ? 'Reativar acesso?' : 'Suspender acesso?'}
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {isSuspended
-                                      ? `${u.name} voltará a ter acesso à plataforma normalmente.`
-                                      : `${u.name} não conseguirá mais fazer login. Esta ação pode ser revertida.`
-                                    }
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleToggleStatus(u.id, u.status)}
-                                    className={`rounded-xl font-bold border-none ${isSuspended ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-500 hover:bg-amber-600'}`}
-                                  >
-                                    {isSuspended ? 'Reativar' : 'Suspender'}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                            {/* Chat */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Enviar mensagem"
-                              asChild
-                              className="h-10 w-10 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors"
-                            >
-                              <Link href={`/dashboard/chat/${u.id}`}>
-                                <Send className="h-4 w-4" />
-                              </Link>
-                            </Button>
-
-                            {/* Excluir Usuário */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={isProcessing || u.id === currentUser?.id}
-                                  title="Excluir usuário permanentemente"
-                                  className="h-10 w-10 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
-                                >
-                                  {isProcessing && processingId === u.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="font-black text-red-600">
-                                    Excluir Usuário Permanentemente?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta ação é <strong>irreversível</strong>. O usuário <strong>{u.name}</strong> será excluído definitivamente da autenticação e de todos os registros de perfil no sistema.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteUser(u.id, u.name)}
-                                    className="rounded-xl font-bold border-none bg-red-600 hover:bg-red-700 text-white"
-                                  >
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          {/* Ações */}
+                          <TableCell className="text-right px-4 md:px-6">{rowActions(u)}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* ── Modal de Convite ── */}
       <InviteLinkModal
@@ -1003,70 +1065,70 @@ export default function AdminUserDirectoryPage() {
 
       {/* ── Modal de Edição ── */}
       <Dialog open={!!editingUser} onOpenChange={v => { if (!v) setEditingUser(null); }}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-hidden w-[95vw] sm:max-w-md max-h-[92vh] overflow-y-auto">
-          <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
+        <DialogContent className="rounded-card p-0 overflow-hidden w-[95vw] sm:max-w-md max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="p-6 pb-4 border-b">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-lg shadow shrink-0">
+              <div className="h-12 w-12 rounded-control bg-primary/10 flex items-center justify-center font-bold text-primary text-lg shrink-0">
                 {editingUser?.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
               <div>
-                <DialogTitle className="text-xl font-black italic text-primary leading-none uppercase tracking-tight">
-                  Editar Usuário
+                <DialogTitle className="text-lg font-bold text-foreground leading-tight">
+                  Editar usuário
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5 font-medium text-muted-foreground">
+                <DialogDescription className="text-sm mt-0.5 text-muted-foreground">
                   {editingUser?.name}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-8 space-y-4">
+          <div className="p-6 space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Nome Completo</Label>
+              <Label className="u-label ml-1">Nome completo</Label>
               <Input
                 value={editName}
                 onChange={e => setEditName(e.target.value)}
                 placeholder="Nome do usuário"
-                className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">E-mail</Label>
+              <Label className="u-label ml-1">E-mail</Label>
               <Input
                 value={editEmail}
                 onChange={e => setEditEmail(e.target.value)}
                 placeholder="email@exemplo.com"
-                className="h-12 bg-muted/30 border-none rounded-xl font-mono text-sm"
+                className="h-11 bg-muted/30 border-none rounded-control font-mono text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Escola / Polo</Label>
+                <Label className="u-label ml-1">Escola / polo</Label>
                 <Input
                   value={editInstitution}
                   onChange={e => setEditInstitution(e.target.value)}
                   placeholder="Nome da escola"
-                  className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                  className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Turma / Curso</Label>
+                <Label className="u-label ml-1">Turma / curso</Label>
                 <Input
                   value={editCourse}
                   onChange={e => setEditCourse(e.target.value)}
                   placeholder="Ex: 3ª Série A"
-                  className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                  className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Número da Sala</Label>
+                <Label className="u-label ml-1">Número da sala</Label>
                 <Select value={editSala} onValueChange={setEditSala}>
-                  <SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm">
+                  <SelectTrigger className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -1077,17 +1139,18 @@ export default function AdminUserDirectoryPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Turno</Label>
+                <Label className="u-label ml-1">Turno</Label>
                 <div className="flex gap-2">
                   {TURNO_OPTIONS.map(t => (
                     <button
                       key={t.value}
                       type="button"
                       onClick={() => setEditTurno(t.value)}
-                      className={`flex-1 h-12 rounded-xl font-black text-xs transition-all border-2 ${
+                      aria-pressed={editTurno === t.value}
+                      className={`flex-1 min-w-0 h-11 rounded-control font-bold text-xs transition-colors border ${
                         editTurno === t.value
-                          ? 'bg-primary text-white border-primary shadow'
-                          : 'bg-white border-muted text-muted-foreground hover:border-primary/30'
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-card border-border text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {t.label}
@@ -1098,48 +1161,45 @@ export default function AdminUserDirectoryPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Tipo de Perfil</Label>
+              <Label className="u-label ml-1">Tipo de perfil</Label>
               <Input
                 value={editProfileType}
                 onChange={e => setEditProfileType(e.target.value)}
                 placeholder="Ex: student, teacher, staff..."
-                className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm"
+                className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Segmento</Label>
+              <Label className="u-label ml-1">Segmento</Label>
               <div className="flex gap-3">
                 {['', 'ENEM', 'ETEC'].map(opt => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => setEditExamTarget(opt)}
-                    className={`flex-1 h-11 rounded-xl font-black text-xs transition-all border-2 ${
+                    aria-pressed={editExamTarget === opt}
+                    className={`flex-1 h-11 rounded-control font-bold text-xs transition-colors border ${
                       editExamTarget === opt
-                        ? opt === 'ETEC'
-                          ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-200'
-                          : opt === 'ENEM'
-                            ? 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-200'
-                            : 'bg-slate-200 text-slate-600 border-slate-200'
-                        : 'bg-white border-muted text-muted-foreground hover:border-primary/30'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >
-                    {opt === '' ? 'N/A' : opt}
+                    {opt === '' ? 'Nenhum' : opt}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="px-8 pb-8">
+          <div className="px-6 pb-6">
             <Button
               onClick={handleUpdateUser}
               disabled={editIsSubmitting}
-              className="w-full h-14 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 uppercase tracking-widest text-xs transition-all active:scale-95"
+              className="w-full h-11 font-bold rounded-control"
             >
               {editIsSubmitting && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
-              Salvar Alterações
+              Salvar alterações
             </Button>
           </div>
         </DialogContent>

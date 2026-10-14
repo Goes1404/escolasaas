@@ -71,6 +71,8 @@ import { useToast } from "@/hooks/use-toast";
 import { exportToCsv } from "@/lib/export-csv";
 import { StudentFilterBar, distinctOptions } from "@/components/secretary/StudentFilterBar";
 import { Download } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { fmtBRL, fmtNumber, toNumber, txt } from "@/lib/format";
 
 // ────────────────────────────────────────────────
 // Modal de Convite (Cadastro de Aluno)
@@ -106,39 +108,40 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
     if (!link) return;
     await navigator.clipboard.writeText(link);
     setCopied(true);
-    toast({ title: 'Link de convite copiado!' });
+    toast({ title: 'Link de convite copiado' });
     setTimeout(() => setCopied(false), 3000);
   };
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md rounded-card border-none shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-8 pb-4 bg-orange-50 border-b border-orange-100">
+      <DialogContent className="w-[95vw] sm:max-w-md rounded-card p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-4 border-b text-left">
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
-              <Link2 className="h-6 w-6 text-orange-600" />
+            <div className="h-11 w-11 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+              <Link2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black text-orange-700 leading-none italic uppercase tracking-tighter">
-                Link de Cadastro
+              <p className="u-label">Secretaria · matrículas</p>
+              <DialogTitle className="u-page-title text-xl mt-0.5">
+                Link de cadastro
               </DialogTitle>
-              <DialogDescription className="text-xs mt-1 font-medium text-orange-600/60">
-                Inscrição direta de novos estudantes
+              <DialogDescription className="text-xs mt-1 text-muted-foreground">
+                Para novos alunos se cadastrarem sozinhos
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-8 space-y-6">
+        <div className="p-6 space-y-6">
           {!link ? (
             <div className="space-y-6">
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                Este link permite que novos alunos criem suas contas sozinhos. 
-                Eles serão integrados automaticamente como <strong className="text-primary italic uppercase">Estudantes</strong>.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Com este link, novos alunos criam a própria conta. Eles entram automaticamente
+                com o papel de <strong className="text-foreground">aluno</strong>.
               </p>
               
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Validade do Link (Dias)</Label>
+                <Label className="u-label ml-1">Validade do link (dias)</Label>
                 <div className="flex gap-2">
                   {[1, 3, 7, 15, 30].map(d => (
                     <Button
@@ -146,7 +149,8 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
                       type="button"
                       variant={expiryDays === d ? 'default' : 'outline'}
                       onClick={() => setExpiryDays(d)}
-                      className={`flex-1 h-11 rounded-xl font-black text-xs transition-all ${expiryDays === d ? 'bg-orange-600 shadow-lg shadow-orange-200 border-none' : 'bg-white border-slate-100 text-slate-400'}`}
+                      aria-pressed={expiryDays === d}
+                      className={`flex-1 min-w-0 px-0 h-11 rounded-control font-bold text-sm ${expiryDays === d ? '' : 'text-muted-foreground'}`}
                     >
                       {d}d
                     </Button>
@@ -157,35 +161,36 @@ function InviteLinkModal({ open, onClose }: { open: boolean; onClose: () => void
               <Button
                 onClick={generateInvite}
                 disabled={loading}
-                className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-2xl shadow-xl shadow-orange-200 uppercase tracking-widest text-xs transition-all active:scale-95 border-none"
+                variant="arcade"
+                className="w-full h-11 font-bold rounded-control"
               >
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                Gerar Link de Inscrição
+                Gerar link de cadastro
               </Button>
             </div>
           ) : (
-            <div className="space-y-6 animate-in zoom-in-95 duration-500">
-              <div className="bg-slate-50 border border-slate-100 rounded-card p-5 space-y-4">
+            <div className="space-y-5">
+              <div className="border border-border rounded-card p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                   <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] uppercase px-3 py-1">Link Ativo</Badge>
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expira em {expiryDays} dias</span>
+                   <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] px-2.5">Link ativo</Badge>
+                   <span className="u-label">Expira em {expiryDays} {expiryDays === 1 ? "dia" : "dias"}</span>
                 </div>
-                <p className="text-xs font-mono text-slate-400 break-all bg-white p-3 rounded-xl border border-slate-50">
+                <p className="text-xs font-mono text-muted-foreground break-all bg-muted/40 p-3 rounded-control">
                   {link}
                 </p>
                 <Button
                   onClick={handleCopy}
-                  className="w-full h-12 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 gap-2 border-none"
+                  className="w-full h-11 font-bold rounded-control gap-2"
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? 'Copiado para o clipboard!' : 'Copiar Link agora'}
+                  {copied ? 'Link copiado' : 'Copiar link'}
                 </Button>
               </div>
               
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100 text-blue-700">
-                <AlertCircle size={20} className="shrink-0" />
-                <p className="text-[10px] font-bold leading-tight uppercase tracking-tight">
-                  Envie este link para os grupos de novos alunos para que façam a autoinscrição.
+              <div className="flex items-start gap-3 p-4 bg-muted/40 rounded-control border border-border text-muted-foreground">
+                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                <p className="text-sm leading-snug">
+                  Envie este link nos grupos de novos alunos para que eles mesmos façam o cadastro.
                 </p>
               </div>
             </div>
@@ -256,7 +261,7 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
     if (!link) return;
     await navigator.clipboard.writeText(link);
     setCopied(true);
-    toast({ title: 'Link copiado!' });
+    toast({ title: 'Link copiado' });
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -280,7 +285,7 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setDirectSuccess(true);
-      toast({ title: 'Senha redefinida!' });
+      toast({ title: 'Senha redefinida' });
     } catch (err: any) {
       setDirectError(err.message || 'Falha ao redefinir.');
     } finally {
@@ -290,41 +295,45 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 bg-slate-50 border-b border-slate-200">
+      <DialogContent className="w-[95vw] sm:max-w-md rounded-card p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-4 border-b text-left">
           <div className="flex items-center gap-3">
-            <KeyRound className="h-5 w-5 text-primary" />
-            <div>
-              <DialogTitle className="text-base font-black text-primary">Redefinir Senha</DialogTitle>
-              <DialogDescription className="text-xs">{user?.name}</DialogDescription>
+            <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+              <KeyRound className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="u-label">Secretaria · acesso</p>
+              <DialogTitle className="u-page-title text-lg mt-0.5">Redefinir senha</DialogTitle>
+              <DialogDescription className="text-xs truncate">{user?.name}</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <div className="p-6 space-y-5">
-          <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 text-xs">
-            <Mail className="h-4 w-4 text-slate-400" />
-            <span className="font-mono text-slate-600 truncate">{user?.email}</span>
+          <div className="flex items-center gap-2 bg-muted/40 rounded-control px-3 py-2 text-xs min-w-0">
+            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="font-mono text-muted-foreground truncate">{user?.email}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl">
-            <button onClick={() => setTab('link')} className={`h-8 rounded-lg text-xs font-bold transition-all ${tab === 'link' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>Enviar Link</button>
-            <button onClick={() => setTab('direct')} className={`h-8 rounded-lg text-xs font-bold transition-all ${tab === 'direct' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>Definir Senha</button>
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-control">
+            <button onClick={() => setTab('link')} aria-pressed={tab === 'link'} className={`h-9 rounded-control text-sm font-semibold transition-colors ${tab === 'link' ? 'bg-background text-foreground' : 'text-muted-foreground'}`}>Enviar link</button>
+            <button onClick={() => setTab('direct')} aria-pressed={tab === 'direct'} className={`h-9 rounded-control text-sm font-semibold transition-colors ${tab === 'direct' ? 'bg-background text-foreground' : 'text-muted-foreground'}`}>Definir senha</button>
           </div>
 
           {tab === 'link' && (
             <div className="space-y-4">
               {!link && !linkLoading && !linkError && (
-                <Button onClick={generateLink} className="w-full h-11 bg-primary text-white font-bold rounded-xl border-none shadow-md">
-                  Gerar Link de Recuperação
+                <Button onClick={generateLink} variant="arcade" className="w-full h-11 font-bold rounded-control">
+                  Gerar link de recuperação
                 </Button>
               )}
-              {linkLoading && <div className="py-4 text-center text-xs text-slate-400">Gerando...</div>}
+              {linkLoading && <div className="py-4 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>}
+              {linkError && <div className="text-sm text-red-600">{linkError}</div>}
               {link && (
                 <div className="space-y-3">
-                  <p className="text-[10px] font-mono break-all p-2.5 bg-slate-50 border border-slate-100 rounded-lg">{link}</p>
-                  <Button onClick={handleCopy} className="w-full h-10 bg-primary text-white border-none rounded-xl font-bold text-xs">
-                    {copied ? 'Copiado!' : 'Copiar Link'}
+                  <p className="text-xs font-mono break-all p-2.5 bg-muted/40 rounded-control">{link}</p>
+                  <Button onClick={handleCopy} className="w-full h-11 rounded-control font-bold">
+                    {copied ? 'Link copiado' : 'Copiar link'}
                   </Button>
                 </div>
               )}
@@ -334,13 +343,14 @@ function ResetPasswordModal({ user, open, onClose }: ResetModalProps) {
           {tab === 'direct' && (
             <div className="space-y-4">
               {directSuccess ? (
-                <div className="text-center py-4 text-xs font-bold text-green-600">Senha definida com sucesso!</div>
+                <div className="flex items-center justify-center gap-2 py-4 text-sm font-semibold text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Senha definida.</div>
               ) : (
                 <>
-                  <Input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-10 rounded-xl font-mono text-xs" />
-                  {directError && <div className="text-xs text-red-600">{directError}</div>}
-                  <Button onClick={handleDirectReset} disabled={directLoading} className="w-full h-11 bg-primary text-white border-none rounded-xl font-bold text-xs">
-                    Salvar Nova Senha
+                  <Input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} aria-label="Nova senha" className="h-11 rounded-control font-mono text-sm" />
+                  {directError && <div className="text-sm text-red-600">{directError}</div>}
+                  <Button onClick={handleDirectReset} disabled={directLoading} variant="arcade" className="w-full h-11 rounded-control font-bold">
+                    {directLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                    Salvar nova senha
                   </Button>
                 </>
               )}
@@ -404,7 +414,7 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCreatedEmail(data.user.email);
-      toast({ title: 'Aluno cadastrado com sucesso!' });
+      toast({ title: 'Aluno cadastrado' });
       onCreated();
     } catch (err: any) {
       toast({ title: 'Erro ao cadastrar', description: err.message, variant: 'destructive' });
@@ -415,71 +425,72 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
-      <DialogContent className="sm:max-w-lg rounded-card border-none shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-8 pb-4 bg-blue-50 border-b border-blue-100">
+      <DialogContent className="w-[95vw] sm:max-w-lg rounded-card p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-4 border-b text-left">
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-blue-600" />
+            <div className="h-11 w-11 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+              <UserPlus className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black text-blue-700 leading-none italic uppercase tracking-tighter">
-                Novo Aluno
+              <p className="u-label">Secretaria · matrículas</p>
+              <DialogTitle className="u-page-title text-xl mt-0.5">
+                Novo aluno
               </DialogTitle>
-              <DialogDescription className="text-xs mt-1 font-medium text-blue-600/60">
-                Cadastro manual de estudante
+              <DialogDescription className="text-xs mt-1 text-muted-foreground">
+                Cadastro manual
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {createdEmail ? (
-            <div className="space-y-4 animate-in zoom-in-95 duration-500">
-              <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-control border border-emerald-100">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                <div>
-                  <p className="text-xs font-black text-emerald-700 uppercase tracking-wide">Aluno criado!</p>
-                  <p className="text-[11px] text-emerald-600 mt-0.5 font-mono">{createdEmail}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-emerald-700">Aluno cadastrado</p>
+                  <p className="text-xs text-emerald-700 mt-0.5 font-mono break-all">{createdEmail}</p>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Uma senha temporária foi gerada. Use o botão <strong>Redefinir Senha</strong> na lista para enviar o link de acesso ao aluno.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Uma senha temporária foi gerada. Use o botão <strong className="text-foreground">Redefinir senha</strong> na lista para enviar o link de acesso ao aluno.
               </p>
-              <Button onClick={() => { reset(); onClose(); }} className="w-full h-12 rounded-2xl font-black text-xs border-none bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={() => { reset(); onClose(); }} className="w-full h-11 rounded-control font-bold">
                 Fechar
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Nome Completo *</Label>
-                <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ex: Maria Silva Santos" className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm" />
+                <Label className="u-label ml-1">Nome completo *</Label>
+                <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ex.: Maria Silva Santos" className="h-11 bg-muted/30 border-none rounded-control font-semibold text-sm" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">CPF (opcional)</Label>
-                  <Input value={cpf} onChange={e => setCpf(e.target.value)} placeholder="000.000.000-00" className="h-12 bg-muted/30 border-none rounded-xl font-mono text-sm" />
+                  <Label className="u-label ml-1">CPF (opcional)</Label>
+                  <Input value={cpf} onChange={e => setCpf(e.target.value)} placeholder="000.000.000-00" className="h-11 bg-muted/30 border-none rounded-control font-mono text-sm" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Nascimento *</Label>
-                  <Input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm" />
+                  <Label className="u-label ml-1">Nascimento *</Label>
+                  <Input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">E-mail</Label>
-                  <button type="button" onClick={() => setUseCustomEmail(!useCustomEmail)} className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-700">
+                  <Label className="u-label ml-1">E-mail</Label>
+                  <button type="button" onClick={() => setUseCustomEmail(!useCustomEmail)} className="u-label !text-primary hover:underline">
                     {useCustomEmail ? 'Usar e-mail automático' : 'Definir e-mail próprio'}
                   </button>
                 </div>
                 {useCustomEmail ? (
-                  <Input value={emailOverride} onChange={e => setEmailOverride(e.target.value)} placeholder="aluno@email.com" className="h-12 bg-muted/30 border-none rounded-xl font-mono text-sm" />
+                  <Input value={emailOverride} onChange={e => setEmailOverride(e.target.value)} placeholder="aluno@email.com" className="h-11 bg-muted/30 border-none rounded-control font-mono text-sm" />
                 ) : (
-                  <div className="h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center px-4">
-                    <Mail className="h-4 w-4 text-slate-300 mr-2 shrink-0" />
-                    <span className="text-xs text-slate-400 font-mono">
+                  <div className="h-11 rounded-control bg-muted/40 flex items-center px-4 min-w-0">
+                    <Mail className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
+                    <span className="text-xs text-muted-foreground font-mono truncate">
                       {fullName.trim() ? `${fullName.trim().split(' ')[0].toLowerCase().replace(/[^a-z]/g, '')}...@compromisso.com` : 'gerado a partir do nome'}
                     </span>
                   </div>
@@ -487,15 +498,15 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Escola / Polo</Label>
+                <Label className="u-label ml-1">Escola / polo</Label>
                 <Select value={institution} onValueChange={setInstitution}>
-                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                  <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none text-sm">
                     <SelectValue placeholder="Selecionar polo" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="none" className="font-bold text-xs text-slate-400">Sem polo definido</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="none" className="text-sm text-muted-foreground">Sem polo definido</SelectItem>
                     {SCHOOL_LIST.map(s => (
-                      <SelectItem key={s} value={s} className="font-bold text-xs">{s}</SelectItem>
+                      <SelectItem key={s} value={s} className="text-sm">{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -503,16 +514,16 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Turma</Label>
+                  <Label className="u-label ml-1">Turma</Label>
                   <Select value={course} onValueChange={setCourse}>
-                    <SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm">
+                    <SelectTrigger className="h-11 bg-muted/30 border-none rounded-control font-medium text-sm">
                       <SelectValue placeholder="Escolha" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-none shadow-2xl">
+                    <SelectContent className="rounded-control">
                       {Array.from({ length: 12 }, (_, i) => {
                         const num = String(i + 1).padStart(2, '0');
                         return (
-                          <SelectItem key={num} value={num} className="font-bold text-xs">
+                          <SelectItem key={num} value={num} className="text-sm">
                             Sala {num}
                           </SelectItem>
                         );
@@ -521,27 +532,27 @@ function NewStudentModal({ open, onClose, onCreated }: { open: boolean; onClose:
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Foco de Exame</Label>
+                  <Label className="u-label ml-1">Foco de exame</Label>
                   <Select value={examTarget} onValueChange={setExamTarget}>
-                    <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                    <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none text-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-none shadow-2xl">
-                      <SelectItem value="ENEM" className="font-bold text-xs">ENEM</SelectItem>
-                      <SelectItem value="ETEC" className="font-bold text-xs">ETEC / FATEC</SelectItem>
-                      <SelectItem value="Outro" className="font-bold text-xs">Outros Vestibulares</SelectItem>
+                    <SelectContent className="rounded-control">
+                      <SelectItem value="ENEM" className="text-sm">ENEM</SelectItem>
+                      <SelectItem value="ETEC" className="text-sm">ETEC / FATEC</SelectItem>
+                      <SelectItem value="Outro" className="text-sm">Outros vestibulares</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => { reset(); onClose(); }} className="flex-1 h-12 rounded-2xl font-black text-xs border-slate-200">
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                <Button variant="outline" onClick={() => { reset(); onClose(); }} className="flex-1 h-11 rounded-control font-bold">
                   Cancelar
                 </Button>
-                <Button onClick={handleSubmit} disabled={loading} className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-200 border-none text-xs">
+                <Button onClick={handleSubmit} disabled={loading} variant="arcade" className="flex-1 h-11 rounded-control font-bold">
                   {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                  Cadastrar Aluno
+                  Cadastrar aluno
                 </Button>
               </div>
             </div>
@@ -608,7 +619,7 @@ export default function SecretaryEnrollmentDirectory() {
       const { error } = await supabase.from('profiles').update({ status: newStatus }).eq('id', id);
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
-      toast({ title: newStatus === 'active' ? 'Matrícula Reativada' : 'Matrícula Suspensa' });
+      toast({ title: newStatus === 'active' ? 'Matrícula reativada' : 'Matrícula suspensa' });
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally {
@@ -628,7 +639,7 @@ export default function SecretaryEnrollmentDirectory() {
       if (!res.ok) throw new Error(data.error);
 
       setUsers(prev => prev.filter(u => u.id !== id));
-      toast({ title: 'Matrícula excluída', description: `O estudante ${name} foi removido com sucesso.` });
+      toast({ title: 'Matrícula excluída', description: `${name} foi removido(a).` });
     } catch (err: any) {
       toast({ title: 'Erro ao excluir', description: err.message, variant: 'destructive' });
     } finally {
@@ -664,7 +675,7 @@ export default function SecretaryEnrollmentDirectory() {
       const { error } = await supabase.from('profiles').update(updates).eq('id', editingUser.id);
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updates } : u));
-      toast({ title: "Dados da matrícula atualizados!" });
+      toast({ title: "Dados da matrícula atualizados" });
       setEditingUser(null);
     } catch (err: any) {
       toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
@@ -718,35 +729,199 @@ export default function SecretaryEnrollmentDirectory() {
       { header: "Renda per capita", accessor: (u) => (u.income_per_capita ? Number(u.income_per_capita) : "") },
       { header: "Elegivel Isencao", accessor: (u) => (u.is_financial_aid_eligible ? "Sim" : "Nao") },
     ]);
-    toast({ title: "CSV exportado! 📄", description: `${filtered.length} matrículas baixadas.` });
+    toast({ title: "CSV exportado", description: `${filtered.length} matrículas baixadas.` });
   };
 
+  const hasFilter = !!searchTerm || !!courseFilter || !!institutionFilter || statusFilter !== 'all';
+  const clearFilters = () => { setSearchTerm(""); setCourseFilter(""); setInstitutionFilter(""); setStatusFilter("all"); };
+
+  // Situação social: verde = isento, vermelho = acima do limite, neutro = pendente.
+  const socialBadge = (u: any) => {
+    if (Number(u.family_income) > 0) {
+      return (
+        <div className="flex flex-col gap-0.5 items-start">
+          <Badge className={`border-none font-bold text-[10px] px-2 h-5 flex items-center gap-1 ${
+            u.is_financial_aid_eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+          }`}>
+            <HandHeart className="h-3 w-3" />
+            {u.is_financial_aid_eligible ? 'Isento' : 'Acima do limite'}
+          </Badge>
+          <span className="u-num text-[11px] text-muted-foreground">
+            R$ {fmtNumber(toNumber(u.income_per_capita) ?? 0)}/morador
+          </span>
+        </div>
+      );
+    }
+    if (u.is_financial_aid_eligible) {
+      return (
+        <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] px-2 h-5 flex items-center gap-1 w-fit">
+          <HandHeart className="h-3 w-3" /> Isento (manual)
+        </Badge>
+      );
+    }
+    return <span className="text-xs text-muted-foreground">Renda pendente</span>;
+  };
+
+  const statusBadge = (isSuspended: boolean) => (
+    <Badge variant="outline" className={`font-bold text-[10px] px-2.5 h-5 ${isSuspended ? 'text-red-600 border-red-200 bg-red-50' : 'text-emerald-700 border-emerald-200 bg-emerald-50'}`}>
+      {isSuspended ? 'Suspensa' : 'Ativa'}
+    </Badge>
+  );
+
+  const iconBtn = "h-9 w-9 rounded-control text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
+
+  const rowActions = (u: any) => {
+    const isSuspended = u.status === 'suspended';
+    const isProcessing = processingId === u.id;
+    return (
+      <div className="flex items-center justify-end gap-0.5 flex-wrap">
+        <Button variant="ghost" size="icon" title="Ver ficha completa" aria-label="Ver ficha completa" asChild className={iconBtn}>
+          <Link href={`/dashboard/secretary/students/${u.id}`}>
+            <Eye className="h-4 w-4" />
+          </Link>
+        </Button>
+
+        <Button variant="ghost" size="icon" title="Editar matrícula" aria-label="Editar matrícula" onClick={() => openEditModal(u)} className={iconBtn}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Redefinir senha"
+          aria-label="Redefinir senha"
+          onClick={() => {
+            setResetTarget({ id: u.id, name: u.name, email: u.email });
+            setResetOpen(true);
+          }}
+          className={iconBtn}
+        >
+          <KeyRound className="h-4 w-4" />
+        </Button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isProcessing}
+              title={isSuspended ? 'Reativar matrícula' : 'Suspender matrícula'}
+              aria-label={isSuspended ? 'Reativar matrícula' : 'Suspender matrícula'}
+              className={`${iconBtn} ${isSuspended ? 'hover:text-emerald-600' : 'hover:text-red-600'}`}
+            >
+              {isProcessing
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : isSuspended
+                  ? <CheckCircle2 className="h-4 w-4" />
+                  : <UserX className="h-4 w-4" />
+              }
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="w-[95vw] sm:max-w-md rounded-card">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-bold">
+                {isSuspended ? 'Reativar matrícula?' : 'Suspender matrícula?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {isSuspended
+                  ? `${txt(u.name, 'O aluno')} volta a ter acesso às aulas e à plataforma.`
+                  : `${txt(u.name, 'O aluno')} não vai conseguir entrar no sistema até a matrícula ser reativada.`
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-control font-bold">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleToggleStatus(u.id, u.status)}
+                className={`rounded-control font-bold border-none text-white ${isSuspended ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}
+              >
+                {isSuspended ? 'Reativar' : 'Suspender'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {u.phone && (
+          <Button variant="ghost" size="icon" title="Mandar mensagem no WhatsApp" aria-label="Mandar mensagem no WhatsApp" asChild className={`${iconBtn} hover:text-emerald-600`}>
+            <a
+              href={`https://wa.me/55${String(u.phone).replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Phone className="h-4 w-4" />
+            </a>
+          </Button>
+        )}
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isProcessing}
+              title="Excluir matrícula"
+              aria-label="Excluir matrícula"
+              className={`${iconBtn} hover:text-red-600 hover:bg-red-50`}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="w-[95vw] sm:max-w-md rounded-card">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-bold text-red-600">
+                Excluir matrícula para sempre?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação <strong>não pode ser desfeita</strong>. <strong>{txt(u.name, 'O aluno')}</strong> será removido(a) do login e de todos os registros do sistema.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-control font-bold">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleDeleteUser(u.id, u.name)}
+                className="rounded-control font-bold border-none bg-red-600 hover:bg-red-700 text-white"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
+  const perCapitaEdit = toNumber(editingUser?.income_per_capita) ?? 0;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
+    <div className="space-y-6 pb-20">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">
-            Matrículas & Estudantes
-            <span className="text-lg font-bold text-muted-foreground ml-2 not-italic">
-              ({filtered.length})
-            </span>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><Users className="h-3.5 w-3.5" /> Secretaria · matrículas</p>
+          <h1 className="u-page-title text-3xl mt-1">
+            Matrículas <span className="u-num text-xl text-muted-foreground align-middle">{filtered.length}</span>
           </h1>
-          <p className="text-muted-foreground font-medium italic text-sm">
-            Gere links de convite, suspenda acessos, gerencie turmas e controle isenções sociais.
+          <p className="text-muted-foreground text-sm mt-2">
+            Cadastre alunos, gere links de convite, suspenda acessos, organize turmas e controle isenções.
           </p>
         </div>
-        <div className="flex items-center gap-2 md:gap-3 shrink-0 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 shrink-0">
           <Button
+            variant="arcade"
             onClick={() => setNewStudentOpen(true)}
-            className="bg-blue-600 text-white border-none font-black rounded-2xl shadow-md h-12 px-4 md:px-6 gap-2 hover:bg-blue-700 transition-all text-xs md:text-sm"
+            className="col-span-2 sm:col-span-1 rounded-control h-11 px-5 gap-2 font-bold"
           >
             <UserPlus className="h-4 w-4" />
-            Novo Aluno
+            Novo aluno
           </Button>
           <Button
+            variant="outline"
             onClick={() => setInviteOpen(true)}
-            className="bg-white text-orange-600 border border-orange-100 font-black rounded-2xl shadow-md h-12 px-4 md:px-6 gap-2 hover:bg-orange-50 transition-all text-xs md:text-sm"
+            className="rounded-control h-11 px-4 gap-2 font-bold"
           >
             <Link2 className="h-4 w-4" />
             Convite
@@ -754,7 +929,7 @@ export default function SecretaryEnrollmentDirectory() {
           <Button
             onClick={handleExportCsv}
             variant="outline"
-            className="bg-white text-slate-600 border-slate-200 font-black rounded-2xl shadow-md h-12 px-4 md:px-6 gap-2 hover:bg-slate-50 transition-all text-xs md:text-sm"
+            className="rounded-control h-11 px-4 gap-2 font-bold"
           >
             <Download className="h-4 w-4" />
             Exportar CSV
@@ -776,329 +951,209 @@ export default function SecretaryEnrollmentDirectory() {
         totalCount={users.length}
         extra={
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-11 w-full lg:w-56 bg-muted/30 border-none rounded-xl font-bold text-sm shrink-0">
-              <SelectValue placeholder="Filtrar por Status" />
+            <SelectTrigger className="h-11 w-full lg:w-56 bg-muted/30 border-none rounded-control font-semibold text-sm shrink-0">
+              <SelectValue placeholder="Filtrar por situação" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
-              <SelectItem value="all" className="font-bold text-xs">Todos os Estudantes</SelectItem>
-              <SelectItem value="active" className="font-bold text-xs">Ativos</SelectItem>
-              <SelectItem value="suspended" className="font-bold text-xs">Suspensos</SelectItem>
-              <SelectItem value="is_financial_aid_eligible" className="font-bold text-xs">Elegíveis Isenção (Social)</SelectItem>
-              <SelectItem value="income_ok" className="font-bold text-xs">Renda OK / Isento</SelectItem>
-              <SelectItem value="income_exceeded" className="font-bold text-xs">Excedeu Limite (Reprovado)</SelectItem>
-              <SelectItem value="income_pending" className="font-bold text-xs">Pendente (Não Simularam)</SelectItem>
-              <SelectItem value="sem_telefone" className="font-bold text-xs">Sem telefone (não recupera senha sozinho)</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all" className="text-sm">Todos os alunos</SelectItem>
+              <SelectItem value="active" className="text-sm">Ativos</SelectItem>
+              <SelectItem value="suspended" className="text-sm">Suspensos</SelectItem>
+              <SelectItem value="is_financial_aid_eligible" className="text-sm">Elegíveis à isenção social</SelectItem>
+              <SelectItem value="income_ok" className="text-sm">Renda dentro do limite / isentos</SelectItem>
+              <SelectItem value="income_exceeded" className="text-sm">Renda acima do limite</SelectItem>
+              <SelectItem value="income_pending" className="text-sm">Renda pendente (não informaram)</SelectItem>
+              <SelectItem value="sem_telefone" className="text-sm">Sem telefone (não recuperam a senha sozinhos)</SelectItem>
             </SelectContent>
           </Select>
         }
       />
 
-      {/* Tabela de Alunos */}
-      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="h-10 w-10 animate-spin text-accent" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-20 text-center text-muted-foreground italic text-sm">
-              Nenhum estudante encontrado.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow className="h-12 md:h-14">
-                    <TableHead className="px-4 md:px-6 font-black uppercase text-[10px] tracking-widest">Estudante</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest hidden sm:table-cell">Turma / Escola</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest">Social</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest">Matrícula</TableHead>
-                    <TableHead className="text-right px-4 md:px-6 font-black uppercase text-[10px] tracking-widest">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map(u => {
-                    const isSuspended = u.status === 'suspended';
-                    const isProcessing = processingId === u.id;
+      {/* Lista de alunos */}
+      {loading ? (
+        <div className="py-20 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title={users.length === 0 ? "Nenhum aluno cadastrado ainda" : "Nenhum aluno com esses filtros"}
+          description={users.length === 0
+            ? "Cadastre o primeiro aluno ou gere um link de convite para eles mesmos se cadastrarem."
+            : "Tente outro nome ou limpe os filtros para ver todos."}
+          action={users.length === 0
+            ? { label: "Novo aluno", onClick: () => setNewStudentOpen(true), icon: UserPlus }
+            : hasFilter ? { label: "Limpar filtros", onClick: clearFilters } : undefined}
+          secondary={users.length === 0 ? { label: "Gerar convite", onClick: () => setInviteOpen(true) } : undefined}
+        />
+      ) : (
+        <>
+          {/* Celular: cartões empilhados */}
+          <div className="sm:hidden space-y-2">
+            {filtered.map(u => {
+              const isSuspended = u.status === 'suspended';
+              return (
+                <div key={u.id} className="rounded-card border border-border bg-card p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-control flex items-center justify-center font-bold text-sm bg-muted text-foreground shrink-0">
+                      {u.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`font-semibold text-sm truncate ${isSuspended ? 'line-through text-muted-foreground' : ''}`}>
+                        {txt(u.name)}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {u.email || '@' + (u.username || 'user')}
+                      </p>
+                      <p className="u-label mt-1 truncate">
+                        {u.course || 'Sem turma'} · {u.institution || 'Sem polo'}
+                      </p>
+                    </div>
+                    <div className="shrink-0">{statusBadge(isSuspended)}</div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    {socialBadge(u)}
+                    {u.phone && <span className="text-xs text-muted-foreground truncate">{u.phone}</span>}
+                  </div>
+                  <div className="border-t border-border pt-2">
+                    {rowActions(u)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-                    return (
-                      <TableRow key={u.id} className="h-16 hover:bg-muted/5 border-b last:border-0 transition-colors">
-                        <TableCell className="px-4 md:px-6">
-                          <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl flex items-center justify-center font-black text-sm bg-primary text-white shrink-0">
-                              {u.name?.charAt(0)?.toUpperCase() || '?'}
-                            </div>
-                            <div className="min-w-0">
-                              <p className={`font-bold text-sm truncate ${isSuspended ? 'line-through opacity-40 text-slate-400' : 'text-primary italic'}`}>
-                                {u.name || '—'}
-                              </p>
-                              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 truncate">
-                                {u.email || '@' + (u.username || 'user')}
-                              </p>
-                              {u.phone && (
-                                <p className="text-[9px] font-black text-emerald-600 truncate mt-0.5">
-                                  📞 {u.phone}
+          {/* Telas maiores: tabela */}
+          <Card className="hidden sm:block rounded-card shadow-none overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow className="h-12">
+                      <TableHead className="px-4 md:px-6 u-label">Aluno</TableHead>
+                      <TableHead className="u-label">Turma / escola</TableHead>
+                      <TableHead className="u-label">Social</TableHead>
+                      <TableHead className="u-label">Matrícula</TableHead>
+                      <TableHead className="text-right px-4 md:px-6 u-label">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map(u => {
+                      const isSuspended = u.status === 'suspended';
+                      return (
+                        <TableRow key={u.id} className="h-16 hover:bg-muted/20 border-b last:border-0 transition-colors">
+                          <TableCell className="px-4 md:px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-control flex items-center justify-center font-bold text-sm bg-muted text-foreground shrink-0">
+                                {u.name?.charAt(0)?.toUpperCase() || '?'}
+                              </div>
+                              <div className="min-w-0">
+                                <p className={`font-semibold text-sm truncate ${isSuspended ? 'line-through text-muted-foreground' : ''}`}>
+                                  {txt(u.name)}
                                 </p>
-                              )}
-                              {/* Turma/Polo inline no mobile (coluna dedicada fica oculta < sm) */}
-                              <p className="sm:hidden text-[9px] font-black uppercase tracking-wider text-slate-400 truncate mt-0.5">
-                                {u.course || 'Sem turma'} · {u.institution || 'Sem polo'}
-                              </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {u.email || '@' + (u.username || 'user')}
+                                </p>
+                                {u.phone && (
+                                  <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                                    <Phone className="h-3 w-3" /> {u.phone}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
 
-                        <TableCell className="hidden sm:table-cell">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-700">{u.course || 'Sem Turma'}</span>
-                            <span className="text-[10px] text-slate-400 font-semibold">{u.institution || 'Sem Polo'}</span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          {Number(u.family_income) > 0 ? (
-                            <div className="flex flex-col gap-0.5 items-start">
-                              <Badge className={`border-none font-bold text-[9px] uppercase px-2 h-5 flex items-center gap-1 ${
-                                u.is_financial_aid_eligible
-                                  ? 'bg-emerald-100 text-emerald-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                <HandHeart className="h-3 w-3" />
-                                {u.is_financial_aid_eligible ? 'Isento' : 'Excedeu'}
-                              </Badge>
-                              <span className="text-[10px] font-mono font-bold text-slate-500">
-                                R$ {Number(u.income_per_capita).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}/mor.
-                              </span>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold">{u.course || 'Sem turma'}</span>
+                              <span className="text-xs text-muted-foreground">{u.institution || 'Sem polo'}</span>
                             </div>
-                          ) : u.is_financial_aid_eligible ? (
-                            <div className="flex flex-col gap-0.5 items-start">
-                              <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[9px] uppercase px-2 h-5 flex items-center gap-1">
-                                <HandHeart className="h-3 w-3" /> Isento (Man.)
-                              </Badge>
-                            </div>
-                          ) : (
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Pendente</span>
-                          )}
-                        </TableCell>
+                          </TableCell>
 
-                        <TableCell>
-                          <Badge variant="outline" className={`font-bold text-[9px] uppercase px-2.5 h-5 ${isSuspended ? 'text-red-500 border-red-200 bg-red-50' : 'text-emerald-600 border-emerald-200 bg-emerald-50'}`}>
-                            {isSuspended ? 'Suspensa' : 'Ativa'}
-                          </Badge>
-                        </TableCell>
+                          <TableCell>{socialBadge(u)}</TableCell>
 
-                        <TableCell className="text-right px-4 md:px-6">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Ver perfil 360°"
-                              asChild
-                              className="h-10 w-10 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-                            >
-                              <Link href={`/dashboard/secretary/students/${u.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
+                          <TableCell>{statusBadge(isSuspended)}</TableCell>
 
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Editar Matrícula"
-                              onClick={() => openEditModal(u)}
-                              className="h-10 w-10 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
+                          <TableCell className="text-right px-4 md:px-6">
+                            {rowActions(u)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Gerar Reset de Senha"
-                              onClick={() => {
-                                setResetTarget({ id: u.id, name: u.name, email: u.email });
-                                setResetOpen(true);
-                              }}
-                              className="h-10 w-10 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-colors"
-                            >
-                              <KeyRound className="h-4 w-4" />
-                            </Button>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={isProcessing}
-                                  title={isSuspended ? 'Reativar matrícula' : 'Suspender matrícula'}
-                                  className={`h-10 w-10 rounded-lg transition-colors ${isSuspended ? 'hover:bg-emerald-50 hover:text-emerald-600' : 'hover:bg-amber-50 hover:text-amber-600'}`}
-                                >
-                                  {isProcessing
-                                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                                    : isSuspended
-                                      ? <CheckCircle2 className="h-4 w-4" />
-                                      : <UserX className="h-4 w-4" />
-                                  }
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="font-black text-primary">
-                                    {isSuspended ? 'Reativar Matrícula?' : 'Suspender Matrícula?'}
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {isSuspended
-                                      ? `O estudante ${u.name} terá o acesso restabelecido para assistir aulas e acessar a plataforma.`
-                                      : `O estudante ${u.name} não conseguirá mais realizar login no sistema até que a matrícula seja reativada.`
-                                    }
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleToggleStatus(u.id, u.status)}
-                                    className={`rounded-xl font-bold border-none ${isSuspended ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-500 hover:bg-amber-600'}`}
-                                  >
-                                    {isSuspended ? 'Reativar' : 'Suspender'}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                            {/* WhatsApp Link */}
-                            {u.phone && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Enviar mensagem por WhatsApp"
-                                asChild
-                                className="h-10 w-10 rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                              >
-                                <a
-                                  href={`https://wa.me/55${u.phone.replace(/\D/g, '')}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <Phone className="h-4 w-4" />
-                                </a>
-                              </Button>
-                            )}
-
-                            {/* Excluir Matrícula */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={isProcessing}
-                                  title="Excluir matrícula permanentemente"
-                                  className="h-10 w-10 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
-                                >
-                                  {isProcessing && processingId === u.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="font-black text-red-600">
-                                    Excluir Matrícula Permanentemente?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta ação é <strong>irreversível</strong>. O estudante <strong>{u.name}</strong> será excluído definitivamente da autenticação e de todos os registros no sistema.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteUser(u.id, u.name)}
-                                    className="rounded-xl font-bold border-none bg-red-600 hover:bg-red-700 text-white"
-                                  >
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Modal de Novo Aluno */}
+      {/* Modal de novo aluno */}
       <NewStudentModal open={newStudentOpen} onClose={() => setNewStudentOpen(false)} onCreated={fetchUsers} />
 
-      {/* Modal de Convite */}
+      {/* Modal de convite */}
       <InviteLinkModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
 
-      {/* Modal de Reset */}
+      {/* Modal de senha */}
       <ResetPasswordModal user={resetTarget} open={resetOpen} onClose={() => { setResetOpen(false); setResetTarget(null); }} />
 
-      {/* Modal de Edição de Matrícula */}
+      {/* Modal de edição de matrícula */}
       <Dialog open={!!editingUser} onOpenChange={v => { if (!v) setEditingUser(null); }}>
-        <DialogContent className="rounded-card border-none shadow-2xl p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
-          <DialogHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
+        <DialogContent className="rounded-card p-0 overflow-y-auto max-h-[92vh] w-[95vw] sm:max-w-md">
+          <DialogHeader className="p-6 pb-4 border-b text-left">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-lg shadow shrink-0">
+              <div className="h-11 w-11 rounded-control bg-muted flex items-center justify-center font-bold text-lg shrink-0">
                 {editingUser?.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
-              <div>
-                <DialogTitle className="text-xl font-black italic text-primary leading-none uppercase tracking-tight">
-                  Editar Matrícula
+              <div className="min-w-0">
+                <p className="u-label">Secretaria · matrículas</p>
+                <DialogTitle className="u-page-title text-xl mt-0.5">
+                  Editar matrícula
                 </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5 font-medium text-muted-foreground">
-                  Ficha do Estudante
+                <DialogDescription className="text-xs mt-0.5 text-muted-foreground truncate">
+                  {txt(editingUser?.name, "Ficha do aluno")}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="p-8 space-y-4">
+          <div className="p-6 space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Nome Completo</Label>
-              <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm" />
+              <Label className="u-label ml-1">Nome completo</Label>
+              <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control font-semibold text-sm" />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">E-mail</Label>
-              <Input value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-mono text-sm" />
+              <Label className="u-label ml-1">E-mail</Label>
+              <Input value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control font-mono text-sm" />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Telefone</Label>
-              <Input value={editPhone} onChange={e => setEditPhone(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm" placeholder="Ex: (11) 99999-9999" />
+              <Label className="u-label ml-1">Telefone</Label>
+              <Input value={editPhone} onChange={e => setEditPhone(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control text-sm" placeholder="Ex.: (11) 99999-9999" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Escola / Polo</Label>
-                <Input value={editInstitution} onChange={e => setEditInstitution(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm" />
+                <Label className="u-label ml-1">Escola / polo</Label>
+                <Input value={editInstitution} onChange={e => setEditInstitution(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Turma</Label>
+                <Label className="u-label ml-1">Turma</Label>
                 <Select value={editCourse} onValueChange={setEditCourse}>
-                  <SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-medium text-sm">
-                    <SelectValue placeholder="Selecionar Sala" />
+                  <SelectTrigger className="h-11 bg-muted/30 border-none rounded-control text-sm">
+                    <SelectValue placeholder="Selecionar sala" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
+                  <SelectContent className="rounded-control">
                     {Array.from({ length: 12 }, (_, i) => {
                       const num = String(i + 1).padStart(2, '0');
                       return (
-                        <SelectItem key={num} value={num} className="font-bold text-xs">
+                        <SelectItem key={num} value={num} className="text-sm">
                           Sala {num}
                         </SelectItem>
                       );
                     })}
                     {editCourse && !Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).includes(editCourse) && (
-                      <SelectItem value={editCourse} className="font-bold text-xs">
+                      <SelectItem value={editCourse} className="text-sm">
                         {editCourse}
                       </SelectItem>
                     )}
@@ -1108,57 +1163,57 @@ export default function SecretaryEnrollmentDirectory() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Foco de Exame</Label>
+              <Label className="u-label ml-1">Foco de exame</Label>
               <Select value={editExamTarget} onValueChange={setEditExamTarget}>
-                <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold">
+                <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none text-sm">
                   <SelectValue placeholder="Foco" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-2xl">
-                  <SelectItem value="ENEM" className="font-bold text-xs">ENEM</SelectItem>
-                  <SelectItem value="ETEC" className="font-bold text-xs">ETEC / FATEC</SelectItem>
-                  <SelectItem value="Outro" className="font-bold text-xs">Outros Vestibulares</SelectItem>
+                <SelectContent className="rounded-control">
+                  <SelectItem value="ENEM" className="text-sm">ENEM</SelectItem>
+                  <SelectItem value="ETEC" className="text-sm">ETEC / FATEC</SelectItem>
+                  <SelectItem value="Outro" className="text-sm">Outros vestibulares</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Renda calculada pelo aluno */}
+            {/* Renda informada pelo aluno */}
             {editingUser?.family_income > 0 && (
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-primary/40 tracking-widest">Cálculo de Renda (Aluno)</span>
-                  <Badge className={`border-none font-bold text-[9px] uppercase px-2 h-5 ${
-                    editingUser.income_per_capita <= 2431.50
+              <div className="p-4 rounded-control border border-border space-y-3">
+                <div className="flex justify-between items-center gap-2">
+                  <span className="u-label">Renda informada pelo aluno</span>
+                  <Badge className={`border-none font-bold text-[10px] px-2 h-5 shrink-0 ${
+                    perCapitaEdit <= 2431.50
                       ? 'bg-emerald-100 text-emerald-700'
                       : 'bg-red-100 text-red-700'
                   }`}>
-                    {editingUser.income_per_capita <= 2431.50 ? 'Renda OK' : 'Excedeu Limite'}
+                    {perCapitaEdit <= 2431.50 ? 'Dentro do limite' : 'Acima do limite'}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-y-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground text-[10px]">Renda Familiar Total</span>
-                    <p className="font-bold text-primary">R$ {Number(editingUser.family_income).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    <span className="text-muted-foreground text-[11px]">Renda familiar total</span>
+                    <p className="u-num text-sm">{fmtBRL(editingUser.family_income)}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-[10px]">Membros da Família</span>
-                    <p className="font-bold text-primary">{editingUser.family_size} pessoas</p>
+                    <span className="text-muted-foreground text-[11px]">Moradores</span>
+                    <p className="u-num text-sm">{txt(editingUser.family_size)} {Number(editingUser.family_size) === 1 ? 'pessoa' : 'pessoas'}</p>
                   </div>
-                  <div className="col-span-2 pt-1 border-t border-slate-200/60">
-                    <span className="text-muted-foreground text-[10px]">Renda Per Capita</span>
-                    <p className="font-black text-sm italic text-primary">
-                      R$ {Number(editingUser.income_per_capita).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / morador
+                  <div className="col-span-2 pt-1 border-t border-border">
+                    <span className="text-muted-foreground text-[11px]">Renda per capita</span>
+                    <p className="u-num text-base">
+                      {fmtBRL(perCapitaEdit)} <span className="font-sans text-xs text-muted-foreground">por morador</span>
                     </p>
                   </div>
                 </div>
 
                 {editingUser.family_members && Array.isArray(editingUser.family_members) && editingUser.family_members.length > 0 && (
-                  <div className="pt-2 border-t border-slate-200/60 space-y-1">
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase">Composição Familiar:</span>
+                  <div className="pt-2 border-t border-border space-y-1">
+                    <span className="u-label">Composição familiar</span>
                     <div className="max-h-24 overflow-y-auto space-y-1 pr-1">
                       {editingUser.family_members.map((m: any, i: number) => (
-                        <div key={i} className="flex justify-between text-[11px] font-semibold text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-100">
-                          <span>{m.label || `Integrante ${i + 1}`}</span>
-                          <span className="font-mono">R$ {Number(m.income || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        <div key={i} className="flex justify-between gap-2 text-xs bg-muted/40 px-2.5 py-1 rounded-control">
+                          <span className="text-muted-foreground truncate">{txt(m?.label, `Integrante ${i + 1}`)}</span>
+                          <span className="u-num shrink-0">{fmtBRL(m?.income || 0, 'R$ 0,00')}</span>
                         </div>
                       ))}
                     </div>
@@ -1167,27 +1222,30 @@ export default function SecretaryEnrollmentDirectory() {
               </div>
             )}
 
-            {/* Social / Isenção (Financial Aid) */}
-            <div className="flex items-center justify-between p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
-              <div className="flex gap-2.5 items-center">
-                <HandHeart className="h-5 w-5 text-orange-600 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-black text-slate-700 leading-none">Cota Social / Isenção</span>
-                  <span className="text-[9px] text-slate-400 font-semibold mt-1">Elegível para benefícios da plataforma</span>
+            {/* Isenção social */}
+            <div className="flex items-center justify-between gap-3 p-4 border border-border rounded-control">
+              <div className="flex gap-2.5 items-center min-w-0">
+                <HandHeart className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold leading-none">Cota social / isenção</span>
+                  <span className="text-xs text-muted-foreground mt-1">Elegível para os benefícios da plataforma</span>
                 </div>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
+                role="switch"
+                aria-checked={editIsFinancialAid}
+                aria-label="Cota social / isenção"
                 onClick={() => setEditIsFinancialAid(!editIsFinancialAid)}
-                className={`h-6 w-11 rounded-full p-0.5 transition-colors focus:outline-none ${editIsFinancialAid ? 'bg-orange-600' : 'bg-slate-200'}`}
+                className={`h-6 w-11 rounded-full p-0.5 transition-colors focus:outline-none shrink-0 ${editIsFinancialAid ? 'bg-primary' : 'bg-muted-foreground/30'}`}
               >
                 <div className={`h-5 w-5 rounded-full bg-white transition-transform ${editIsFinancialAid ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
             </div>
 
-            <Button onClick={handleUpdateUser} disabled={editIsSubmitting} className="w-full h-14 bg-primary hover:bg-primary/95 text-white font-black rounded-2xl shadow-xl mt-4 border-none">
+            <Button onClick={handleUpdateUser} disabled={editIsSubmitting} variant="arcade" className="w-full h-11 rounded-control font-bold mt-2">
               {editIsSubmitting ? <Loader2 className="animate-spin mr-2" /> : <UserCheck className="mr-2" />}
-              Salvar Alterações
+              Salvar alterações
             </Button>
           </div>
         </DialogContent>

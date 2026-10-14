@@ -12,6 +12,8 @@ import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { brl } from "@/lib/print-utils";
 import { format } from "date-fns";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 interface Campaign {
   id: string; school_year: number; title: string; contract_template: string; plan_id: string;
@@ -67,7 +69,7 @@ export default function StudentReenrollmentPage() {
   const decide = async (action: "accept" | "refuse") => {
     if (!agreement) return;
     if (action === "accept" && (!signerName.trim() || !signerCpf.trim())) {
-      toast({ title: "Preencha nome e CPF do responsável", variant: "destructive" });
+      toast({ title: "Faltou nome ou CPF", description: "Preencha o nome completo e o CPF do responsável para aceitar.", variant: "destructive" });
       return;
     }
     setActing(true);
@@ -84,14 +86,23 @@ export default function StudentReenrollmentPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Falha ao registrar");
+      if (!res.ok) {
+        // Só as validações do formulário viram texto na tela; erro de banco ou
+        // de servidor cai na mensagem padrão.
+        const amigavel = res.status === 401
+          ? "Sua sessão expirou. Saia e entre de novo para continuar."
+          : typeof data?.error === "string" && (data.error === "CPF inválido" || data.error.startsWith("Informe"))
+            ? data.error
+            : "";
+        throw Object.assign(new Error(amigavel), { paraAluno: true });
+      }
       toast({
         title: action === "accept" ? "Rematrícula confirmada! 🎉" : "Recusa registrada",
         description: action === "accept" ? "Sua vaga para o próximo ano está garantida." : undefined,
       });
       fetchAll();
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Não deu para registrar sua resposta", description: (e?.paraAluno && e.message) || "Confira sua internet e tente de novo. Se continuar, fale com a secretaria.", variant: "destructive" });
     } finally {
       setActing(false);
     }
@@ -99,8 +110,9 @@ export default function StudentReenrollmentPage() {
 
   if (isUserLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="flex flex-col items-center justify-center gap-3 min-h-[50vh]">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="u-label">Carregando rematrícula…</p>
       </div>
     );
   }
@@ -117,20 +129,21 @@ export default function StudentReenrollmentPage() {
       </div>
 
       {!campaign && (
-        <Card className="shadow-2xl rounded-card">
-          <CardContent className="p-10 text-center text-muted-foreground">
-            Nenhuma campanha de rematrícula aberta no momento.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileSignature}
+          title="A rematrícula ainda não abriu"
+          description="Quando a escola abrir a rematrícula do próximo ano, o contrato aparece aqui para seu responsável aceitar."
+          action={{ label: "Voltar ao início", href: "/dashboard/home" }}
+        />
       )}
 
       {campaign && !agreement && (
-        <Card className="shadow-2xl rounded-card">
-          <CardContent className="p-10 text-center text-muted-foreground">
-            A campanha {campaign.title} está aberta, mas sua pendência ainda não foi gerada.
-            Fale com a secretaria.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileSignature}
+          title="Seu contrato ainda não foi liberado"
+          description={`A rematrícula "${txt(campaign.title, "do próximo ano")}" está aberta, mas o seu contrato ainda não foi gerado. Fale com a secretaria para liberar.`}
+          action={{ label: "Falar com a secretaria", href: "/dashboard/chat" }}
+        />
       )}
 
       {campaign && agreement && (
@@ -190,7 +203,7 @@ export default function StudentReenrollmentPage() {
 
             {agreement.status === "aceito" && agreement.decided_at && (
               <p className="text-xs text-muted-foreground">
-                Aceito por {agreement.signer_name} em {format(new Date(agreement.decided_at), "dd/MM/yyyy 'às' HH:mm")}.
+                Aceito por {txt(agreement.signer_name, "responsável")} em {fmtDate(agreement.decided_at, "dd/MM/yyyy 'às' HH:mm")}.
                 Valor contratado: {brl(agreement.amount_snapshot)}.
               </p>
             )}

@@ -190,7 +190,7 @@ export default function ExemptionSimulationPage() {
               Simulador de Isenção
             </h1>
             <Badge className="bg-accent text-accent-foreground border-none font-black text-[10px] px-3 py-1 shadow-lg animate-pulse">
-              VERSÃO 2024
+              SALÁRIO MÍNIMO ATUALIZADO
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm md:text-lg max-w-2xl font-medium italic">
@@ -198,7 +198,7 @@ export default function ExemptionSimulationPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 text-primary/40 font-black text-[10px] uppercase tracking-widest bg-white/50 px-4 py-2 rounded-full border border-white/20">
-          <History className="h-3 w-3" /> Status: {result ? 'Simulado' : 'Pendente'}
+          <History className="h-3 w-3" /> {result ? 'Já calculado' : 'Ainda não calculado'}
         </div>
       </div>
 
@@ -212,13 +212,13 @@ export default function ExemptionSimulationPage() {
               <div className="h-12 w-12 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-6 shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
                 <Scale className="h-6 w-6" />
               </div>
-              <CardTitle className="u-display text-2xl [word-spacing:0.15em] leading-snug">A regra de 1,5 SM</CardTitle>
+              <CardTitle className="u-display text-2xl [word-spacing:0.15em] leading-snug">A regra de 1,5 salário mínimo</CardTitle>
               <CardDescription className="text-white/60 font-medium italic">O critério oficial do Governo Federal.</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="p-5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-sm space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-accent flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3" /> Teto Atualizado
+                  <CheckCircle2 className="h-3 w-3" /> Limite atual
                 </p>
                 <p className="text-sm font-medium leading-relaxed italic">
                   A soma de todas as rendas dividida pelo número de moradores deve ser de até <strong className="text-accent text-lg">R$ {THRESHOLD.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>.
@@ -262,7 +262,7 @@ export default function ExemptionSimulationPage() {
                   <CardDescription className="font-medium italic">Adicione cada integrante que mora com você (campos opcionais).</CardDescription>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Soma Atual</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Soma da renda</p>
                   <p className="text-2xl font-black text-primary italic">R$ {totalFamilyIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export default function ExemptionSimulationPage() {
                     onClick={addMember}
                     className="flex-1 h-14 border-dashed border-2 border-primary/20 rounded-2xl font-bold text-primary hover:bg-primary/5"
                   >
-                    <UserPlus className="h-4 w-4 mr-2" /> Adicionar Integrante
+                    <UserPlus className="h-4 w-4 mr-2" /> Adicionar pessoa
                   </Button>
                   <Button 
                     type="submit" 
@@ -323,7 +323,7 @@ export default function ExemptionSimulationPage() {
                     className="flex-1 bg-primary hover:bg-primary/95 text-white h-14 rounded-2xl font-black text-lg shadow-xl"
                   >
                     {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <TrendingUp className="h-5 w-5 mr-2" />}
-                    {loading ? "Analisando..." : "Verificar Elegibilidade"}
+                    {loading ? "Calculando…" : "Ver se tenho direito"}
                   </Button>
                 </div>
               </form>
@@ -339,17 +339,17 @@ export default function ExemptionSimulationPage() {
                   </div>
                   <div className="text-center md:text-left space-y-2">
                     <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-snug">
-                      {result.eligible ? "Elegível para isenção" : "Fora do critério de isenção"}
+                      {result.eligible ? "Você tem direito à isenção" : "Você está fora do critério de isenção"}
                     </h3>
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-80">
-                      Diagnóstico: {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} / R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
+                      Cálculo: {result.familySize} {result.familySize === 1 ? "pessoa" : "pessoas"} / R$ {result.totalFamilyIncome.toLocaleString('pt-BR')} total
                     </p>
                   </div>
                 </div>
                 <CardContent className="p-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-6 bg-white rounded-3xl border-2 border-muted/10 flex flex-col gap-1 shadow-inner group hover:border-accent/30 transition-all">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sua Renda Per Capita</span>
+                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sua renda por pessoa</span>
                       <span className={`u-num text-3xl ${result.eligible ? 'text-green-600' : 'text-red-600'}`}>R$ {result.perCapita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                       <p className="text-[8px] font-bold text-muted-foreground mt-2 uppercase">Valor por cada morador da casa</p>
                     </div>
@@ -363,13 +363,13 @@ export default function ExemptionSimulationPage() {
                   <div className="mt-10 flex flex-col md:flex-row gap-4">
                     <Button asChild className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-black h-16 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 text-base">
                       <Link href="/dashboard/chat/aurora-ai">
-                        Tirar Dúvidas com Aurora
+                        Tirar dúvidas com a Aurora
                         <ArrowRight className="h-5 w-5 ml-2" />
                       </Link>
                     </Button>
                     <Button variant="outline" className="flex-1 h-16 rounded-2xl border-2 font-black text-primary hover:bg-muted/50 transition-all" asChild>
                       <Link href="/dashboard/student/documents">
-                        Checklist de Documentos
+                        Lista de documentos
                       </Link>
                     </Button>
                   </div>

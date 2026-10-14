@@ -31,6 +31,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { distinctOptions } from "@/components/secretary/StudentFilterBar";
 import { esc } from "@/lib/print-utils";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from "@/components/EmptyState";
 
 export default function SecretaryDocumentsPage() {
   const { toast } = useToast();
@@ -118,7 +120,7 @@ export default function SecretaryDocumentsPage() {
 
     const todayStr = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const birthStr = selectedStudent.birth_date
-      ? format(new Date(selectedStudent.birth_date + "T12:00:00"), "dd/MM/yyyy")
+      ? fmtDate(selectedStudent.birth_date + "T12:00:00", "dd/MM/yyyy")
       : "___/___/______";
 
     // Segurança: esc() (de lib/print-utils) escapa qualquer valor vindo do
@@ -333,70 +335,75 @@ export default function SecretaryDocumentsPage() {
   const courseOptions = useMemo(() => distinctOptions(students, "course"), [students]);
 
   const filteredStudents = students.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (s.name || "").toLowerCase().includes(searchQuery.toLowerCase()) &&
     (!courseFilter || (s.course || "") === courseFilter)
   );
 
+  const DOC_LABEL: Record<string, string> = {
+    declaracao: "Declaração", frequencia: "Frequência", responsavel: "Responsável",
+    certificado: "Certificado", historico: "Ficha",
+  };
+  const fieldCls = "h-11 bg-muted/30 border-none rounded-control text-sm";
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
+    <div className="space-y-6 pb-20">
       {/* Cabeçalho */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-black text-primary italic leading-none">
-          Central de Documentos
-        </h1>
-        <p className="text-muted-foreground font-medium italic text-sm">
-          Gere declarações e certificados com validade interna instantaneamente.
+      <div>
+        <p className="u-label flex items-center gap-2"><FileCheck className="h-3.5 w-3.5" /> Secretaria · documentos</p>
+        <h1 className="u-page-title text-3xl mt-1">Emissão de documentos</h1>
+        <p className="text-muted-foreground text-sm mt-2">
+          Gere declarações e certificados para impressão na hora.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Painel de Seleção */}
-        <Card className="lg:col-span-1 border-none shadow-2xl rounded-card bg-white p-6 space-y-5">
-          <h2 className="text-lg font-black text-primary italic leading-none flex items-center gap-2">
-            <FileText className="h-5 w-5" /> Tipo & Estudante
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Seleção */}
+        <Card className="lg:col-span-1 rounded-card shadow-none p-5 sm:p-6 space-y-5">
+          <h2 className="text-base font-bold flex items-center gap-2">
+            <FileText className="h-5 w-5 text-muted-foreground" /> Tipo e aluno
           </h2>
 
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Tipo do Documento</Label>
+              <Label className="u-label ml-1">Tipo do documento</Label>
               <Select value={docType} onValueChange={setDocType}>
-                <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-none font-bold">
+                <SelectTrigger className={`${fieldCls} font-semibold`}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-2xl">
-                  <SelectItem value="declaracao" className="font-bold text-xs">Declaração de Matrícula</SelectItem>
-                  <SelectItem value="frequencia" className="font-bold text-xs">Declaração de Frequência</SelectItem>
-                  <SelectItem value="responsavel" className="font-bold text-xs">Declaração para Responsável</SelectItem>
-                  <SelectItem value="certificado" className="font-bold text-xs">Certificado de Conclusão</SelectItem>
-                  <SelectItem value="historico" className="font-bold text-xs">Ficha / Ocorrência</SelectItem>
+                <SelectContent className="rounded-control">
+                  <SelectItem value="declaracao" className="text-sm">Declaração de matrícula</SelectItem>
+                  <SelectItem value="frequencia" className="text-sm">Declaração de frequência</SelectItem>
+                  <SelectItem value="responsavel" className="text-sm">Declaração para o responsável</SelectItem>
+                  <SelectItem value="certificado" className="text-sm">Certificado de conclusão</SelectItem>
+                  <SelectItem value="historico" className="text-sm">Ficha / ocorrência</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Buscar Aluno</Label>
+              <Label className="u-label ml-1">Buscar aluno</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Pesquisar..."
+                  placeholder="Digite o nome..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="h-10 pl-9 pr-3 rounded-xl bg-slate-50 border-none text-xs"
+                  className={`${fieldCls} pl-9 pr-3`}
                 />
               </div>
             </div>
 
             {courseOptions.length > 0 && (
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Turma</Label>
+                <Label className="u-label ml-1">Turma</Label>
                 <Select value={courseFilter || "__all__"} onValueChange={(v) => setCourseFilter(v === "__all__" ? "" : v)}>
-                  <SelectTrigger className="h-10 rounded-xl bg-slate-50 border-none font-bold text-xs">
+                  <SelectTrigger className={fieldCls}>
                     <SelectValue placeholder="Todas as turmas" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="__all__" className="font-bold text-xs">Todas as turmas</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="__all__" className="text-sm">Todas as turmas</SelectItem>
                     {courseOptions.map((c) => (
-                      <SelectItem key={c} value={c} className="font-bold text-xs">{c}</SelectItem>
+                      <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -404,23 +411,35 @@ export default function SecretaryDocumentsPage() {
             )}
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Estudante *</Label>
+              <Label className="u-label ml-1">Aluno *</Label>
               {loadingStudents ? (
                 <div className="py-4 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+              ) : filteredStudents.length === 0 ? (
+                <EmptyState
+                  compact
+                  icon={Search}
+                  title={students.length === 0 ? "Nenhum aluno cadastrado" : "Nenhum aluno com esse nome"}
+                  description={students.length === 0 ? "Cadastre alunos em Matrículas para emitir documentos." : "Confira a grafia ou troque a turma."}
+                  action={students.length === 0
+                    ? { label: "Ir para matrículas", href: "/dashboard/secretary/enrollments" }
+                    : { label: "Limpar busca", onClick: () => { setSearchQuery(""); setCourseFilter(""); } }}
+                />
               ) : (
-                <div className="max-h-56 overflow-y-auto border border-slate-100 rounded-xl p-2 space-y-1 bg-slate-50/50">
+                <div className="max-h-56 overflow-y-auto border border-border rounded-control p-1.5 space-y-0.5">
                   {filteredStudents.map(s => (
-                    <div 
+                    <button
+                      type="button"
                       key={s.id}
                       onClick={() => setSelectedStudentId(s.id)}
-                      className={`p-2 rounded-lg cursor-pointer transition-colors text-xs font-semibold ${
-                        selectedStudentId === s.id 
-                          ? 'bg-primary text-white' 
-                          : 'hover:bg-slate-100 text-slate-700'
+                      aria-pressed={selectedStudentId === s.id}
+                      className={`w-full text-left p-2 rounded-control transition-colors text-sm ${
+                        selectedStudentId === s.id
+                          ? 'bg-primary text-primary-foreground font-semibold'
+                          : 'hover:bg-muted'
                       }`}
                     >
-                      {s.name}
-                    </div>
+                      {txt(s.name, "Sem nome")}
+                    </button>
                   ))}
                 </div>
               )}
@@ -428,21 +447,21 @@ export default function SecretaryDocumentsPage() {
           </div>
         </Card>
 
-        {/* Formulário de Parâmetros e Visualização */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-[3rem] bg-white p-8 flex flex-col justify-between">
+        {/* Parâmetros e emissão */}
+        <Card className="lg:col-span-2 rounded-card shadow-none p-5 sm:p-8 flex flex-col justify-between">
           {selectedStudent ? (
             <div className="space-y-6 flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-                  <div>
-                    <span className="text-[9px] uppercase font-black tracking-wider text-slate-400">Preenchimento de Parâmetros</span>
-                    <h3 className="font-extrabold text-slate-800 text-lg leading-snug italic mt-0.5">{selectedStudent.name}</h3>
-                    <p className="text-[10px] text-slate-400 font-bold mt-1">
-                      Curso: {selectedStudent.course || 'Ensino Geral'} • Polo: {selectedStudent.institution || 'Geral'}
+                <div className="flex justify-between items-start gap-3 border-b border-border pb-4">
+                  <div className="min-w-0">
+                    <span className="u-label">Dados do documento</span>
+                    <h3 className="font-bold text-lg leading-snug mt-0.5 truncate">{txt(selectedStudent.name, "Sem nome")}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Curso: {selectedStudent.course || 'Ensino Geral'} · Polo: {selectedStudent.institution || 'Geral'}
                     </p>
                   </div>
-                  <Badge className="bg-primary/5 text-primary border-none font-bold text-xs uppercase px-3 py-1">
-                    {docType === 'declaracao' ? 'Declaração' : docType === 'frequencia' ? 'Frequência' : docType === 'responsavel' ? 'Responsável' : docType === 'certificado' ? 'Certificado' : 'Histórico'}
+                  <Badge variant="outline" className="font-semibold text-xs px-3 py-1 shrink-0">
+                    {DOC_LABEL[docType] || 'Ficha'}
                   </Badge>
                 </div>
 
@@ -450,21 +469,21 @@ export default function SecretaryDocumentsPage() {
                   {docType === "declaracao" && (
                     <>
                       <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">CPF do Aluno</Label>
-                        <Input 
-                          placeholder="Ex: 000.000.000-00" 
+                        <Label className="u-label ml-1">CPF do aluno</Label>
+                        <Input
+                          placeholder="Ex.: 000.000.000-00"
                           value={studentCpf}
                           onChange={e => setStudentCpf(e.target.value)}
-                          className="h-12 bg-slate-50 border-none rounded-xl font-bold text-sm" 
+                          className={fieldCls}
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">RG do Aluno</Label>
-                        <Input 
-                          placeholder="Ex: 00.000.000-0" 
+                        <Label className="u-label ml-1">RG do aluno</Label>
+                        <Input
+                          placeholder="Ex.: 00.000.000-0"
                           value={studentRg}
                           onChange={e => setStudentRg(e.target.value)}
-                          className="h-12 bg-slate-50 border-none rounded-xl font-bold text-sm" 
+                          className={fieldCls}
                         />
                       </div>
                     </>
@@ -472,30 +491,30 @@ export default function SecretaryDocumentsPage() {
 
                   {docType === "certificado" && (
                     <div className="space-y-1.5 md:col-span-2">
-                      <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Carga Horária (Horas)</Label>
-                      <Input 
+                      <Label className="u-label ml-1">Carga horária (horas)</Label>
+                      <Input
                         type="number"
-                        placeholder="Ex: 120" 
+                        placeholder="Ex.: 120"
                         value={workload}
                         onChange={e => setWorkload(e.target.value)}
-                        className="h-12 bg-slate-50 border-none rounded-xl font-bold text-sm" 
+                        className={fieldCls}
                       />
                     </div>
                   )}
 
                   {docType === "responsavel" && (
-                    <div className="md:col-span-2 flex items-center gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
-                      <HelpCircle className="h-4 w-4 text-blue-500 shrink-0" />
-                      <p className="text-[11px] font-semibold text-blue-700">
-                        Os dados do responsável (nome, parentesco, CPF) são puxados do perfil do aluno. Cadastre-os lá se ainda não houver.
+                    <div className="md:col-span-2 flex items-start gap-2 p-3 rounded-control bg-muted/40 border border-border">
+                      <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground">
+                        Os dados do responsável (nome, parentesco, CPF) vêm do perfil do aluno. Cadastre-os lá se ainda não houver.
                       </p>
                     </div>
                   )}
 
                   {docType === "frequencia" && (
-                    <div className="md:col-span-2 flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                      <p className="text-[11px] font-semibold text-emerald-700">
+                    <div className="md:col-span-2 flex items-start gap-2 p-3 rounded-control bg-muted/40 border border-border">
+                      <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground">
                         A frequência (presenças / total de aulas) é calculada automaticamente a partir do diário de classe.
                       </p>
                     </div>
@@ -503,36 +522,36 @@ export default function SecretaryDocumentsPage() {
 
                   {docType === "historico" && (
                     <div className="space-y-1.5 md:col-span-2">
-                      <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Observações / Ocorrência</Label>
-                      <textarea 
+                      <Label className="u-label ml-1">Observações / ocorrência</Label>
+                      <textarea
                         rows={4}
-                        placeholder="Preencha as ocorrências ou observações do estudante..." 
+                        placeholder="Descreva as ocorrências ou observações do aluno..."
                         value={observations}
                         onChange={e => setObservations(e.target.value)}
-                        className="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-semibold focus:outline-none"
+                        className="w-full bg-muted/30 border-none rounded-control p-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                       />
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-slate-100 mt-8 flex gap-3">
-                <Button 
-                  onClick={handleGeneratePrint} 
-                  className="flex-1 h-14 bg-primary text-white font-black text-xs uppercase shadow-xl hover:scale-[1.01] transition-all border-none"
+              <div className="pt-6 border-t border-border mt-6 flex gap-3">
+                <Button
+                  variant="arcade"
+                  onClick={handleGeneratePrint}
+                  className="flex-1 h-12 font-bold rounded-control whitespace-normal"
                 >
-                  <Printer className="mr-2 h-4 w-4" /> Gerar & Imprimir Documento Oficial
+                  <Printer className="mr-2 h-4 w-4" /> Gerar e imprimir documento
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
-              <Printer className="h-16 w-16 text-slate-300 mb-4" />
-              <p className="font-bold text-slate-500 text-sm">Nenhum aluno selecionado</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-[280px]">
-                Selecione um estudante e o tipo de certidão no painel esquerdo para liberar o preenchimento da ficha.
-              </p>
-            </div>
+            <EmptyState
+              className="flex-1 border-none bg-transparent"
+              icon={Printer}
+              title="Nenhum aluno selecionado"
+              description="Escolha o tipo de documento e o aluno no painel ao lado para preencher os dados e imprimir."
+            />
           )}
         </Card>
       </div>

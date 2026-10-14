@@ -9,13 +9,32 @@ import { medirCarregamentoDeTela } from '@/lib/perf';
 import { trackFalha } from '@/lib/telemetry';
 import { trackMissionProgress } from '@/lib/missions';
 import {
-  Brain, ChevronLeft, ChevronRight, Loader2, RefreshCw,
+  Brain, ChevronLeft, ChevronRight, RefreshCw,
   CheckCircle2, XCircle, Zap, BookOpen, Filter,
   RotateCcw, Star, TrendingUp, Flame,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { fmtNumber, pct as calcPct, toNumber } from '@/lib/format';
+
+/**
+ * Alternativas como chegam do banco: às vezes JSON em texto, às vezes com
+ * `value` no lugar de `text`. Normaliza só para exibir — um `.map` em string
+ * derrubava a tela inteira.
+ */
+function opcoesDe(raw: unknown): { key: string; text: string }[] {
+  let lista: unknown = raw;
+  if (typeof raw === 'string') {
+    try { lista = JSON.parse(raw); } catch { return []; }
+  }
+  if (!Array.isArray(lista)) return [];
+  return lista
+    .filter((o): o is Record<string, unknown> => !!o && typeof o === 'object')
+    .map(o => ({ key: String(o.key ?? ''), text: String(o.text ?? o.value ?? '') }));
+}
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 type CardRow = {
@@ -82,6 +101,8 @@ function FlipCard({
   revealed: boolean;
   onReveal: () => void;
 }) {
+  const opcoes = opcoesDe(card.options);
+  const correta = opcoes.find(o => o.key === card.correct_answer)?.text;
   return (
     <div
       className="relative w-full"
@@ -101,12 +122,12 @@ function FlipCard({
           </Badge>
         )}
         <p className="text-base md:text-lg font-bold text-primary italic text-center leading-relaxed max-w-lg shrink-0">
-          {card.question_text.replace('[IMAGEM_PENDENTE]', '')}
+          {String(card.question_text ?? '').replace('[IMAGEM_PENDENTE]', '')}
         </p>
 
-        {card.options && card.options.length > 0 && (
+        {opcoes.length > 0 && (
           <div className="w-full max-w-md space-y-1.5 my-2 shrink-0">
-            {card.options.map((opt) => (
+            {opcoes.map((opt) => (
               <div key={opt.key} className="flex items-start gap-2.5 text-xs text-slate-700 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 font-medium">
                 <span className="shrink-0 font-black text-primary uppercase">{opt.key})</span>
                 <span className="flex-1 leading-normal">{opt.text}</span>
@@ -129,12 +150,12 @@ function FlipCard({
         transition={{ duration: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
       >
         <div>
-          <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-3">Resposta Correta</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-3">Resposta correta</p>
           <div className="flex items-center gap-3 bg-white/15 rounded-2xl px-4 py-3 border border-white/20">
             <CheckCircle2 className="h-5 w-5 text-emerald-300 shrink-0" />
             <p className="text-white font-black text-lg">
-              {card.correct_answer})&nbsp;
-              {card.options.find(o => o.key === card.correct_answer)?.text}
+              {card.correct_answer ? <>{card.correct_answer})&nbsp;</> : null}
+              {correta ?? (card.correct_answer ? '' : 'Gabarito não informado')}
             </p>
           </div>
         </div>
@@ -251,7 +272,7 @@ export default function FlashcardsPage() {
       medirCarregamentoDeTela('flashcards', inicioCarga);
     } catch (e: any) {
       trackFalha('flashcards_falha_carregar', e);
-      toast({ title: 'Erro ao carregar flashcards', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não conseguimos carregar seus cartões', description: 'Confira sua internet e toque em Revisar de novo.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -320,7 +341,7 @@ export default function FlashcardsPage() {
       }
     } catch (e: any) {
       trackFalha('flashcard_progresso_nao_salvo', e);
-      toast({ title: 'Erro ao salvar progresso', description: e.message, variant: 'destructive' });
+      toast({ title: 'Sua resposta não foi salva', description: 'Confira sua internet e toque na sua avaliação de novo.', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -328,16 +349,31 @@ export default function FlashcardsPage() {
 
   /* ── Render ── */
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh] gap-4 flex-col">
-      <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
-      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">
-        Preparando seus cards...
-      </p>
+    <div className="max-w-lg mx-auto px-4 pb-24 space-y-5" aria-label="Carregando…">
+      <Skeleton className="h-40 w-full rounded-card" />
+      <Skeleton className="h-[480px] w-full rounded-card" />
     </div>
   );
 
+  // Nada para revisar e nada revisado: não é "sessão concluída", é vazio.
+  if (!done && filteredCards.length === 0 && session.reviewed === 0) {
+    return (
+      <div className="max-w-lg mx-auto px-4 pb-24 animate-in fade-in duration-700">
+        <EmptyState
+          tone="dark"
+          icon={Brain}
+          title="Você não tem cartões para revisar hoje"
+          description="Cada questão volta aqui no dia certo de revisar. Enquanto isso, resolva questões num simulado para ganhar novos cartões."
+          action={{ label: 'Treinar com simulados', href: '/dashboard/student/simulados', icon: Zap }}
+          secondary={{ label: 'Procurar de novo', onClick: load }}
+          className="aurora-dark border-2 border-solid border-foreground shadow-hard"
+        />
+      </div>
+    );
+  }
+
   if (done || filteredCards.length === 0) {
-    const pct = session.reviewed > 0 ? Math.round((session.correct / session.reviewed) * 100) : 0;
+    const pct = calcPct(session.correct, session.reviewed);
     const elapsed = Math.round((Date.now() - startTime.current) / 60000);
     return (
       <div className="max-w-lg mx-auto px-4 pb-24 space-y-6 animate-in fade-in duration-700">
@@ -347,7 +383,7 @@ export default function FlashcardsPage() {
             <CheckCircle2 className="h-14 w-14 mx-auto" aria-hidden />
             <h1 className="u-page-title text-3xl leading-[1.15]">Sessão concluída</h1>
             <p className="text-white/60 text-sm">
-              {session.reviewed === 0 ? 'Nenhum card disponível para hoje.' : `${session.reviewed} cards revisados em ~${elapsed} min`}
+              {session.reviewed === 1 ? '1 cartão revisado' : `${session.reviewed} cartões revisados`}{elapsed < 1 ? ' em menos de 1 minuto' : ` em cerca de ${elapsed} min`}
             </p>
             <div className="grid grid-cols-3 gap-3 mt-6">
               {[
@@ -365,7 +401,7 @@ export default function FlashcardsPage() {
         </div>
         <Button onClick={load} className="w-full h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2">
           <RefreshCw className="h-4 w-4" />
-          Nova Sessão
+          Revisar de novo
         </Button>
       </div>
     );
@@ -382,16 +418,16 @@ export default function FlashcardsPage() {
         <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="space-y-1">
             <span className="text-[9px] font-black uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full border border-white/20 inline-flex items-center gap-1.5">
-              <Brain className="h-2.5 w-2.5" /> Flash Cards
+              <Brain className="h-2.5 w-2.5" /> Cartões de revisão
             </span>
             <h1 className="u-page-title text-2xl leading-[1.15]">
               Revisão<br />
-              <span className="text-white/60">Espaçada</span>
+              <span className="text-white/60">do dia</span>
             </h1>
           </div>
           <div className="text-right shrink-0">
             <p className="text-3xl font-black leading-none">{index + 1}<span className="text-sm text-white/40">/{filteredCards.length}</span></p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mt-1">cards hoje</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mt-1">cartões hoje</p>
           </div>
         </div>
         {/* Progress bar */}
@@ -486,8 +522,8 @@ export default function FlashcardsPage() {
         <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground/60">
           <TrendingUp className="h-3.5 w-3.5" />
           <span className="font-medium">
-            Próx. revisão em {currentCard.interval_days} dia{currentCard.interval_days !== 1 ? 's' : ''}
-            {currentCard.repetitions > 0 ? ` · ${currentCard.repetitions}ª repetição` : ' · Novo card'}
+            Próxima revisão em {fmtNumber(currentCard.interval_days, 0, '1')} {toNumber(currentCard.interval_days) === 1 || toNumber(currentCard.interval_days) === null ? 'dia' : 'dias'}
+            {(toNumber(currentCard.repetitions) ?? 0) > 0 ? ` · ${currentCard.repetitions}ª repetição` : ' · Cartão novo'}
           </span>
         </div>
       )}

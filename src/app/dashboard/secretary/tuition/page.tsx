@@ -24,6 +24,7 @@ import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { esc, openPrintWindow, brl } from "@/lib/print-utils";
 import { format } from "date-fns";
+import { fmtDate } from '@/lib/format';
 
 interface Plan {
   id: string; name: string; school_year: number; base_amount: number;
@@ -264,7 +265,7 @@ export default function TuitionPage() {
 
   const printReceipt = (inv: Invoice) => {
     const st = studentById[inv.student_id];
-    const compLabel = format(new Date(inv.competence + "T12:00:00"), "MM/yyyy");
+    const compLabel = fmtDate(inv.competence + "T12:00:00", "MM/yyyy");
     openPrintWindow({
       title: "Recibo de Pagamento de Mensalidade",
       codePrefix: "REC",
@@ -280,7 +281,7 @@ export default function TuitionPage() {
             <td>${esc(brl(inv.discount_amount))}</td>
             <td>${esc(brl(inv.paid_amount ?? inv.final_amount))}</td>
             <td>${esc(inv.payment_method ? METODO_LABEL[inv.payment_method] : "—")}</td>
-            <td>${esc(inv.paid_at ? format(new Date(inv.paid_at), "dd/MM/yyyy") : "—")}</td>
+            <td>${esc(inv.paid_at ? fmtDate(inv.paid_at, "dd/MM/yyyy") : "—")}</td>
           </tr>
         </table>
         <p>Para clareza, firmamos o presente recibo.</p>
@@ -515,7 +516,7 @@ export default function TuitionPage() {
                               <span className="text-xs text-emerald-600 ml-1">(-{brl(inv.discount_amount)})</span>
                             )}
                           </td>
-                          <td className="p-4">{format(new Date(inv.due_date + "T12:00:00"), "dd/MM/yyyy")}</td>
+                          <td className="p-4">{fmtDate(inv.due_date + "T12:00:00", "dd/MM/yyyy")}</td>
                           <td className="p-4"><Badge className={`${STATUS_STYLE[ds]} font-black`}>{STATUS_LABEL[ds]}</Badge></td>
                           <td className="p-4">
                             <div className="flex justify-end gap-1">
@@ -734,7 +735,7 @@ export default function TuitionPage() {
           <DialogHeader>
             <DialogTitle className="u-display">Registrar pagamento</DialogTitle>
             <DialogDescription>
-              {payInvoice && `${studentById[payInvoice.student_id]?.name ?? "Aluno"} — competência ${format(new Date(payInvoice.competence + "T12:00:00"), "MM/yyyy")}`}
+              {payInvoice && `${studentById[payInvoice.student_id]?.name ?? "Aluno"} — competência ${fmtDate(payInvoice.competence + "T12:00:00", "MM/yyyy")}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -801,7 +802,7 @@ export default function TuitionPage() {
           <DialogHeader>
             <DialogTitle className="u-display">Histórico da fatura</DialogTitle>
             <DialogDescription>
-              {historyInvoice && `${studentById[historyInvoice.student_id]?.name ?? ""} — ${format(new Date(historyInvoice.competence + "T12:00:00"), "MM/yyyy")}`}
+              {historyInvoice && `${studentById[historyInvoice.student_id]?.name ?? ""} — ${fmtDate(historyInvoice.competence + "T12:00:00", "MM/yyyy")}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -810,7 +811,7 @@ export default function TuitionPage() {
               <div key={ev.id} className="border rounded-xl p-3 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="font-black uppercase text-xs tracking-widest">{ev.action}</span>
-                  <span className="text-xs text-muted-foreground">{format(new Date(ev.created_at), "dd/MM/yyyy HH:mm")}</span>
+                  <span className="text-xs text-muted-foreground">{fmtDate(ev.created_at, "dd/MM/yyyy HH:mm")}</span>
                 </div>
                 {Object.keys(ev.details || {}).length > 0 && (
                   <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap break-all">

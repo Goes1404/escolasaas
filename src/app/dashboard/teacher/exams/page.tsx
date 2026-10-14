@@ -20,7 +20,8 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-import { EXAM_TYPES, EXAM_TYPE_BADGE as TYPE_COLOR, type ExamType } from '@/lib/exam-types';
+import { EXAM_TYPES, EXAM_TYPE_BADGE as TYPE_COLOR, examTypeLabel, type ExamType } from '@/lib/exam-types';
+import { EmptyState } from '@/components/EmptyState';
 
 type Exam = {
   id: string;
@@ -134,9 +135,9 @@ export default function TeacherExamsPage() {
   };
 
   const handleDelete = async (exam: Exam) => {
-    if (!confirm(`Deletar "${exam.title}"?`)) return;
+    if (!confirm(`Excluir "${exam.title}"?`)) return;
     const { error } = await supabase.from('exams').delete().eq('id', exam.id);
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Prova removida.' });
     fetchExams();
   };
@@ -159,7 +160,7 @@ export default function TeacherExamsPage() {
       toast({ title: 'PDF enviado!' });
       fetchExams();
     } catch (e: any) {
-      toast({ title: 'Erro no upload', description: e.message, variant: 'destructive' });
+      toast({ title: 'Erro ao enviar o PDF', description: e.message, variant: 'destructive' });
     } finally {
       setUploading(u => ({ ...u, [exam.id]: false }));
     }
@@ -173,109 +174,120 @@ export default function TeacherExamsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium italic">Carregando provas...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="u-label">Carregando provas…</p>
       </div>
     );
   }
 
+  const labelCls = 'u-label';
+
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-24">
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl rotate-3">
-            <Scroll className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-primary italic leading-none">Provas & PDFs</h1>
-            <p className="text-muted-foreground font-medium italic">{exams.length} provas no sistema</p>
-          </div>
+    <div className="max-w-6xl space-y-6 pb-24">
+      {/* Cabeçalho (nível médio) */}
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><Scroll className="h-3.5 w-3.5" /> Professor · provas</p>
+          <h1 className="u-page-title text-3xl mt-1">Provas e PDFs</h1>
+          <p className="text-muted-foreground text-sm mt-2"><span className="tabular-nums">{exams.length}</span> {exams.length === 1 ? 'prova cadastrada' : 'provas cadastradas'}</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/teacher/enem-import">
-            <Button variant="outline" className="h-12 px-4 rounded-2xl font-black border-blue-200 text-blue-700 hover:bg-blue-50">
+        <div className="flex flex-col min-[400px]:flex-row gap-2">
+          <Button asChild variant="outline" className="h-11 px-4 rounded-control font-semibold">
+            <Link href="/dashboard/teacher/enem-import">
               <Download className="h-4 w-4 mr-2" /> Importar ENEM
-            </Button>
-          </Link>
-          <Button onClick={openCreate} className="h-12 px-6 rounded-2xl bg-primary text-white font-black shadow-xl hover:scale-[1.02] transition-all">
-            <Plus className="h-5 w-5 mr-2" /> Nova Prova
+            </Link>
+          </Button>
+          <Button onClick={openCreate} variant="arcade" className="h-11 px-5 rounded-control font-bold">
+            <Plus className="h-4 w-4 mr-2" /> Nova prova
           </Button>
         </div>
       </header>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar provas..."
-            className="pl-9 h-11 rounded-xl border-none bg-white shadow-sm font-medium" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar provas…"
+            className="pl-9 h-11 rounded-control bg-background border-border" />
         </div>
         <button
           onClick={() => setFilterOwn(v => !v)}
-          className={`px-4 h-11 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${filterOwn ? 'bg-primary text-white shadow-md' : 'bg-white text-muted-foreground hover:bg-slate-100'}`}
+          aria-pressed={filterOwn}
+          className={`px-4 h-11 rounded-control text-sm font-semibold border transition-colors ${filterOwn ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'}`}
         >
           Só as minhas
         </button>
       </div>
 
-      {/* Grid */}
+      {/* Lista */}
       {filtered.length === 0 ? (
-        <Card className="border-none shadow-xl rounded-card bg-white p-12 text-center">
-          <BookOpen className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-xl font-black text-primary italic">Nenhuma prova encontrada</p>
-        </Card>
+        exams.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Nenhuma prova cadastrada"
+            description="Crie uma prova e envie o PDF, ou importe uma edição do ENEM já com as questões."
+            action={{ label: 'Nova prova', onClick: openCreate, icon: Plus }}
+            secondary={{ label: 'Importar ENEM', href: '/dashboard/teacher/enem-import' }}
+          />
+        ) : (
+          <EmptyState
+            icon={Search}
+            title="Nenhuma prova encontrada"
+            description={filterOwn ? 'Nenhuma prova sua corresponde à busca.' : 'Nenhuma prova corresponde à busca.'}
+            secondary={{ label: 'Limpar filtros', onClick: () => { setSearch(''); setFilterOwn(false); } }}
+          />
+        )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(exam => {
             const typeColor = TYPE_COLOR[(EXAM_TYPES as readonly string[]).includes(exam.exam_type) ? exam.exam_type as ExamType : 'outro'];
             const isUploading = uploading[exam.id];
             const canEdit = isOwner(exam);
 
             return (
-              <Card key={exam.id} className="border-none shadow-xl rounded-card bg-white overflow-hidden hover:shadow-2xl transition-all">
-                <CardContent className="p-6 flex flex-col gap-4 h-full">
+              <Card key={exam.id} className="rounded-card overflow-hidden">
+                <CardContent className="p-4 sm:p-5 flex flex-col gap-3 h-full">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge className={`${typeColor} border-none font-black text-[10px] uppercase px-3 py-1`}>{exam.exam_type}</Badge>
-                    <div className="flex items-center gap-1">
-                      {exam.year && <Badge className="bg-primary/5 text-primary border-none font-black text-xs">{exam.year}</Badge>}
-                      {!canEdit && <Lock className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Prova de outro professor" />}
+                    <Badge className={`${typeColor} font-semibold text-[10px] px-2 py-0.5 rounded-control`}>{examTypeLabel(exam.exam_type)}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      {exam.year && <span className="u-num text-sm text-muted-foreground">{exam.year}</span>}
+                      {!canEdit && <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-label="Prova de outro professor" />}
                     </div>
                   </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-lg font-black text-primary italic leading-tight">{exam.title}</h3>
-                    {exam.description && <p className="text-xs text-muted-foreground font-medium mt-1.5 line-clamp-2">{exam.description}</p>}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-foreground leading-snug break-words">{exam.title}</h3>
+                    {exam.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{exam.description}</p>}
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
-                    <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" />{exam.question_count} questões</span>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                    <span className="flex items-center gap-1 tabular-nums"><BookOpen className="h-3.5 w-3.5" />{exam.question_count} {exam.question_count === 1 ? 'questão' : 'questões'}</span>
                     {exam.pdf_url
-                      ? <span className="flex items-center gap-1 text-green-600 font-black"><CheckCircle2 className="h-3.5 w-3.5" />PDF</span>
-                      : <span className="flex items-center gap-1 text-amber-500 font-black"><FileText className="h-3.5 w-3.5" />Sem PDF</span>
+                      ? <span className="flex items-center gap-1 text-emerald-600 font-semibold"><CheckCircle2 className="h-3.5 w-3.5" />Com PDF</span>
+                      : <span className="flex items-center gap-1 font-semibold"><FileText className="h-3.5 w-3.5" />Sem PDF</span>
                     }
                   </div>
 
                   {/* PDF */}
                   {exam.pdf_url ? (
                     <div className="flex gap-2">
-                      <a href={exam.pdf_url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                        <Button variant="outline" className="w-full h-10 rounded-xl font-black text-xs border-green-200 text-green-700 hover:bg-green-50">
+                      <Button asChild variant="outline" className="flex-1 h-10 rounded-control font-semibold text-xs">
+                        <a href={exam.pdf_url} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-1.5" /> Ver PDF
-                        </Button>
-                      </a>
+                        </a>
+                      </Button>
                       {canEdit && (
                         <Button variant="outline" size="icon" onClick={() => fileInputRefs.current[exam.id]?.click()}
-                          disabled={isUploading} className="h-10 w-10 rounded-xl border-slate-200 text-muted-foreground hover:bg-slate-50">
+                          disabled={isUploading} className="h-10 w-10 rounded-control" title="Trocar PDF" aria-label="Trocar PDF">
                           {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                         </Button>
                       )}
                     </div>
                   ) : canEdit ? (
-                    <Button onClick={() => fileInputRefs.current[exam.id]?.click()} disabled={isUploading}
-                      className="w-full h-10 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 border-none font-black text-xs shadow-sm">
-                      {isUploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</> : <><Upload className="h-4 w-4 mr-2" />Upload PDF</>}
+                    <Button variant="outline" onClick={() => fileInputRefs.current[exam.id]?.click()} disabled={isUploading}
+                      className="w-full h-10 rounded-control font-semibold text-xs">
+                      {isUploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando…</> : <><Upload className="h-4 w-4 mr-2" />Enviar PDF</>}
                     </Button>
                   ) : null}
 
@@ -288,20 +300,20 @@ export default function TeacherExamsPage() {
                       com PDF, mesmo que a prova seja de outro (ação segura, validada no servidor). */}
                   {exam.pdf_url && (
                     <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/teacher/exams/${exam.id}/images`)}
-                      className="w-full h-9 rounded-xl text-xs font-black text-blue-600 bg-blue-50/50 hover:bg-blue-50">
+                      className="w-full h-9 rounded-control text-xs font-semibold">
                       <ScanSearch className="h-3.5 w-3.5 mr-1.5" /> Extrair imagens do PDF
                     </Button>
                   )}
 
                   {canEdit && (
-                    <div className="flex gap-2 pt-1 border-t border-slate-100">
+                    <div className="flex gap-2 pt-2 border-t border-border">
                       <Button variant="ghost" size="sm" onClick={() => openEdit(exam)}
-                        className="flex-1 h-9 rounded-xl text-xs font-black text-primary hover:bg-primary/5">
+                        className="flex-1 h-9 rounded-control text-xs font-semibold">
                         <Pencil className="h-3.5 w-3.5 mr-1.5" /> Editar
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(exam)}
-                        className="flex-1 h-9 rounded-xl text-xs font-black text-red-400 hover:bg-red-50">
-                        <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Deletar
+                        className="flex-1 h-9 rounded-control text-xs font-semibold text-red-600 hover:text-red-600 hover:bg-red-500/10">
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Excluir
                       </Button>
                     </div>
                   )}
@@ -312,46 +324,46 @@ export default function TeacherExamsPage() {
         </div>
       )}
 
-      {/* Dialog */}
+      {/* Diálogo */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-card max-w-md">
+        <DialogContent className="rounded-card w-[95vw] sm:w-full max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-black italic text-primary text-xl">
-              {editingExam ? 'Editar Prova' : 'Nova Prova'}
+            <DialogTitle className="font-bold text-lg">
+              {editingExam ? 'Editar prova' : 'Nova prova'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-5 py-2">
+          <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Título</Label>
+              <Label className={labelCls}>Título</Label>
               <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                placeholder="Ex: ENEM 2023 — 1º Dia" className="h-11 rounded-xl font-medium" />
+                placeholder="Ex.: ENEM 2023 — 1º dia" className="h-11 rounded-control" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Ano</Label>
+                <Label className={labelCls}>Ano</Label>
                 <Input type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
-                  placeholder="2024" className="h-11 rounded-xl font-medium" />
+                  placeholder="2024" className="h-11 rounded-control" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Tipo</Label>
+                <Label className={labelCls}>Tipo</Label>
                 <Select value={form.exam_type} onValueChange={v => setForm(f => ({ ...f, exam_type: v as ExamType }))}>
-                  <SelectTrigger className="h-11 rounded-xl font-medium"><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {EXAM_TYPES.map(t => <SelectItem key={t} value={t} className="font-bold uppercase text-xs">{t}</SelectItem>)}
+                  <SelectTrigger className="h-11 rounded-control"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-control">
+                    {EXAM_TYPES.map(t => <SelectItem key={t} value={t} className="text-sm">{examTypeLabel(t)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Descrição (opcional)</Label>
+              <Label className={labelCls}>Descrição (opcional)</Label>
               <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                placeholder="Caderno de Linguagens e Ciências Humanas" className="rounded-xl font-medium resize-none" rows={3} />
+                placeholder="Caderno de Linguagens e Ciências Humanas" className="rounded-control resize-none" rows={3} />
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl font-black">Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary text-white font-black shadow-lg">
-              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando...</> : 'Salvar'}
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-control font-semibold">Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving} className="rounded-control font-bold">
+              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando…</> : 'Salvar'}
             </Button>
           </DialogFooter>
         </DialogContent>

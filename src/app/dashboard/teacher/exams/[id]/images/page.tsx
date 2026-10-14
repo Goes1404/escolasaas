@@ -14,6 +14,7 @@ import {
   ArrowLeft, CheckCircle2, ImageIcon, Loader2, ScanSearch,
   Sparkles, Trash2, AlertTriangle, Save,
 } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
 
 interface ExamInfo {
   id: string;
@@ -224,7 +225,7 @@ export default function RepairExamImagesPage() {
       setPhase('done');
       toast({
         title: `${data.updated} questões atualizadas!`,
-        description: uploadFails > 0 ? `${uploadFails} uploads falharam.` : 'Imagens vinculadas com sucesso.',
+        description: uploadFails > 0 ? `${uploadFails} imagens não puderam ser enviadas.` : 'Imagens vinculadas às questões.',
       });
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Erro ao aplicar.');
@@ -236,207 +237,213 @@ export default function RepairExamImagesPage() {
 
   if (phase === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary opacity-60" />
+      <div className="flex flex-col justify-center items-center min-h-[50vh] gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="u-label">Carregando prova…</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-24">
-      <header className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/teacher/exams')}
-          className="h-11 w-11 rounded-2xl shrink-0">
-          <ArrowLeft className="h-5 w-5" />
+    <div className="max-w-5xl space-y-6 pb-24">
+      {/* Cabeçalho (nível médio) */}
+      <header className="flex items-start gap-3">
+        <Button variant="outline" size="icon" onClick={() => router.push('/dashboard/teacher/exams')}
+          className="h-9 w-9 rounded-control shrink-0 mt-1" aria-label="Voltar para as provas">
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl -rotate-3 shrink-0">
-          <ScanSearch className="h-7 w-7" />
-        </div>
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-black text-primary italic leading-none truncate">Reparar Imagens</h1>
-          <p className="text-muted-foreground font-medium italic text-sm truncate">{exam?.title}</p>
+          <p className="u-label flex items-center gap-2"><ScanSearch className="h-3.5 w-3.5" /> Professor · provas</p>
+          <h1 className="u-page-title text-2xl md:text-3xl mt-1">Imagens da prova</h1>
+          {exam?.title && <p className="text-muted-foreground text-sm mt-1 break-words">{exam.title}</p>}
         </div>
       </header>
 
       {/* Resumo */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="border-none shadow-lg rounded-card bg-white">
-          <CardContent className="p-5 text-center">
-            <p className="text-2xl font-black text-primary">{questions.length}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Questões</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="rounded-card">
+          <CardContent className="p-3 sm:p-5">
+            <p className="u-label">Questões</p>
+            <p className="u-num text-xl sm:text-2xl mt-1.5">{questions.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-card bg-white">
-          <CardContent className="p-5 text-center">
-            <p className="text-2xl font-black text-amber-500">{pendingQuestions.length}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Sem imagem</p>
+        <Card className="rounded-card">
+          <CardContent className="p-3 sm:p-5">
+            <p className="u-label">Sem imagem</p>
+            <p className="u-num text-xl sm:text-2xl mt-1.5">{pendingQuestions.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-card bg-white">
-          <CardContent className="p-5 text-center">
-            <p className="text-2xl font-black text-green-600">{phase === 'done' ? appliedCount : proposedCount}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">
-              {phase === 'done' ? 'Aplicadas' : 'Propostas'}
-            </p>
+        <Card className="rounded-card">
+          <CardContent className="p-3 sm:p-5">
+            <p className="u-label !text-emerald-600">{phase === 'done' ? 'Aplicadas' : 'Propostas'}</p>
+            <p className="u-num text-xl sm:text-2xl mt-1.5 text-emerald-600">{phase === 'done' ? appliedCount : proposedCount}</p>
           </CardContent>
         </Card>
       </div>
 
       {phase === 'ready' && (
-        <Card className="border-none shadow-xl rounded-card bg-white">
-          <CardContent className="p-8 text-center space-y-4">
-            {exam?.pdf_url ? (
-              <>
-                <Sparkles className="h-10 w-10 text-primary mx-auto" />
-                <p className="font-black text-lg text-primary italic">Extrair imagens do PDF desta prova</p>
-                <p className="text-sm text-muted-foreground font-medium max-w-md mx-auto">
-                  O PDF já salvo no sistema será analisado; cada imagem encontrada é associada
-                  automaticamente à questão pelo número impresso. Você revisa tudo antes de aplicar.
-                </p>
-                <Button onClick={() => void handleExtract()} className="h-12 px-8 rounded-2xl font-black shadow-xl">
-                  <ScanSearch className="h-5 w-5 mr-2" /> Analisar PDF
-                </Button>
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto" />
-                <p className="font-black text-lg text-amber-600 italic">Esta prova não tem PDF</p>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Envie o PDF na tela de Provas primeiro e volte aqui.
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        exam?.pdf_url ? (
+          <Card className="rounded-card">
+            <CardContent className="p-5 sm:p-8 text-center space-y-4">
+              <Sparkles className="h-8 w-8 text-primary mx-auto" />
+              <p className="font-bold text-base text-foreground">Extrair as imagens do PDF desta prova</p>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                O PDF salvo no sistema é analisado e cada imagem encontrada é ligada à questão pelo
+                número impresso. Você revisa tudo antes de aplicar.
+              </p>
+              <Button onClick={() => void handleExtract()} variant="arcade" className="h-11 px-6 rounded-control font-bold">
+                <ScanSearch className="h-4 w-4 mr-2" /> Analisar PDF
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <EmptyState
+            icon={AlertTriangle}
+            title="Esta prova ainda não tem PDF"
+            description="Envie o PDF na tela de provas e volte aqui para extrair as imagens."
+            action={{ label: 'Ir para as provas', href: '/dashboard/teacher/exams', icon: ArrowLeft }}
+          />
+        )
       )}
 
       {phase === 'extracting' && (
-        <Card className="border-none shadow-xl rounded-card bg-white">
-          <CardContent className="p-10 text-center space-y-3">
-            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-            <p className="font-black text-primary italic">Analisando o PDF…</p>
-            <p className="text-xs text-muted-foreground font-medium">Renderizando páginas e recortando imagens. Pode levar alguns segundos.</p>
+        <Card className="rounded-card">
+          <CardContent className="p-8 text-center space-y-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="font-bold text-foreground">Analisando o PDF…</p>
+            <p className="text-sm text-muted-foreground">Lendo as páginas e recortando as imagens. Pode levar alguns segundos.</p>
           </CardContent>
         </Card>
       )}
 
       {(phase === 'review' || phase === 'applying') && (
         <>
-          <Card className="border-none shadow-lg rounded-card bg-blue-50">
-            <CardContent className="p-5 flex items-start gap-3">
-              <ImageIcon className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-800 font-medium">
-                {images.length} imagens extraídas do PDF. Revise as propostas abaixo — você pode trocar
-                ou remover cada associação. Questões que já têm imagem não são alteradas.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="u-surface p-4 flex items-start gap-3">
+            <ImageIcon className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground tabular-nums">{images.length}</span> {images.length === 1 ? 'imagem encontrada' : 'imagens encontradas'} no PDF.
+              Revise as propostas abaixo — dá para trocar ou remover cada uma. Questões que já têm imagem não são alteradas.
+            </p>
+          </div>
 
-          <div className="space-y-3">
-            {pendingQuestions.map(q => {
-              const assignedId = assignments[q.id] ?? null;
-              const assigned = assignedId ? imageById.get(assignedId) : undefined;
-              const availableImages = images.filter(img => !usedImageIds.has(img.id) || img.id === assignedId);
-              return (
-                <Card key={q.id} className={`border-none shadow-lg rounded-card overflow-hidden ${assigned ? 'bg-white' : 'bg-slate-50'}`}>
-                  <CardContent className="p-5 flex flex-col md:flex-row gap-4 md:items-center">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Badge className="bg-primary/10 text-primary border-none font-black text-[10px]">
-                          Questão {q.printedNumber ?? q.order_index}
-                        </Badge>
-                        {!assigned && <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] uppercase">Sem proposta</Badge>}
-                      </div>
-                      <p className="text-xs text-muted-foreground font-medium line-clamp-2">
-                        {q.question_text.replace('[IMAGEM_PENDENTE]', '').trim()}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      {assigned && (
-                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-slate-200 bg-white shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img loading="lazy" decoding="async" src={assigned.url} alt="Proposta" className="w-full h-full object-contain" />
-                          <span className="absolute bottom-1 left-1 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded">
-                            pág. {assigned.page}
-                          </span>
+          {pendingQuestions.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle2}
+              title="Todas as questões já têm imagem"
+              description="Não há nada para aplicar nesta prova."
+              action={{ label: 'Voltar para as provas', href: '/dashboard/teacher/exams', icon: ArrowLeft }}
+            />
+          ) : (
+            <div className="space-y-2">
+              {pendingQuestions.map(q => {
+                const assignedId = assignments[q.id] ?? null;
+                const assigned = assignedId ? imageById.get(assignedId) : undefined;
+                const availableImages = images.filter(img => !usedImageIds.has(img.id) || img.id === assignedId);
+                return (
+                  <Card key={q.id} className={`rounded-card overflow-hidden ${assigned ? '' : 'bg-muted/30'}`}>
+                    <CardContent className="p-4 flex flex-col md:flex-row gap-3 md:gap-4 md:items-center">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <Badge variant="outline" className="font-semibold text-[10px] rounded-control tabular-nums">
+                            Questão {q.printedNumber ?? q.order_index}
+                          </Badge>
+                          {!assigned && <span className="text-[11px] font-semibold text-muted-foreground">Sem proposta</span>}
                         </div>
-                      )}
-                      <div className="flex flex-col gap-2">
-                        <Select
-                          value={assignedId ?? 'none'}
-                          onValueChange={v => setAssignment(q.id, v === 'none' ? null : v)}
-                          disabled={phase === 'applying'}
-                        >
-                          <SelectTrigger className="w-40 h-9 rounded-xl text-xs font-bold">
-                            <SelectValue placeholder="Escolher imagem" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none" className="text-xs">— Nenhuma —</SelectItem>
-                            {availableImages.map(img => (
-                              <SelectItem key={img.id} value={img.id} className="text-xs">
-                                {img.questionNumber !== null ? `Q${img.questionNumber}` : 'Sem nº'} · pág. {img.page}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {assigned && (
-                          <Button variant="ghost" size="sm" disabled={phase === 'applying'}
-                            onClick={() => setAssignment(q.id, null)}
-                            className="h-7 rounded-lg text-[10px] font-black text-red-400 hover:text-red-600 hover:bg-red-50">
-                            <Trash2 className="h-3 w-3 mr-1" /> Remover
-                          </Button>
-                        )}
+                        <p className="text-xs text-muted-foreground line-clamp-2 break-words">
+                          {q.question_text.replace('[IMAGEM_PENDENTE]', '').trim()}
+                        </p>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
 
-          <div className="sticky bottom-4 z-20">
-            <Button
-              onClick={() => void handleApply()}
-              disabled={proposedCount === 0 || phase === 'applying'}
-              className="w-full h-14 rounded-2xl bg-primary text-white font-black text-lg shadow-2xl"
-            >
-              {phase === 'applying' ? (
-                <><Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Aplicando… {applyProgress ? `${applyProgress.current}/${applyProgress.total}` : ''}</>
-              ) : (
-                <><Save className="h-5 w-5 mr-2" /> Aplicar {proposedCount} imagem(ns)</>
-              )}
-            </Button>
-          </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {assigned && (
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-control overflow-hidden border border-border bg-white shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img loading="lazy" decoding="async" src={assigned.url} alt="Imagem proposta" className="w-full h-full object-contain" />
+                            <span className="absolute bottom-1 left-1 bg-foreground text-background text-[9px] font-semibold px-1.5 py-0.5 rounded-control tabular-nums">
+                              pág. {assigned.page}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1.5 flex-1 md:flex-none min-w-0">
+                          <Select
+                            value={assignedId ?? 'none'}
+                            onValueChange={v => setAssignment(q.id, v === 'none' ? null : v)}
+                            disabled={phase === 'applying'}
+                          >
+                            <SelectTrigger className="w-full md:w-44 h-9 rounded-control text-xs">
+                              <SelectValue placeholder="Escolher imagem" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none" className="text-xs">Nenhuma</SelectItem>
+                              {availableImages.map(img => (
+                                <SelectItem key={img.id} value={img.id} className="text-xs">
+                                  {img.questionNumber !== null ? `Questão ${img.questionNumber}` : 'Sem número'} · pág. {img.page}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {assigned && (
+                            <Button variant="ghost" size="sm" disabled={phase === 'applying'}
+                              onClick={() => setAssignment(q.id, null)}
+                              className="h-8 rounded-control text-xs font-semibold text-red-600 hover:text-red-600 hover:bg-red-500/10">
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {pendingQuestions.length > 0 && (
+            <div className="sticky bottom-4 z-20">
+              <Button
+                onClick={() => void handleApply()}
+                disabled={proposedCount === 0 || phase === 'applying'}
+                variant="arcade"
+                className="w-full h-12 rounded-control font-bold"
+              >
+                {phase === 'applying' ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Aplicando… {applyProgress ? `${applyProgress.current}/${applyProgress.total}` : ''}</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> Aplicar {proposedCount} {proposedCount === 1 ? 'imagem' : 'imagens'}</>
+                )}
+              </Button>
+            </div>
+          )}
         </>
       )}
 
       {phase === 'done' && (
-        <Card className="border-none shadow-xl rounded-card bg-white overflow-hidden">
-          <div className="h-2 bg-green-400" />
-          <CardContent className="p-8 text-center space-y-4">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
-            <p className="text-xl font-black text-primary italic">{appliedCount} questões atualizadas!</p>
-            <p className="text-sm text-muted-foreground font-medium">
-              Os alunos já veem as imagens ao fazer esta prova no simulado.
+        <Card className="rounded-card overflow-hidden">
+          <CardContent className="p-6 sm:p-8 text-center space-y-3">
+            <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto" />
+            <p className="text-base font-bold text-foreground">
+              <span className="tabular-nums">{appliedCount}</span> {appliedCount === 1 ? 'questão atualizada' : 'questões atualizadas'}.
             </p>
-            <Button onClick={() => router.push('/dashboard/teacher/exams')} className="rounded-2xl font-black h-11 px-8">
-              Voltar às Provas
+            <p className="text-sm text-muted-foreground">
+              Os alunos já veem as imagens ao fazer esta prova.
+            </p>
+            <Button onClick={() => router.push('/dashboard/teacher/exams')} variant="outline" className="rounded-control font-semibold h-11 px-6">
+              Voltar para as provas
             </Button>
           </CardContent>
         </Card>
       )}
 
       {phase === 'error' && (
-        <Card className="border-none shadow-lg rounded-card bg-red-50">
-          <CardContent className="p-6 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-black text-red-700 text-sm">Algo deu errado</p>
-              <p className="text-xs text-red-600 font-medium mt-1">{errorMsg}</p>
-              <Button variant="outline" size="sm" onClick={() => setPhase('ready')} className="mt-3 rounded-xl font-black text-xs">
-                Tentar novamente
+        <Card className="rounded-card border-red-500/30">
+          <CardContent className="p-5 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-red-600 text-sm">Algo deu errado</p>
+              <p className="text-sm text-muted-foreground mt-1 break-words">{errorMsg}</p>
+              <Button variant="outline" size="sm" onClick={() => setPhase('ready')} className="mt-3 rounded-control font-semibold text-xs">
+                Tentar de novo
               </Button>
             </div>
           </CardContent>

@@ -24,6 +24,8 @@ import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate, fmtNumber } from '@/lib/format';
+import { EmptyState } from "@/components/EmptyState";
 
 const VALID_SCORES = [0, 40, 80, 120, 160, 200];
 const COMP_KEYS = ["c1", "c2", "c3", "c4", "c5"] as const;
@@ -107,7 +109,7 @@ export default function AssessmentsGraderPage() {
 
           loadedSubmissions.forEach((sub) => {
             const matchedProfile = profilesData?.find((p) => p.id === sub.user_id);
-            sub.profiles = matchedProfile || { name: "Aluno Oculto" };
+            sub.profiles = matchedProfile || { name: "Aluno" };
           });
         }
       }
@@ -116,8 +118,8 @@ export default function AssessmentsGraderPage() {
     } catch (e: any) {
       console.error("Erro explícito no Supabase:", e.message || JSON.stringify(e));
       toast({
-        title: "Erro no Banco",
-        description: e.message || "Falha ao conectar com auth.users",
+        title: "Erro ao carregar",
+        description: e.message || "Não foi possível carregar as redações.",
         variant: "destructive",
       });
     } finally {
@@ -164,7 +166,7 @@ export default function AssessmentsGraderPage() {
 
       if (error) throw error;
 
-      toast({ title: "Avaliação Registrada!", description: "Nota humana salva para calibrar a Aurora." });
+      toast({ title: "Correção salva!", description: "Sua nota foi registrada e ajuda a calibrar a Aurora." });
 
       setSubmissions((prev) =>
         prev.map((s) =>
@@ -196,39 +198,26 @@ export default function AssessmentsGraderPage() {
   const pendingCount = submissions.filter((s) => s.status !== "reviewed").length;
   const reviewedCount = submissions.filter((s) => s.status === "reviewed").length;
 
+  const hideOnMobileWhenSelected = selectedEssay ? "hidden lg:block" : "block";
+
   return (
-    <div className="pb-24 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* ── Hero (hidden on mobile when essay selected) ── */}
-      <div className={`${selectedEssay ? "hidden lg:block" : "block"}`}>
-        <div className="relative rounded-card overflow-hidden bg-[#0d0d0f] border border-white/5 p-6">
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse at 80% 10%, rgba(76,204,237,0.13) 0%, transparent 60%), radial-gradient(ellipse at 10% 90%, rgba(168,85,247,0.08) 0%, transparent 60%)",
-            }}
-          />
-          <div className="relative z-10 flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400/85 mb-1">
-                Staff · Maestro
-              </p>
-              <h1 className="text-2xl font-black italic tracking-tighter text-white leading-none">
-                Central de Auditoria
-              </h1>
-              <p className="text-white/70 text-xs font-semibold mt-1">
-                Revisão técnica de redações
-              </p>
+    <div className="pb-24 space-y-6">
+      {/* ── Cabeçalho (nível médio) — some no celular quando uma redação está aberta ── */}
+      <div className={hideOnMobileWhenSelected}>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="u-label flex items-center gap-2"><ClipboardCheck className="h-3.5 w-3.5" /> Professor · redações</p>
+            <h1 className="u-page-title text-3xl mt-1">Correção de redações</h1>
+            <p className="text-muted-foreground text-sm mt-2">Revise a nota da Aurora IA e registre a sua correção.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:w-64 shrink-0">
+            <div className="u-surface p-3">
+              <p className="u-label">A corrigir</p>
+              <p className="u-num text-xl mt-1">{pendingCount}</p>
             </div>
-            <div className="flex gap-2 shrink-0">
-              <div className="flex flex-col items-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-3 py-2 min-w-[60px]">
-                <span className="text-lg font-black text-amber-400 leading-none">{pendingCount}</span>
-                <span className="text-[8px] font-bold text-amber-400/80 uppercase tracking-wider mt-0.5">Fila</span>
-              </div>
-              <div className="flex flex-col items-center bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-3 py-2 min-w-[60px]">
-                <span className="text-lg font-black text-emerald-400 leading-none">{reviewedCount}</span>
-                <span className="text-[8px] font-bold text-emerald-400/80 uppercase tracking-wider mt-0.5">OK</span>
-              </div>
+            <div className="u-surface p-3">
+              <p className="u-label !text-emerald-600">Corrigidas</p>
+              <p className="u-num text-xl mt-1 text-emerald-600">{reviewedCount}</p>
             </div>
           </div>
         </div>
@@ -236,91 +225,95 @@ export default function AssessmentsGraderPage() {
 
       {/* ── Calibração da IA (viés médio vs. correção humana) ── */}
       {calibration && (
-        <div className={`${selectedEssay ? "hidden lg:block" : "block"}`}>
-          <div className="bg-white shadow-sm border border-slate-200 rounded-card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Scale className="h-4 w-4 text-orange-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
-                Calibração da Aurora · {calibration.n} corrigidas
+        <div className={hideOnMobileWhenSelected}>
+          <div className="u-surface p-4">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <p className="u-label flex items-center gap-1.5">
+                <Scale className="h-3.5 w-3.5" /> Calibração da Aurora · <span className="tabular-nums">{calibration.n}</span> corrigidas
               </p>
-              <Badge
-                className={`ml-auto border-none font-black text-[9px] uppercase px-2 ${
-                  Math.abs(calibration.avgBias) <= 40
-                    ? "bg-emerald-100 text-emerald-700"
-                    : calibration.avgBias > 0
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-blue-100 text-blue-700"
+              <span
+                className={`ml-auto text-[11px] font-semibold ${
+                  Math.abs(calibration.avgBias) <= 40 ? "text-emerald-600" : "text-foreground"
                 }`}
               >
                 {calibration.avgBias > 0
-                  ? `+${calibration.avgBias} generosa`
+                  ? `IA dá ${calibration.avgBias} pts a mais`
                   : calibration.avgBias < 0
-                  ? `${calibration.avgBias} rígida`
-                  : "calibrada"}
-              </Badge>
+                  ? `IA dá ${Math.abs(calibration.avgBias)} pts a menos`
+                  : "IA calibrada"}
+              </span>
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {COMP_KEYS.map((k) => {
                 const b = (calibration.compBias as any)[k] as number;
                 return (
-                  <div key={k} className="text-center bg-slate-50 border border-slate-100 rounded-xl py-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none">
-                      {COMP_SHORT[k]}
+                  <div key={k} className="text-center border border-border rounded-control py-2 px-1 min-w-0" title={COMP_SHORT[k]}>
+                    <p className="u-label !tracking-[0.12em] truncate">
+                      <span className="sm:hidden">{k.toUpperCase()}</span>
+                      <span className="hidden sm:inline">{COMP_SHORT[k]}</span>
                     </p>
-                    <p
-                      className={`text-sm font-black italic leading-none mt-1 ${
-                        Math.abs(b) <= 8 ? "text-emerald-600" : b > 0 ? "text-amber-600" : "text-blue-600"
-                      }`}
-                    >
+                    <p className={`u-num text-sm leading-none mt-1.5 ${Math.abs(b) <= 8 ? "text-emerald-600" : ""}`}>
                       {b > 0 ? `+${b}` : b}
                     </p>
                   </div>
                 );
               })}
             </div>
-            <p className="text-[9px] font-medium text-slate-400 italic mt-2 leading-tight">
-              Diferença média (IA − professor). Positivo = IA generosa demais; negativo = rígida demais.
+            <p className="text-xs text-muted-foreground mt-2 leading-snug">
+              Diferença média entre a nota da IA e a sua. Positivo: a IA está dando nota demais; negativo: de menos.
             </p>
           </div>
         </div>
       )}
 
-      {/* ── Search (hidden on mobile when essay selected) ── */}
-      <div className={`${selectedEssay ? "hidden lg:block" : "block"} relative`}>
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+      {/* ── Busca ── */}
+      <div className={`${hideOnMobileWhenSelected} relative`}>
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Buscar estudante ou tema..."
+          placeholder="Buscar aluno ou tema…"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full h-12 bg-white shadow-sm border border-slate-200 rounded-2xl pl-11 pr-4 text-sm font-semibold text-slate-800 placeholder:text-slate-500 outline-none focus:border-[#4CCCED]/40 focus:bg-slate-50 transition-all"
+          className="w-full h-11 bg-background border border-border rounded-control pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors"
         />
       </div>
 
-      {/* ── Split layout: list + detail ── */}
+      {/* ── Lista + detalhe ── */}
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
 
-        {/* === LIST (always shown on desktop, hidden on mobile when essay selected) === */}
-        <div className={`${selectedEssay ? "hidden lg:block" : "block"} w-full lg:w-[320px] shrink-0`}>
-          <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-white shadow-sm">
-              <div className="flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4 text-orange-400/85" />
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-600">
-                  Fila de Avaliação ({filteredSubmissions.length})
-                </p>
-              </div>
+        {/* === LISTA === */}
+        <div className={`${hideOnMobileWhenSelected} w-full lg:w-[320px] shrink-0`}>
+          <div className="u-surface overflow-hidden">
+            <div className="px-4 py-3 border-b border-border">
+              <p className="u-label flex items-center gap-1.5">
+                <ClipboardCheck className="h-3.5 w-3.5" /> Redações · <span className="tabular-nums">{filteredSubmissions.length}</span>
+              </p>
             </div>
 
             <div className="max-h-[60vh] lg:max-h-[600px] overflow-y-auto scrollbar-hide">
               {loading ? (
-                <div className="p-10 flex justify-center">
-                  <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
+                <div className="p-10 flex flex-col items-center gap-3">
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                  <p className="u-label">Carregando redações…</p>
                 </div>
               ) : filteredSubmissions.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Inbox className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sem envios</p>
+                <div className="p-4">
+                  {submissions.length === 0 ? (
+                    <EmptyState
+                      compact
+                      icon={Inbox}
+                      title="Nenhuma redação enviada ainda"
+                      description="Quando os alunos enviarem redações, elas aparecem aqui para você corrigir."
+                    />
+                  ) : (
+                    <EmptyState
+                      compact
+                      icon={Search}
+                      title="Nenhuma redação encontrada"
+                      description={`Nada corresponde a "${searchTerm}".`}
+                      secondary={{ label: "Limpar busca", onClick: () => setSearchTerm("") }}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col">
@@ -331,39 +324,27 @@ export default function AssessmentsGraderPage() {
                       <button
                         key={item.id}
                         onClick={() => handleSelectEssay(item)}
-                        className={`relative p-4 text-left border-b border-slate-100 last:border-0 transition-all touch-manipulation active:scale-[0.99] ${
-                          isSelected
-                            ? "bg-[#4CCCED]/8"
-                            : "hover:bg-slate-50"
+                        className={`relative p-4 text-left border-b border-border last:border-0 transition-colors touch-manipulation ${
+                          isSelected ? "bg-primary/10" : "hover:bg-muted/50"
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#4CCCED] rounded-r-full" />
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                         )}
-                        <div className="flex items-center justify-between mb-1.5 gap-2">
-                          <p className="font-black text-slate-800 text-xs italic leading-none truncate flex-1">
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <p className="font-semibold text-foreground text-sm leading-tight truncate flex-1">
                             {item.profiles?.name || "Aluno"}
                           </p>
-                          <Badge
-                            className={`border-none font-black text-[8px] uppercase px-2 h-4 shrink-0 ${
-                              isPending
-                                ? "bg-amber-500/15 text-amber-400"
-                                : "bg-emerald-500/15 text-emerald-400"
-                            }`}
-                          >
-                            {isPending ? "Pendente" : "OK"}
-                          </Badge>
+                          <span className={`text-[11px] font-semibold shrink-0 ${isPending ? "text-muted-foreground" : "text-emerald-600"}`}>
+                            {isPending ? "A corrigir" : "Corrigida"}
+                          </span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 truncate italic mb-2 leading-tight">
-                          "{item.theme}"
+                        <p className="text-xs text-muted-foreground truncate mb-2 leading-tight">
+                          {item.theme || "Sem tema"}
                         </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">
-                            {item.score} pts
-                          </span>
-                          <span className="text-[8px] font-bold text-slate-500 uppercase">
-                            {format(new Date(item.created_at), "dd/MM HH:mm", { locale: ptBR })}
-                          </span>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
+                          <span className="font-semibold text-foreground">{fmtNumber(item.score)} pts</span>
+                          <span>{fmtDate(item.created_at, "dd/MM HH:mm")}</span>
                         </div>
                       </button>
                     );
@@ -374,84 +355,61 @@ export default function AssessmentsGraderPage() {
           </div>
         </div>
 
-        {/* === DETAIL === */}
+        {/* === DETALHE === */}
         <div className={`${selectedEssay ? "block" : "hidden lg:block"} flex-1 min-w-0`}>
           {selectedEssay ? (
-            <div className="bg-white shadow-sm border border-slate-200 rounded-card overflow-hidden">
+            <div className="u-surface overflow-hidden">
 
-              {/* Mobile back button */}
-              <div className="lg:hidden p-3 border-b border-slate-100">
-                <button
+              <div className="lg:hidden p-3 border-b border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSelectedEssay(null)}
-                  className="flex items-center gap-2 text-slate-400 hover:text-slate-800 text-xs font-black uppercase tracking-widest h-9 px-3 rounded-xl bg-slate-50 active:scale-95 transition-all touch-manipulation"
+                  className="h-9 rounded-control text-xs font-semibold"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  Voltar à fila
-                </button>
+                  <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                  Voltar para a lista
+                </Button>
               </div>
 
-              <div className="p-5 lg:p-6 space-y-5">
+              <div className="p-4 sm:p-5 lg:p-6 space-y-5">
 
-                {/* Student header */}
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#4CCCED]/20 border border-[#4CCCED]/30 text-orange-400 flex items-center justify-center font-black italic shrink-0">
+                  <div className="h-10 w-10 rounded-control bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
                     {selectedEssay.profiles?.name?.charAt(0)?.toUpperCase() || "A"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-base font-black text-slate-800 italic truncate leading-none">
-                      {selectedEssay.profiles?.name}
+                    <p className="text-base font-bold text-foreground truncate leading-tight">
+                      {selectedEssay.profiles?.name || "Aluno"}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                      Submissão acadêmica
-                    </p>
+                    <p className="u-label mt-1">Enviada em {fmtDate(selectedEssay.created_at, "dd/MM/yyyy 'às' HH:mm")}</p>
                   </div>
                 </div>
 
-                {/* Theme block */}
-                <div className="bg-white shadow-sm border border-slate-100 rounded-2xl p-4">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
-                    Tema da Redação
-                  </p>
-                  <h3 className="text-sm font-black text-slate-800 italic leading-snug">
-                    {selectedEssay.theme}
+                <div className="border border-border rounded-control p-4">
+                  <p className="u-label mb-1">Tema</p>
+                  <h3 className="text-sm font-semibold text-foreground leading-snug break-words">
+                    {selectedEssay.theme || "Sem tema"}
                   </h3>
                 </div>
 
-                {/* Content */}
-                <div className="relative bg-white shadow-sm border border-dashed border-slate-200 rounded-2xl p-5">
-                  <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest absolute -top-2 left-4 bg-white px-2">
-                    Transcrição
-                  </p>
-                  <div className="font-medium text-sm leading-relaxed italic text-slate-600 whitespace-pre-wrap max-h-[400px] overflow-y-auto scrollbar-hide">
+                <div className="border border-border rounded-control p-4">
+                  <p className="u-label mb-2">Texto do aluno</p>
+                  <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap break-words max-h-[400px] overflow-y-auto">
                     {selectedEssay.content}
                   </div>
                 </div>
 
-                {/* AI Score */}
-                <div className="relative bg-[#0d0d0f] border border-[#4CCCED]/15 rounded-2xl p-5 overflow-hidden">
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: "radial-gradient(ellipse at 100% 0%, rgba(76,204,237,0.15) 0%, transparent 60%)",
-                    }}
-                  />
-                  <div className="relative z-10 flex items-start justify-between mb-3">
-                    <Badge className="bg-[#4CCCED]/20 text-orange-400 border-none font-black text-[9px] px-2 py-0.5 uppercase tracking-widest">
-                      Laudo Aurora IA
-                    </Badge>
-                    <Sparkles className="h-4 w-4 text-orange-400 animate-pulse" />
+                {/* Nota da IA */}
+                <div className="border border-border rounded-control p-4 sm:p-5">
+                  <div className="flex items-start justify-between mb-3 gap-2">
+                    <p className="u-label flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Correção da Aurora IA</p>
                   </div>
-                  <div className="relative z-10">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/55 mb-1">
-                      Nota
-                    </p>
-                    <p className="text-5xl font-black italic text-white leading-none drop-shadow-xl">
-                      {selectedEssay.score}
-                    </p>
-                  </div>
+                  <p className="u-label mb-1">Nota</p>
+                  <p className="u-num text-4xl sm:text-5xl leading-none">{fmtNumber(selectedEssay.score)}</p>
                   {selectedEssay.feedback && (
-                    <p className="relative z-10 text-xs font-medium italic text-white/60 leading-relaxed mt-4 pt-4 border-t border-white/10">
-                      "{selectedEssay.feedback}"
+                    <p className="text-sm text-muted-foreground leading-relaxed mt-4 pt-4 border-t border-border whitespace-pre-line break-words">
+                      {selectedEssay.feedback}
                     </p>
                   )}
 
@@ -460,18 +418,18 @@ export default function AssessmentsGraderPage() {
                       se a nota foi tranquila ou disputada — e, portanto, onde
                       a revisão humana rende mais. */}
                   {banca && (
-                    <div className="relative z-10 mt-4 pt-4 border-t border-white/10 space-y-2">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-white/55">
-                        Banca · {banca.corretores?.length ?? 0} correções independentes
+                    <div className="mt-4 pt-4 border-t border-border space-y-2">
+                      <p className="u-label">
+                        Banca · <span className="tabular-nums">{banca.corretores?.length ?? 0}</span> correções independentes
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {(banca.corretores ?? []).map((c: any, i: number) => (
                           <span
                             key={i}
-                            className={`rounded-lg px-2 py-1 text-[10px] font-mono ${
+                            className={`rounded-control px-2 py-1 text-[11px] font-mono border ${
                               banca.usadas?.includes(i)
-                                ? 'bg-[#4CCCED]/20 text-orange-300 border border-[#4CCCED]/30'
-                                : 'bg-white/5 text-white/40 border border-white/10 line-through'
+                                ? 'border-primary text-foreground bg-primary/10'
+                                : 'border-border text-muted-foreground line-through'
                             }`}
                             title={banca.usadas?.includes(i) ? 'Usada na nota final' : 'Descartada pelo protocolo'}
                           >
@@ -480,13 +438,13 @@ export default function AssessmentsGraderPage() {
                         ))}
                       </div>
                       {banca.houveDiscrepancia && (
-                        <p className="text-[10px] font-medium text-amber-300/80 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           Divergência acima do limite do INEP: {banca.motivos?.join('; ')}.
                         </p>
                       )}
                       {banca.revisaoRecomendada && (
-                        <p className="text-[10px] font-black text-amber-300 leading-relaxed">
-                          ⚠ Caso limítrofe — sua correção aqui vale mais que a média.
+                        <p className="text-xs font-semibold text-red-600 leading-relaxed">
+                          Caso no limite — aqui a sua correção pesa mais que a média.
                         </p>
                       )}
                     </div>
@@ -494,24 +452,22 @@ export default function AssessmentsGraderPage() {
                 </div>
 
                 {/* Correção humana por competência (calibra a IA) */}
-                <div className="space-y-3 bg-white shadow-sm border border-slate-100 rounded-2xl p-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-2">
-                      <Scale className="h-3 w-3 text-orange-400" /> Sua Correção Oficial
+                <div className="space-y-3 border border-border rounded-control p-4">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Label className="u-label flex items-center gap-1.5">
+                      <Scale className="h-3.5 w-3.5" /> Sua correção
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">IA: {selectedEssay.score}</span>
-                      <Badge className="bg-[#4CCCED]/15 text-orange-500 border-none font-black text-[10px] px-2">
-                        {teacherTotal} pts
-                      </Badge>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground tabular-nums">
+                      <span>IA: {fmtNumber(selectedEssay.score)}</span>
+                      <span className="u-num text-sm text-foreground">{teacherTotal} pts</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     {COMP_KEYS.map((k) => {
                       const ai = aiComps(selectedEssay)[k];
                       return (
-                        <div key={k} className="flex items-center gap-2">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider w-[68px] shrink-0">
+                        <div key={k} className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-1.5 min-[420px]:gap-2">
+                          <span className="text-[11px] font-semibold text-muted-foreground min-[420px]:w-[76px] shrink-0">
                             {COMP_SHORT[k]}
                           </span>
                           <div className="flex gap-1 flex-1">
@@ -522,16 +478,17 @@ export default function AssessmentsGraderPage() {
                                   key={v}
                                   type="button"
                                   onClick={() => setTeacherComps((prev) => ({ ...prev, [k]: v }))}
-                                  className={`flex-1 h-8 rounded-lg text-[10px] font-black transition-all relative ${
+                                  aria-pressed={active}
+                                  className={`flex-1 h-9 rounded-control text-[11px] font-semibold tabular-nums transition-colors relative border ${
                                     active
-                                      ? "bg-[#4CCCED] text-white shadow-sm"
-                                      : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                      ? "bg-primary text-primary-foreground border-primary"
+                                      : "bg-background text-muted-foreground border-border hover:bg-muted"
                                   }`}
-                                  title={ai === v ? "Nota original da IA" : undefined}
+                                  title={ai === v ? "Nota que a IA deu" : undefined}
                                 >
                                   {v}
                                   {ai === v && !active && (
-                                    <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-orange-400" />
+                                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
                                   )}
                                 </button>
                               );
@@ -541,41 +498,43 @@ export default function AssessmentsGraderPage() {
                       );
                     })}
                   </div>
-                  <p className="text-[9px] font-medium text-slate-400 italic leading-tight">
-                    O ponto laranja marca a nota que a IA deu. Ajuste onde discordar — isso treina a calibração da Aurora.
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    O ponto azul marca a nota que a IA deu. Ajuste onde discordar — isso ajuda a calibrar a Aurora.
                   </p>
                 </div>
 
-                {/* Mentor feedback */}
+                {/* Comentário do professor */}
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-2 ml-1">
-                    <MessageSquare className="h-3 w-3 text-orange-400" /> Parecer do Maestro
+                  <Label className="u-label flex items-center gap-1.5 ml-0.5">
+                    <MessageSquare className="h-3.5 w-3.5" /> Comentário para o aluno
                   </Label>
                   <Textarea
                     value={mentorFeedback}
                     onChange={(e) => setMentorFeedback(e.target.value)}
-                    placeholder="Adicione suas notas pedagógicas ou orientações personalizadas..."
-                    className="min-h-[140px] rounded-2xl bg-white shadow-sm border border-slate-200 p-4 font-medium italic text-sm text-slate-800 placeholder:text-slate-400 resize-none focus-visible:ring-orange-500/30 focus-visible:border-[#4CCCED]/30 transition-all"
+                    placeholder="Escreva orientações para o aluno melhorar a redação…"
+                    className="min-h-[140px] rounded-control bg-background border-border p-3 text-sm resize-none"
                   />
                   <div className="flex gap-2">
                     <Button
                       onClick={handleSaveFeedback}
                       disabled={isSaving}
-                      className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black rounded-2xl shadow-xl shadow-orange-500/30 border-none text-xs uppercase tracking-widest disabled:opacity-40"
+                      variant="arcade"
+                      className="flex-1 h-12 rounded-control font-bold"
                     >
                       {isSaving ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : (
                         <CheckCircle2 className="h-4 w-4 mr-2" />
                       )}
-                      Validar Revisão
+                      Salvar correção
                     </Button>
                     <Button
                       asChild
-                      className="h-12 w-12 bg-white shadow-sm border border-slate-200 hover:border-[#4CCCED]/40 hover:text-orange-400 text-slate-500 rounded-2xl shrink-0"
-                      title="Conversar com Aluno"
+                      variant="outline"
+                      className="h-12 w-12 rounded-control shrink-0 p-0"
+                      title="Conversar com o aluno"
                     >
-                      <Link href={`/dashboard/chat/${selectedEssay.user_id}`}>
+                      <Link href={`/dashboard/chat/${selectedEssay.user_id}`} aria-label="Conversar com o aluno">
                         <MessageSquare className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -584,17 +543,12 @@ export default function AssessmentsGraderPage() {
               </div>
             </div>
           ) : (
-            <div className="hidden lg:flex flex-col items-center justify-center text-center py-20 bg-white shadow-sm border border-dashed border-slate-200 rounded-card min-h-[400px]">
-              <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-                <FileText className="h-7 w-7 text-slate-400" />
-              </div>
-              <p className="text-sm font-black text-slate-500 italic uppercase tracking-widest">
-                Selecione uma Submissão
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 max-w-xs uppercase tracking-wider">
-                Clique em um aluno na fila para iniciar a auditoria
-              </p>
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="Escolha uma redação na lista"
+              description="Abra a redação de um aluno para ver o texto, a nota da IA e registrar a sua correção."
+              className="hidden lg:flex min-h-[400px] justify-center"
+            />
           )}
         </div>
       </div>

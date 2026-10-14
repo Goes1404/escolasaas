@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { Trophy, Medal, Crown, Zap, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 import Link from 'next/link';
+import { EmptyState } from '@/components/EmptyState';
+import { fmtNumber, txt } from '@/lib/format';
 
 type RankEntry = {
   student_id:  string;
@@ -60,7 +62,7 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
   }, [load]);
 
   if (loading) {
-    return <div className="h-48 rounded-card bg-muted/20 animate-pulse" />;
+    return <div className="h-48 rounded-card bg-muted/20 animate-pulse" aria-busy="true" aria-label="Carregando ranking" />;
   }
 
   return (
@@ -73,13 +75,13 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
               <Trophy className="h-5 w-5 text-amber-500" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ranking Semanal</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ranking semanal</p>
               <p className="text-sm font-black italic text-slate-800 leading-none">
-                Líderes da Semana
+                Líderes da semana
               </p>
             </div>
           </div>
-          <Link href="/dashboard/student/ranking" className="text-slate-400 hover:text-primary transition-colors">
+          <Link href="/dashboard/student/ranking" aria-label="Ver ranking completo" className="text-slate-400 hover:text-primary transition-colors">
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -87,7 +89,13 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
         {/* List of top 5 */}
         <div className="space-y-2">
           {ranking.length === 0 ? (
-            <p className="text-xs font-semibold text-muted-foreground italic text-center py-4">Nenhuma atividade esta semana</p>
+            <EmptyState
+              compact
+              icon={Trophy}
+              title="Ninguém pontuou nesta semana ainda"
+              description="Responda o desafio do dia para ganhar XP e abrir o ranking."
+              action={{ label: 'Começar o desafio', href: '/dashboard/student/daily' }}
+            />
           ) : (
             ranking.map((entry) => {
               const isMe = entry.student_id === userId;
@@ -117,7 +125,7 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
 
                   {/* Avatar */}
                   {entry.avatar_url ? (
-                    <img loading="lazy" decoding="async" src={entry.avatar_url} alt={entry.full_name} className="h-8 w-8 rounded-full object-cover shrink-0" />
+                    <img loading="lazy" decoding="async" src={entry.avatar_url} alt={txt(entry.full_name, '')} className="h-8 w-8 rounded-full object-cover shrink-0" />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-brand-slate flex items-center justify-center text-white font-black text-[10px] shrink-0">
                       {initials}
@@ -126,14 +134,14 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
 
                   {/* Name */}
                   <p className={`text-xs font-black truncate flex-1 ${isMe ? 'text-amber-900' : 'text-slate-700'}`}>
-                    {entry.full_name?.split(' ')[0]} {entry.full_name?.split(' ')[1] || ''}
+                    {txt(entry.full_name, 'Aluno').split(' ').slice(0, 2).join(' ')}
                     {isMe && <span className="text-[8px] font-bold text-amber-600 bg-amber-100 rounded px-1 ml-1">você</span>}
                   </p>
 
                   {/* XP */}
                   <div className="flex items-center gap-0.5 shrink-0">
                     <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
-                    <span className="text-[11px] font-black text-slate-700">{entry.weekly_xp}</span>
+                    <span className="text-[11px] font-black text-slate-700">{fmtNumber(entry.weekly_xp, 0, '0')}</span>
                   </div>
                 </div>
               );
@@ -147,18 +155,18 @@ export function WeeklyRankingWidget({ userId, examTarget }: Props) {
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-amber-50 border border-amber-200">
               <span className="w-6 text-center text-xs font-black text-amber-700">{myEntry.position}º</span>
               {myEntry.avatar_url ? (
-                <img loading="lazy" decoding="async" src={myEntry.avatar_url} alt={myEntry.full_name} className="h-8 w-8 rounded-full object-cover shrink-0" />
+                <img loading="lazy" decoding="async" src={myEntry.avatar_url} alt={txt(myEntry.full_name, '')} className="h-8 w-8 rounded-full object-cover shrink-0" />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-brand-slate flex items-center justify-center text-white font-black text-[10px] shrink-0">
                   {myEntry.full_name?.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?'}
                 </div>
               )}
               <p className="text-xs font-black text-amber-900 truncate flex-1">
-                {myEntry.full_name?.split(' ')[0]} (você)
+                {txt(myEntry.full_name, 'Você').split(' ')[0]} (você)
               </p>
               <div className="flex items-center gap-0.5 shrink-0">
                 <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
-                <span className="text-[11px] font-black text-slate-700">{myEntry.weekly_xp}</span>
+                <span className="text-[11px] font-black text-slate-700">{fmtNumber(myEntry.weekly_xp, 0, '0')}</span>
               </div>
             </div>
           </div>

@@ -17,6 +17,8 @@ import {
   BookOpen, AlertCircle, RotateCw, CheckCircle2, Search, Filter, ScanSearch
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { fmtNumber } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 import { EXAM_TYPES, EXAM_TYPE_BADGE as TYPE_COLOR, type ExamType } from '@/lib/exam-types';
 
@@ -81,7 +83,7 @@ export default function AdminExamsPage() {
       }));
       setExams(mapped);
     } catch (e: any) {
-      setError(e.message || 'Erro ao carregar provas.');
+      setError(e.message || 'Não foi possível carregar as provas.');
     } finally {
       setLoading(false);
     }
@@ -125,31 +127,31 @@ export default function AdminExamsPage() {
       if (editingExam) {
         const { error: err } = await supabase.from('exams').update(payload).eq('id', editingExam.id);
         if (err) throw err;
-        toast({ title: 'Prova atualizada!' });
+        toast({ title: 'Prova atualizada' });
       } else {
         const { error: err } = await supabase.from('exams').insert(payload);
         if (err) throw err;
-        toast({ title: 'Prova criada!' });
+        toast({ title: 'Prova criada' });
       }
 
       setDialogOpen(false);
       fetchExams();
     } catch (e: any) {
-      toast({ title: 'Erro ao salvar', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível salvar a prova', description: e.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (exam: Exam) => {
-    if (!confirm(`Deletar "${exam.title}"? Esta ação não pode ser desfeita.`)) return;
+    if (!confirm(`Excluir "${exam.title}"? Esta ação não pode ser desfeita.`)) return;
     try {
       const { error: err } = await supabase.from('exams').delete().eq('id', exam.id);
       if (err) throw err;
-      toast({ title: 'Prova deletada.' });
+      toast({ title: 'Prova excluída' });
       fetchExams();
     } catch (e: any) {
-      toast({ title: 'Erro ao deletar', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível excluir a prova', description: e.message, variant: 'destructive' });
     }
   };
 
@@ -171,10 +173,10 @@ export default function AdminExamsPage() {
       const { error: dbErr } = await supabase.from('exams').update({ pdf_url: publicUrl }).eq('id', exam.id);
       if (dbErr) throw dbErr;
 
-      toast({ title: 'PDF enviado com sucesso!' });
+      toast({ title: 'PDF enviado' });
       fetchExams();
     } catch (e: any) {
-      toast({ title: 'Erro no upload', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível enviar o PDF', description: e.message, variant: 'destructive' });
     } finally {
       setUploading(u => ({ ...u, [exam.id]: false }));
     }
@@ -185,34 +187,35 @@ export default function AdminExamsPage() {
     try {
       const { error: err } = await supabase.from('exams').update({ pdf_url: null }).eq('id', exam.id);
       if (err) throw err;
-      toast({ title: 'PDF removido.' });
+      toast({ title: 'PDF removido' });
       fetchExams();
     } catch (e: any) {
-      toast({ title: 'Erro ao remover PDF', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não foi possível remover o PDF', description: e.message, variant: 'destructive' });
     }
   };
 
   const filtered = exams.filter(e => {
     const matchType = filter === 'all' || e.exam_type === filter;
-    const matchSearch = !search.trim() || e.title.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search.trim() || (e.title || '').toLowerCase().includes(search.toLowerCase());
     return matchType && matchSearch;
   });
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium italic">Carregando provas...</p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="u-label">Carregando provas…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-destructive font-bold">{error}</p>
-        <Button onClick={fetchExams} variant="outline" className="rounded-xl">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4 text-center">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <p className="font-bold text-foreground">Não foi possível carregar as provas</p>
+        <p className="text-sm text-muted-foreground break-words max-w-md">{error}</p>
+        <Button onClick={fetchExams} variant="outline" className="rounded-control font-bold">
           <RotateCw className="h-4 w-4 mr-2" /> Tentar novamente
         </Button>
       </div>
@@ -220,20 +223,16 @@ export default function AdminExamsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-24">
+    <div className="max-w-6xl mx-auto space-y-6 pb-24">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl rotate-3">
-            <Scroll className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-primary italic leading-none">Gerenciar Provas</h1>
-            <p className="text-muted-foreground font-medium italic">{exams.length} provas cadastradas</p>
-          </div>
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><Scroll className="h-3.5 w-3.5" /> Coordenação · provas</p>
+          <h1 className="u-page-title text-3xl mt-1">Provas</h1>
+          <p className="text-muted-foreground text-sm mt-2"><span className="tabular-nums">{fmtNumber(exams.length, 0, '0')}</span> provas cadastradas</p>
         </div>
-        <Button onClick={openCreate} className="h-12 px-6 rounded-2xl bg-primary text-white font-black shadow-xl hover:scale-[1.02] transition-all">
-          <Plus className="h-5 w-5 mr-2" /> Nova Prova
+        <Button variant="arcade" onClick={openCreate} className="h-11 px-5 rounded-control font-bold shrink-0">
+          <Plus className="h-5 w-5 mr-2" /> Nova prova
         </Button>
       </header>
 
@@ -245,14 +244,15 @@ export default function AdminExamsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar provas..."
-            className="pl-9 h-11 rounded-xl border-none bg-white shadow-sm font-medium"
+            className="pl-9 h-11 rounded-control"
           />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${filter === 'all' ? 'bg-primary text-white shadow-md' : 'bg-white text-muted-foreground hover:bg-slate-100'}`}
+            aria-pressed={filter === 'all'}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold uppercase tracking-wider transition-colors border ${filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground hover:bg-muted'}`}
           >
             Todas
           </button>
@@ -260,7 +260,8 @@ export default function AdminExamsPage() {
             <button
               key={t}
               onClick={() => setFilter(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${filter === t ? 'bg-primary text-white shadow-md' : 'bg-white text-muted-foreground hover:bg-slate-100'}`}
+              aria-pressed={filter === t}
+              className={`px-3 py-1.5 rounded-control text-xs font-bold uppercase tracking-wider transition-colors border ${filter === t ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground hover:bg-muted'}`}
             >
               {t}
             </button>
@@ -270,53 +271,55 @@ export default function AdminExamsPage() {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <Card className="border-none shadow-xl rounded-card bg-white p-12 text-center">
-          <BookOpen className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-xl font-black text-primary italic">Nenhuma prova encontrada</p>
-          <p className="text-muted-foreground font-medium mt-2">
-            {exams.length === 0 ? 'Clique em "Nova Prova" para começar.' : 'Ajuste os filtros de busca.'}
-          </p>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title={exams.length === 0 ? 'Nenhuma prova cadastrada' : 'Nenhuma prova encontrada'}
+          description={exams.length === 0
+            ? 'Crie a primeira prova ou importe uma edição do ENEM.'
+            : 'Tente outra busca ou outro tipo de prova.'}
+          action={exams.length === 0
+            ? { label: 'Nova prova', icon: Plus, onClick: openCreate }
+            : { label: 'Limpar filtros', onClick: () => { setSearch(''); setFilter('all'); } }}
+          secondary={exams.length === 0 ? { label: 'Importar ENEM', href: '/dashboard/admin/enem-import' } : undefined}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(exam => {
             const typeColor = TYPE_COLOR[(EXAM_TYPES as readonly string[]).includes(exam.exam_type) ? exam.exam_type as ExamType : 'outro'];
             const isUploading = uploading[exam.id];
             return (
-              <Card key={exam.id} className="border-none shadow-xl rounded-card bg-white overflow-hidden group hover:shadow-2xl transition-all">
-                <CardContent className="p-6 flex flex-col gap-4 h-full">
+              <Card key={exam.id} className="rounded-card overflow-hidden">
+                <CardContent className="p-5 flex flex-col gap-4 h-full">
                   {/* Type + Year */}
                   <div className="flex items-center justify-between gap-2">
-                    <Badge className={`${typeColor} border-none font-black text-[10px] uppercase px-3 py-1`}>
+                    <Badge className={`${typeColor} border-none font-bold text-[10px] uppercase px-3 py-1`}>
                       {exam.exam_type}
                     </Badge>
                     {exam.year && (
-                      <Badge className="bg-primary/5 text-primary border-none font-black text-xs">
-                        {exam.year}
-                      </Badge>
+                      <span className="u-label tabular-nums">{exam.year}</span>
                     )}
                   </div>
 
                   {/* Title */}
                   <div className="flex-1">
-                    <h3 className="text-lg font-black text-primary italic leading-tight">{exam.title}</h3>
+                    <h3 className="text-base font-bold text-foreground leading-tight break-words">{exam.title}</h3>
                     {exam.description && (
-                      <p className="text-xs text-muted-foreground font-medium mt-1.5 line-clamp-2">{exam.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">{exam.description}</p>
                     )}
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+                  <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" />
-                      {exam.question_count} questões
+                      <span className="tabular-nums">{fmtNumber(exam.question_count, 0, '0')}</span> questões
                     </span>
                     {exam.pdf_url ? (
-                      <span className="flex items-center gap-1 text-green-600 font-black">
+                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
                         <CheckCircle2 className="h-3.5 w-3.5" /> PDF disponível
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-amber-500 font-black">
+                      <span className="flex items-center gap-1 text-amber-600 font-semibold">
                         <FileText className="h-3.5 w-3.5" /> Sem PDF
                       </span>
                     )}
@@ -331,7 +334,7 @@ export default function AdminExamsPage() {
                         rel="noopener noreferrer"
                         className="flex-1"
                       >
-                        <Button variant="outline" className="w-full h-10 rounded-xl font-black text-xs border-green-200 text-green-700 hover:bg-green-50">
+                        <Button variant="outline" className="w-full h-10 rounded-control font-bold text-xs">
                           <ExternalLink className="h-4 w-4 mr-1.5" /> Ver PDF
                         </Button>
                       </a>
@@ -340,8 +343,8 @@ export default function AdminExamsPage() {
                         size="icon"
                         onClick={() => fileInputRefs.current[exam.id]?.click()}
                         disabled={isUploading}
-                        className="h-10 w-10 rounded-xl border-slate-200 text-muted-foreground hover:bg-slate-50"
-                        title="Substituir PDF"
+                        className="h-10 w-10 rounded-control text-muted-foreground"
+                        title="Substituir PDF" aria-label="Substituir PDF"
                       >
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                       </Button>
@@ -349,8 +352,8 @@ export default function AdminExamsPage() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleRemovePdf(exam)}
-                        className="h-10 w-10 rounded-xl border-red-100 text-red-400 hover:bg-red-50"
-                        title="Remover PDF"
+                        className="h-10 w-10 rounded-control text-red-500 hover:bg-red-50"
+                        title="Remover PDF" aria-label="Remover PDF"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -359,12 +362,13 @@ export default function AdminExamsPage() {
                     <Button
                       onClick={() => fileInputRefs.current[exam.id]?.click()}
                       disabled={isUploading}
-                      className="w-full h-10 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 border-none font-black text-xs shadow-sm"
+                      variant="outline"
+                      className="w-full h-10 rounded-control font-bold text-xs"
                     >
                       {isUploading ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando…</>
                       ) : (
-                        <><Upload className="h-4 w-4 mr-2" /> Upload PDF</>
+                        <><Upload className="h-4 w-4 mr-2" /> Enviar PDF</>
                       )}
                     </Button>
                   )}
@@ -388,19 +392,19 @@ export default function AdminExamsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => router.push(`/dashboard/teacher/exams/${exam.id}/images`)}
-                      className="w-full h-9 rounded-xl text-xs font-black text-blue-600 bg-blue-50/50 hover:bg-blue-50"
+                      className="w-full h-9 rounded-control text-xs font-bold text-muted-foreground hover:text-foreground"
                     >
                       <ScanSearch className="h-3.5 w-3.5 mr-1.5" /> Extrair imagens do PDF
                     </Button>
                   )}
 
                   {/* Edit / Delete */}
-                  <div className="flex gap-2 pt-1 border-t border-slate-100">
+                  <div className="flex gap-2 pt-2 border-t">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => openEdit(exam)}
-                      className="flex-1 h-9 rounded-xl text-xs font-black text-primary hover:bg-primary/5"
+                      className="flex-1 h-9 rounded-control text-xs font-bold"
                     >
                       <Pencil className="h-3.5 w-3.5 mr-1.5" /> Editar
                     </Button>
@@ -408,9 +412,9 @@ export default function AdminExamsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(exam)}
-                      className="flex-1 h-9 rounded-xl text-xs font-black text-red-400 hover:bg-red-50"
+                      className="flex-1 h-9 rounded-control text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600"
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Deletar
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Excluir
                     </Button>
                   </div>
                 </CardContent>
@@ -424,43 +428,43 @@ export default function AdminExamsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="rounded-card max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-black italic text-primary text-xl">
-              {editingExam ? 'Editar Prova' : 'Nova Prova'}
+            <DialogTitle className="font-bold text-foreground text-xl">
+              {editingExam ? 'Editar prova' : 'Nova prova'}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5 py-2">
             <div className="space-y-1.5">
-              <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Título</Label>
+              <Label className="u-label">Título</Label>
               <Input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Ex: ENEM 2023 — 1º Dia"
-                className="h-11 rounded-xl font-medium"
+                className="h-11 rounded-control"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Ano</Label>
+                <Label className="u-label">Ano</Label>
                 <Input
                   type="number"
                   value={form.year}
                   onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
                   placeholder="2024"
-                  className="h-11 rounded-xl font-medium"
+                  className="h-11 rounded-control"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Tipo</Label>
+                <Label className="u-label">Tipo</Label>
                 <Select
                   value={form.exam_type}
                   onValueChange={(v) => setForm(f => ({ ...f, exam_type: v as ExamType }))}
                 >
-                  <SelectTrigger className="h-11 rounded-xl font-medium">
+                  <SelectTrigger className="h-11 rounded-control">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-control">
                     {EXAM_TYPES.map(t => (
                       <SelectItem key={t} value={t} className="font-bold uppercase text-xs">{t}</SelectItem>
                     ))}
@@ -470,23 +474,23 @@ export default function AdminExamsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="font-black text-xs uppercase tracking-wider text-muted-foreground">Descrição (opcional)</Label>
+              <Label className="u-label">Descrição (opcional)</Label>
               <Textarea
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="Caderno de Linguagens e Ciências Humanas"
-                className="rounded-xl font-medium resize-none"
+                className="rounded-control resize-none"
                 rows={3}
               />
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl font-black">
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-control font-bold">
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary text-white font-black shadow-lg">
-              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</> : 'Salvar'}
+            <Button onClick={handleSave} disabled={saving} className="rounded-control font-bold">
+              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando…</> : 'Salvar'}
             </Button>
           </DialogFooter>
         </DialogContent>

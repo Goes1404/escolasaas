@@ -42,6 +42,8 @@ import { supabase } from "@/app/lib/supabase";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useRouter } from "next/navigation";
+import { fmtLocale, fmtNumber, toDate, txt, VAZIO } from "@/lib/format";
+import { EmptyState } from "@/components/EmptyState";
 
 interface RiskAlert {
   id: string;
@@ -167,189 +169,198 @@ export default function CoordinatorDashboard() {
   // paint com skeleton próprio; antes ficavam atrás das 5 queries de `loading`.
   if (isUserLoading || (userRole !== 'admin' && userRole !== 'staff')) return (
     <div className="h-96 flex flex-col items-center justify-center gap-4">
-      <Loader2 className="h-10 w-10 animate-spin text-accent" />
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Sincronizando Auditoria Global...</p>
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <p className="u-label">Carregando painel…</p>
     </div>
   );
 
+  const dbLabel = networkStatus.db === 'online' ? 'No ar' : networkStatus.db === 'offline' ? 'Fora do ar' : 'Verificando';
+  const relTime = (v: string | null | undefined) => {
+    const d = toDate(v);
+    return d ? formatDistanceToNow(d, { addSuffix: true, locale: ptBR }) : VAZIO;
+  };
+
+  // Nível médio: superfícies neutras, acento só no ícone, entrada em stagger.
   return (
     <div className="space-y-6 pb-20 px-1">
-      {/* HERO */}
-      <div className="relative aurora-dark rounded-card p-5 md:p-8 shadow-xl overflow-hidden">
-        <div className="absolute top-0 right-0 w-60 h-60 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse block" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/45">Painel Admin</span>
-            </div>
-            <h1 className="text-[2.5rem] md:text-[3.5rem] font-black text-white italic tracking-tighter leading-none">
-              Plataforma<span className="text-primary">.</span>
-            </h1>
-            <p className="text-white/45 text-[10px] font-bold mt-2 tracking-wide uppercase">Coordenação · {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select value={timeFilter} onValueChange={setTimeFilter}>
-              <SelectTrigger className="h-11 rounded-2xl bg-white/8 border-white/15 text-white font-bold text-xs w-[150px]">
-                <Filter className="h-3.5 w-3.5 mr-2 text-primary" />
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent className="rounded-2xl border-none shadow-2xl">
-                <SelectItem value="all" className="font-bold">Todo o Período</SelectItem>
-                <SelectItem value="week" className="font-bold">Última Semana</SelectItem>
-                <SelectItem value="month" className="font-bold">Último Mês</SelectItem>
-                <SelectItem value="year" className="font-bold">Último Ano</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={() => fetchDashboardData()} variant="ghost" size="icon" className="rounded-2xl h-11 w-11 bg-white/8 border border-white/15 hover:bg-white/15">
-              <Activity className={`h-4 w-4 text-white ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+      {/* CABEÇALHO */}
+      <div className="anim-rise flex flex-col sm:flex-row sm:items-end gap-4" style={{ "--i": 0 } as React.CSSProperties}>
+        <div className="flex-1 min-w-0">
+          <p className="u-label flex items-center gap-2">
+            <Layers className="h-3.5 w-3.5 text-primary" /> Coordenação · {fmtLocale(new Date(), 'date', 'pt-BR', { day: 'numeric', month: 'long' })}
+          </p>
+          <h1 className="u-page-title text-3xl md:text-4xl mt-1">Painel da coordenação</h1>
+          <p className="text-muted-foreground text-sm mt-2">Visão geral da plataforma: alunos, equipe e atividade recente.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={timeFilter} onValueChange={setTimeFilter}>
+            <SelectTrigger className="h-11 rounded-control font-semibold text-sm w-[170px]">
+              <Filter className="h-3.5 w-3.5 mr-2 text-primary" />
+              <SelectValue placeholder="Período" />
+            </SelectTrigger>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todo o período</SelectItem>
+              <SelectItem value="week">Última semana</SelectItem>
+              <SelectItem value="month">Último mês</SelectItem>
+              <SelectItem value="year">Último ano</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => fetchDashboardData()} variant="outline" size="icon" aria-label="Atualizar dados" className="rounded-control h-11 w-11 shrink-0">
+            <Activity className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
 
       {/* CARD DE CÓDIGO DOCENTE */}
-      <Card className="border-none shadow-2xl bg-white rounded-[3rem] overflow-hidden p-5 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 border-l-[12px] border-accent animate-in zoom-in-95 duration-700">
-        <div className="flex items-center gap-6">
-          <div className="h-16 w-16 rounded-card bg-accent/10 flex items-center justify-center text-accent shadow-inner">
-            <ShieldAlert className="h-8 w-8" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-primary italic leading-none">Segurança de Rede</h2>
-            <p className="text-muted-foreground text-sm font-medium italic">Gerencie o código de entrada para novos Mentores/Professores.</p>
-          </div>
-        </div>
-        
-        <div className="flex flex-col items-center md:items-end gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border-2 border-dashed border-primary/10 w-full md:w-auto">
-            <div className="flex items-center gap-3">
-              <KeyRound className="h-5 w-5 text-primary/40" />
-              <p className="text-lg font-black tracking-[0.3em] font-mono text-primary">
-                {showTeacherCode ? TEACHER_CODE : "••••••••••••••"}
-              </p>
+      <div className="anim-rise" style={{ "--i": 1 } as React.CSSProperties}>
+        <Card className="rounded-card p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-control bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <ShieldAlert className="h-6 w-6" />
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowTeacherCode(!showTeacherCode)}
-              className="h-10 w-10 rounded-full hover:bg-white"
-            >
-              {showTeacherCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
+            <div className="space-y-1 min-w-0">
+              <h2 className="text-lg font-bold text-foreground leading-tight">Código de acesso de professores</h2>
+              <p className="text-muted-foreground text-sm">Código que novos professores usam para se cadastrar.</p>
+            </div>
           </div>
-          <p className="text-[10px] font-black uppercase text-accent tracking-widest flex items-center gap-2">
-            <Sparkles className="h-3 w-3" /> CÓDIGO ATIVO PARA NOVOS MENTORES
-          </p>
-        </div>
-      </Card>
+
+          <div className="flex flex-col items-stretch md:items-end gap-2 w-full md:w-auto">
+            <div className="flex items-center justify-between gap-3 bg-muted/40 px-4 py-3 rounded-control border border-dashed">
+              <div className="flex items-center gap-3 min-w-0">
+                <KeyRound className="h-5 w-5 text-muted-foreground shrink-0" />
+                <p className="text-base sm:text-lg font-bold tracking-[0.2em] font-mono text-foreground truncate">
+                  {showTeacherCode ? TEACHER_CODE : "••••••••••••••"}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={showTeacherCode ? "Ocultar código" : "Mostrar código"}
+                onClick={() => setShowTeacherCode(!showTeacherCode)}
+                className="h-10 w-10 rounded-control shrink-0"
+              >
+                {showTeacherCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="u-label flex items-center gap-2">
+              <Sparkles className="h-3 w-3 text-primary" /> Código ativo para novos professores
+            </p>
+          </div>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { icon: Users,       value: stats.totalStudents,    label: "Alunos",       sub: "Na base",        accent: "text-primary" },
-          { icon: BookOpen,    value: stats.totalTeachers,    label: "Staff",        sub: "Professores",    accent: "text-violet-600" },
-          { icon: CheckCircle2,value: stats.finishedTrails,   label: "Concluídas",   sub: "Trilhas",        accent: "text-emerald-600" },
-          { icon: HandHeart,   value: stats.eligibleStudents, label: "Isenção",      sub: "Elegíveis",      accent: "text-orange-500" },
+          { icon: Users,       value: stats.totalStudents,    label: "Alunos",     sub: "Na base" },
+          { icon: BookOpen,    value: stats.totalTeachers,    label: "Equipe",     sub: "Professores e coordenação" },
+          { icon: CheckCircle2,value: stats.finishedTrails,   label: "Concluídas", sub: "Trilhas" },
+          { icon: HandHeart,   value: stats.eligibleStudents, label: "Isenção",    sub: "Alunos elegíveis" },
         ].map((stat, i) => (
-          <Card key={i} className="border-none shadow-sm rounded-2xl bg-white overflow-hidden border border-slate-100 hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-5">
-              <stat.icon className={`h-4 w-4 ${stat.accent} mb-3`} strokeWidth={1.5} />
-              {loading ? (
-                <div className="h-8 w-14 rounded-lg bg-slate-100 animate-pulse" />
-              ) : (
-                <p className={`text-3xl md:text-4xl font-black italic leading-none tabular-nums ${stat.accent}`}>{stat.value}</p>
-              )}
-              <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mt-2">{stat.label}</p>
-              <p className="text-[9px] text-slate-400 mt-0.5">{stat.sub}</p>
-            </CardContent>
-          </Card>
+          <div key={i} className="anim-rise" style={{ "--i": i + 2 } as React.CSSProperties}>
+            <Card className="rounded-card h-full">
+              <CardContent className="p-4 md:p-5">
+                <stat.icon className="h-4 w-4 text-primary mb-3" strokeWidth={1.75} />
+                {loading ? (
+                  <div className="h-8 w-14 rounded-control bg-muted animate-pulse" />
+                ) : (
+                  <p className="u-num text-3xl leading-none tabular-nums">{fmtNumber(stat.value, 0, "0")}</p>
+                )}
+                <p className="u-label mt-2">{stat.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{stat.sub}</p>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-8">
-        <Card className="lg:col-span-2 border-none shadow-xl rounded-card bg-white overflow-hidden border border-slate-100">
-          <CardHeader className="p-5 md:p-8 pb-0">
-            <CardTitle className="text-xl font-black text-slate-900 italic">Atividade Recente</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+        <Card className="lg:col-span-2 rounded-card overflow-hidden">
+          <CardHeader className="p-5 md:p-6 pb-0">
+            <CardTitle className="text-lg font-bold text-foreground">Atividade recente</CardTitle>
             <CardDescription className="text-sm">Últimas respostas de simulados na plataforma.</CardDescription>
           </CardHeader>
-          <CardContent className="p-5 md:p-8 space-y-2.5">
+          <CardContent className="p-5 md:p-6 space-y-2.5">
             {loading ? (
-              Array(5).fill(0).map((_, i) => <div key={i} className="h-[76px] rounded-card bg-slate-50 animate-pulse" />)
+              Array(5).fill(0).map((_, i) => <div key={i} className="h-[68px] rounded-card bg-muted/50 animate-pulse" />)
             ) : logs.length === 0 ? (
-              <div className="py-16 text-center opacity-30 italic font-medium border-2 border-dashed rounded-card">Nenhuma atividade recente registrada.</div>
+              <EmptyState
+                compact
+                icon={Clock}
+                title="Nenhuma atividade recente"
+                description="Quando os alunos responderem questões e simulados, a atividade aparece aqui."
+              />
             ) : (
               logs.map((log) => (
-                <div key={log.id} className="flex items-center justify-between p-4 md:p-6 rounded-card bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all group">
-                  <div className="flex items-center gap-3 md:gap-5">
-                    <div className="h-12 w-12 rounded-2xl bg-white shadow-inner flex items-center justify-center font-black text-primary text-sm italic group-hover:bg-primary group-hover:text-white transition-all">{log.user_name?.charAt(0)}</div>
-                    <div>
-                      <p className="text-base font-bold text-primary italic leading-none group-hover:text-accent transition-colors">{log.action}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: ptBR })} por {log.user_name}
+                <div key={log.id} className="flex items-center justify-between gap-3 p-3 md:p-4 rounded-card bg-muted/30 border">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <div className="h-10 w-10 rounded-control bg-card border flex items-center justify-center font-bold text-primary text-sm shrink-0">{txt(log.user_name, "?").charAt(0).toUpperCase()}</div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground leading-snug">{log.action}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <p className="text-xs text-muted-foreground truncate">
+                          {relTime(log.created_at)} · aluno {txt(log.user_name)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <Badge className="bg-primary/5 text-primary text-[8px] font-black uppercase border-none px-3 py-1">{log.entity_type}</Badge>
+                  <Badge variant="outline" className="text-[10px] font-bold uppercase px-2.5 py-1 shrink-0">{log.entity_type}</Badge>
                 </div>
               ))
             )}
           </CardContent>
         </Card>
 
-        <div className="space-y-8">
-          <Card className="border-none shadow-xl bg-white rounded-[3rem] p-6 md:p-10 overflow-hidden group">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em]">Status de Sinal</h3>
-              <Activity className={`h-5 w-5 ${networkStatus.db === 'online' ? 'text-green-500 animate-pulse' : 'text-red-500'}`} />
+        <div className="space-y-5">
+          <Card className="rounded-card p-5 md:p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="u-label">Status do sistema</h3>
+              <Activity className={`h-5 w-5 ${networkStatus.db === 'online' ? 'text-emerald-600' : networkStatus.db === 'offline' ? 'text-red-600' : 'text-muted-foreground'}`} />
             </div>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between text-[11px] font-bold">
-                <span className="text-primary/60 uppercase tracking-widest">Banco de Dados</span>
-                <Badge variant="outline" className={`border-none ${networkStatus.db === 'online' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'} uppercase text-[9px] px-3 py-1 font-black`}>
-                  {networkStatus.db === 'online' ? <Wifi className="h-3 w-3 mr-2" /> : <WifiOff className="h-3 w-3 mr-2" />}
-                  {networkStatus.db.toUpperCase()}
-                </Badge>
-              </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Banco de dados</span>
+              <Badge variant="outline" className={`border-none ${networkStatus.db === 'online' ? 'text-emerald-700 bg-emerald-50' : networkStatus.db === 'offline' ? 'text-red-700 bg-red-50' : 'text-muted-foreground bg-muted'} text-[11px] px-3 py-1 font-bold`}>
+                {networkStatus.db === 'offline' ? <WifiOff className="h-3 w-3 mr-2" /> : <Wifi className="h-3 w-3 mr-2" />}
+                {dbLabel}
+              </Badge>
             </div>
           </Card>
 
-          <Card className="border-none shadow-xl aurora-dark rounded-card overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/15 rounded-full blur-[60px] pointer-events-none" />
-            <CardHeader className="pb-2 p-5 md:p-7 relative z-10">
-              <CardTitle className="text-xs font-black uppercase tracking-[0.3em] flex items-center gap-3 text-primary">
-                <AlertCircle className="h-4 w-4" />
-                Alertas de Risco
+          <Card className="rounded-card overflow-hidden">
+            <CardHeader className="pb-2 p-5 md:p-6">
+              <CardTitle className="u-label flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                Alertas de risco
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-5 md:px-7 pb-5 md:pb-7 space-y-4 relative z-10">
+            <CardContent className="px-5 md:px-6 pb-5 md:pb-6 space-y-4">
               {riskAlerts.length === 0 ? (
-                <div className="py-12 text-center border-2 border-dashed border-white/10 rounded-card opacity-40">
-                  <p className="text-[10px] font-bold italic tracking-widest uppercase">Rede em Conformidade Total</p>
-                </div>
+                <EmptyState
+                  compact
+                  icon={CheckCircle2}
+                  title="Nenhum alerta no momento"
+                  description="Alunos inativos, documentos pendentes e outros riscos aparecem aqui."
+                />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {riskAlerts.map((alert) => (
-                    <div key={alert.id} className="p-5 rounded-card bg-white/5 border border-white/10 flex items-start gap-5 group hover:bg-white/10 transition-all cursor-pointer">
-                      <div className={`p-3 rounded-2xl bg-white/10 ${alert.color} shadow-inner`}>
+                    <div key={alert.id} className="p-4 rounded-card bg-muted/30 border flex items-start gap-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className={`p-2.5 rounded-control bg-card border ${alert.color}`}>
                         <alert.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-3">
-                          <p className="font-black text-sm italic leading-none">{alert.label}</p>
-                          <Badge className="h-5 px-2 bg-accent text-accent-foreground border-none font-black text-[9px]">{alert.count}</Badge>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-sm leading-none">{alert.label}</p>
+                          <Badge variant="secondary" className="h-5 px-2 font-bold text-[10px] tabular-nums">{fmtNumber(alert.count, 0, "0")}</Badge>
                         </div>
-                        <p className="text-[10px] font-medium text-white/50 mt-2 leading-relaxed">{alert.description}</p>
+                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{alert.description}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <Button asChild className="w-full h-14 rounded-2xl bg-accent text-accent-foreground font-black text-xs uppercase shadow-xl hover:scale-105 transition-transform mt-4 border-none">
-                <Link href="/dashboard/admin/checklists">Aplicar Intervenção</Link>
+              <Button asChild variant="arcade" className="w-full h-12 rounded-control font-bold">
+                <Link href="/dashboard/admin/checklists">Abrir checklists</Link>
               </Button>
             </CardContent>
           </Card>

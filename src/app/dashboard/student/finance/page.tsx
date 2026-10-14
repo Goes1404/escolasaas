@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Wallet, BadgePercent, Receipt } from "lucide-react";
+import { Wallet, BadgePercent, Receipt } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { brl } from "@/lib/print-utils";
 import { format } from "date-fns";
+import { fmtDate, fmtNumber, toNumber, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Invoice {
   id: string; competence: string; base_amount: number; discount_amount: number;
@@ -23,7 +26,8 @@ const STATUS_LABEL: Record<string, string> = {
   aberta: "Aberta", paga: "Paga", vencida: "Vencida", cancelada: "Cancelada", negociada: "Negociada",
 };
 const STATUS_STYLE: Record<string, string> = {
-  aberta: "bg-blue-100 text-blue-700",
+  // Em aberto é ausência de estado, e ausência é neutra (ver secretary/tuition).
+  aberta: "bg-muted text-foreground/70",
   paga: "bg-emerald-100 text-emerald-700",
   vencida: "bg-red-100 text-red-700",
   cancelada: "bg-gray-200 text-gray-500",
@@ -32,6 +36,10 @@ const STATUS_STYLE: Record<string, string> = {
 const METODO_LABEL: Record<string, string> = {
   pix: "PIX", dinheiro: "Dinheiro", cartao: "Cartão", transferencia: "Transferência", boleto: "Boleto",
 };
+
+const statusLabel = (s: string) => STATUS_LABEL[s] ?? txt(s);
+const statusStyle = (s: string) => STATUS_STYLE[s] ?? "bg-muted text-foreground/70";
+const metodoLabel = (m: string) => METODO_LABEL[m] ?? txt(m, "");
 
 const displayStatus = (inv: Invoice) =>
   inv.status === "aberta" && inv.due_date < format(new Date(), "yyyy-MM-dd") ? "vencida" : inv.status;
@@ -66,7 +74,7 @@ export default function StudentFinancePage() {
         setPlan((pl as Plan) || null);
       }
     } catch (e: any) {
-      toast({ title: "Erro ao carregar financeiro", description: e.message, variant: "destructive" });
+      toast({ title: "Não conseguimos carregar suas mensalidades", description: "Confira sua internet e abra a página de novo. Se continuar, fale com a secretaria.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -81,8 +89,12 @@ export default function StudentFinancePage() {
 
   if (isUserLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="space-y-8" aria-label="Carregando…">
+        <Skeleton className="h-14 w-64 rounded-control" />
+        <div className="grid md:grid-cols-3 gap-4">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-32 rounded-card" />)}
+        </div>
+        <Skeleton className="h-64 rounded-card" />
       </div>
     );
   }
@@ -104,11 +116,14 @@ export default function StudentFinancePage() {
             <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest">
               <Receipt className="h-4 w-4" /> Plano
             </div>
-            <p className="text-lg font-black mt-2">{plan ? plan.name : "Nenhum plano vinculado"}</p>
-            {plan && (
+            <p className="text-lg font-black mt-2">{plan ? txt(plan.name, "Seu plano") : "Você ainda não tem um plano"}</p>
+            {plan ? (
               <p className="text-sm text-muted-foreground mt-1">
-                {brl(subscription?.custom_amount ?? plan.base_amount)}/mês — vence dia {plan.due_day}
+                {brl(subscription?.custom_amount ?? plan.base_amount)}/mês
+                {toNumber(plan.due_day) !== null && <> — vence dia {plan.due_day}</>}
               </p>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-1">A secretaria vincula o plano quando faz sua matrícula.</p>
             )}
           </CardContent>
         </Card>
@@ -118,13 +133,13 @@ export default function StudentFinancePage() {
               <BadgePercent className="h-4 w-4" /> Bolsas e descontos
             </div>
             {discounts.length === 0 ? (
-              <p className="text-lg font-black mt-2 text-muted-foreground">—</p>
+              <p className="text-sm mt-2 text-muted-foreground">Você não tem bolsa nem desconto ativo agora.</p>
             ) : (
               <div className="mt-2 space-y-1">
                 {discounts.map((d) => (
                   <p key={d.id} className="text-sm font-bold">
-                    {d.kind === "percent" ? `${Number(d.value)}%` : brl(d.value)}{" "}
-                    <span className="text-muted-foreground font-normal">({d.reason})</span>
+                    {d.kind === "percent" ? `${fmtNumber(d.value)}%` : brl(d.value)}
+                    {d.reason && <span className="text-muted-foreground font-normal"> ({d.reason})</span>}
                   </p>
                 ))}
               </div>
@@ -133,13 +148,15 @@ export default function StudentFinancePage() {
         </Card>
         <Card className="shadow-2xl rounded-card">
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs font-black uppercase tracking-widest">
               <Wallet className="h-4 w-4" /> Em aberto
             </div>
-            <p className="text-2xl font-black mt-2 text-blue-600">
-              {brl(emAberto.reduce((acc, i) => acc + Number(i.final_amount), 0))}
+            <p className="text-2xl font-black mt-2">
+              {brl(emAberto.reduce((acc, i) => acc + (toNumber(i.final_amount) ?? 0), 0))}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">{emAberto.length} fatura(s)</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {emAberto.length === 0 ? "Nenhuma mensalidade em aberto" : `${emAberto.length} ${emAberto.length === 1 ? "mensalidade" : "mensalidades"}`}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -150,26 +167,34 @@ export default function StudentFinancePage() {
               cabia em 360px e precisava rolar para o lado. */}
           <ul className="sm:hidden divide-y">
             {invoices.length === 0 && (
-              <li className="p-6 text-center text-sm text-muted-foreground">Nenhuma mensalidade registrada ainda.</li>
+              <li className="p-4">
+                <EmptyState
+                  icon={Receipt}
+                  title="Ainda não há mensalidades por aqui"
+                  description="Quando a secretaria gerar suas mensalidades, cada uma aparece aqui com valor, vencimento e situação."
+                  compact
+                  className="border-none bg-transparent"
+                />
+              </li>
             )}
             {invoices.map((inv) => {
               const ds = displayStatus(inv);
               return (
                 <li key={inv.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="u-label">{format(new Date(inv.competence + "T12:00:00"), "MM/yyyy")}</span>
-                    <Badge className={`${STATUS_STYLE[ds]} font-black shrink-0`}>{STATUS_LABEL[ds]}</Badge>
+                    <span className="u-label">{fmtDate(inv.competence, "MM/yyyy")}</span>
+                    <Badge className={`${statusStyle(ds)} font-black shrink-0`}>{statusLabel(ds)}</Badge>
                   </div>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="u-num text-lg tabular-nums whitespace-nowrap">{brl(inv.final_amount)}</span>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">vence {format(new Date(inv.due_date + "T12:00:00"), "dd/MM/yyyy")}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">vence {fmtDate(inv.due_date, "dd/MM/yyyy")}</span>
                   </div>
                   {Number(inv.discount_amount) > 0 && (
                     <p className="text-xs text-emerald-600">Desconto de {brl(inv.discount_amount)}</p>
                   )}
                   {inv.status === "paga" && inv.paid_at && (
                     <p className="text-xs text-muted-foreground">
-                      Pago{inv.payment_method ? ` via ${METODO_LABEL[inv.payment_method]}` : ""} em {format(new Date(inv.paid_at), "dd/MM/yyyy")}
+                      Pago{inv.payment_method ? ` via ${metodoLabel(inv.payment_method)}` : ""} em {fmtDate(inv.paid_at, "dd/MM/yyyy")}
                     </p>
                   )}
                 </li>
@@ -180,35 +205,41 @@ export default function StudentFinancePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40 text-left">
-                  <th className="p-4 font-black uppercase text-xs tracking-widest">Competência</th>
+                  <th className="p-4 font-black uppercase text-xs tracking-widest">Mês</th>
                   <th className="p-4 font-black uppercase text-xs tracking-widest">Valor</th>
                   <th className="p-4 font-black uppercase text-xs tracking-widest">Vencimento</th>
-                  <th className="p-4 font-black uppercase text-xs tracking-widest">Status</th>
+                  <th className="p-4 font-black uppercase text-xs tracking-widest">Situação</th>
                   <th className="p-4 font-black uppercase text-xs tracking-widest">Pagamento</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.length === 0 && (
-                  <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">
-                    Nenhuma mensalidade registrada ainda.
+                  <tr><td colSpan={5} className="p-4">
+                    <EmptyState
+                      icon={Receipt}
+                      title="Ainda não há mensalidades por aqui"
+                      description="Quando a secretaria gerar suas mensalidades, cada uma aparece aqui com valor, vencimento e situação."
+                      compact
+                      className="border-none bg-transparent"
+                    />
                   </td></tr>
                 )}
                 {invoices.map((inv) => {
                   const ds = displayStatus(inv);
                   return (
                     <tr key={inv.id} className="border-b hover:bg-muted/20">
-                      <td className="p-4 font-semibold">{format(new Date(inv.competence + "T12:00:00"), "MM/yyyy")}</td>
+                      <td className="p-4 font-semibold">{fmtDate(inv.competence, "MM/yyyy")}</td>
                       <td className="p-4 font-bold">
                         {brl(inv.final_amount)}
                         {Number(inv.discount_amount) > 0 && (
                           <span className="text-xs text-emerald-600 ml-1">(-{brl(inv.discount_amount)})</span>
                         )}
                       </td>
-                      <td className="p-4">{format(new Date(inv.due_date + "T12:00:00"), "dd/MM/yyyy")}</td>
-                      <td className="p-4"><Badge className={`${STATUS_STYLE[ds]} font-black`}>{STATUS_LABEL[ds]}</Badge></td>
+                      <td className="p-4">{fmtDate(inv.due_date, "dd/MM/yyyy")}</td>
+                      <td className="p-4"><Badge className={`${statusStyle(ds)} font-black`}>{statusLabel(ds)}</Badge></td>
                       <td className="p-4 text-muted-foreground">
                         {inv.status === "paga" && inv.paid_at
-                          ? `${inv.payment_method ? METODO_LABEL[inv.payment_method] : ""} em ${format(new Date(inv.paid_at), "dd/MM/yyyy")}`
+                          ? `${inv.payment_method ? metodoLabel(inv.payment_method) : "Pago"} em ${fmtDate(inv.paid_at, "dd/MM/yyyy")}`
                           : "—"}
                       </td>
                     </tr>

@@ -21,7 +21,7 @@ interface Message {
 export function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Olá! Sou a Aurora IA. Como posso ajudar na sua gestão ou aprendizado hoje?" }
+    { role: "assistant", content: "Oi! Sou a Aurora IA. Pode me perguntar sobre qualquer matéria ou sobre como usar a plataforma." }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,14 +77,14 @@ export function AccessibilityWidget() {
       } else {
         setMessages(prev => [...prev, { 
           role: "assistant", 
-          content: data.error || "Houve um erro inesperado ao conectar com a Aurora.",
+          content: data.error || "A Aurora não conseguiu responder agora. Tente de novo em alguns instantes.",
           isError: true 
         }]);
       }
     } catch (err: any) {
       setMessages(prev => [...prev, { 
         role: "assistant", 
-        content: `⚠️ [ERRO REDE]: ${err.message || "Tente novamente mais tarde."}`,
+        content: "Não consegui falar com a Aurora agora. Verifique sua internet e tente de novo.",
         isError: true 
       }]);
     } finally {
@@ -138,10 +138,10 @@ export function AccessibilityWidget() {
                 </div>
                 <div className="text-left">
                   <SheetTitle className="text-white font-black italic leading-none">Aurora IA</SheetTitle>
-                  <p className="text-[8px] font-black uppercase tracking-widest text-accent mt-1">Gabinete de Apoio 360</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-accent mt-1">Sua mentora de estudos</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setMessages([{role: "assistant", content: "Sintonizando dados..."}])} className="text-white/65 hover:text-white rounded-full"><Eraser className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setMessages([{role: "assistant", content: "Conversa limpa. Sobre o que você quer falar agora?"}])} aria-label="Limpar conversa" title="Limpar conversa" className="text-white/65 hover:text-white rounded-full"><Eraser className="h-4 w-4" /></Button>
             </div>
           </SheetHeader>
 
@@ -158,7 +158,7 @@ export function AccessibilityWidget() {
               <Input 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Pergunte sobre gestão ou conteúdo..."
+                placeholder="Escreva sua dúvida…"
                 disabled={loading}
                 className="border-none shadow-none focus-visible:ring-0 text-xs font-bold italic h-10 bg-transparent"
               />

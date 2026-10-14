@@ -32,6 +32,23 @@ import { celebrate } from '@/lib/celebrate';
  */
 const CHAVE_NIVEL = 'pet:ultimo-nivel';
 
+/**
+ * As RPCs do bichinho recusam com frases já pensadas para o aluno (sem
+ * acento, porque nascem no SQL). Essas viram texto da tela; qualquer outra
+ * coisa — queda de rede, erro do banco — vira uma orientação genérica, para o
+ * detalhe técnico não aparecer no toast.
+ */
+const MOTIVOS: Record<string, string> = {
+  'XP insuficiente.': 'Você ainda não tem XP suficiente. Estude mais um pouco e volte aqui.',
+  'Voce ja tem o maximo de protecoes.': 'Você já tem o máximo de proteções guardadas.',
+  'Adote um bichinho antes.': 'Adote um bichinho antes de comprar.',
+  'O nome precisa ter de 1 a 20 caracteres.': 'O nome precisa ter de 1 a 20 letras.',
+};
+function motivo(e: unknown): string {
+  const msg = e instanceof Error ? e.message : '';
+  return MOTIVOS[msg] ?? 'Confira sua internet e tente de novo.';
+}
+
 export default function BichinhoPage() {
   const { toast } = useToast();
   const [bicho, setBicho] = useState<Bichinho | null>(null);
@@ -53,7 +70,7 @@ export default function BichinhoPage() {
       if (!b) throw new Error('Não conseguimos carregar seu bichinho agora.');
       setBicho(b);
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Erro ao carregar.');
+      setErro('Não conseguimos carregar seu bichinho agora.');
     } finally {
       setCarregando(false);
     }
@@ -97,7 +114,7 @@ export default function BichinhoPage() {
     } catch (e) {
       toast({
         title: 'Não deu para adotar agora',
-        description: e instanceof Error ? e.message : 'Tente de novo.',
+        description: motivo(e),
         variant: 'destructive',
       });
     } finally {
@@ -145,7 +162,7 @@ export default function BichinhoPage() {
     } catch (e) {
       toast({
         title: 'Não deu para trocar agora',
-        description: e instanceof Error ? e.message : 'Tente de novo.',
+        description: motivo(e),
         variant: 'destructive',
       });
     } finally {
@@ -161,7 +178,7 @@ export default function BichinhoPage() {
     } catch (e) {
       toast({
         title: 'Não foi possível comprar',
-        description: e instanceof Error ? e.message : 'Tente de novo.',
+        description: motivo(e),
         variant: 'destructive',
       });
     } finally {
@@ -181,7 +198,7 @@ export default function BichinhoPage() {
     return (
       <div className="p-6 md:p-10 max-w-3xl mx-auto">
         <div className="rounded-card border border-rose-100 bg-rose-50 p-8 text-center space-y-4">
-          <p className="u-page-title text-lg text-rose-900">{erro ?? 'Erro ao carregar.'}</p>
+          <p className="u-page-title text-lg text-rose-900">{erro ?? 'Não conseguimos carregar seu bichinho agora.'}</p>
           <p className="text-sm font-medium text-rose-700/70">
             Pode ser a conexão. Tente de novo em instantes.
           </p>

@@ -39,12 +39,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { format, isToday, isWithinInterval, subDays, subMonths } from "date-fns";
+import { isToday, isWithinInterval, subDays, subMonths } from "date-fns";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import type { ThreadSummary } from "@/app/api/admin/chat-audit/route";
+import { fmtDate, txt, VAZIO } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type Conversation = ThreadSummary;
+
+const TYPE_LABEL: Record<string, string> = {
+  student: "Aluno",
+  teacher: "Professor",
+  admin: "Coordenação",
+  staff: "Secretaria",
+  mentor: "Mentor",
+  coordenador: "Coordenação",
+};
 
 export default function AdminChatAuditPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,8 +76,8 @@ export default function AdminChatAuditPage() {
     } catch (err: any) {
       console.error("Erro detalhado ao auditar chats:", err);
       toast({
-        title: "Erro de Sincronização",
-        description: "Não foi possível carregar os logs de conversa.",
+        title: "Não foi possível carregar as conversas",
+        description: "Tente novamente em alguns instantes.",
         variant: "destructive"
       });
     } finally {
@@ -89,15 +100,15 @@ export default function AdminChatAuditPage() {
       if (!res.ok) throw new Error(await res.text());
 
       toast({
-        title: "Histórico Limpo",
-        description: "As mensagens de teste foram removidas permanentemente."
+        title: "Conversa apagada",
+        description: "As mensagens foram removidas permanentemente."
       });
       
       // Atualiza a lista removendo o thread
       setThreads(prev => prev.filter(t => !(t.u1_id === u1 && t.u2_id === u2)));
     } catch (err: any) {
       toast({
-        title: "Falha na Limpeza",
+        title: "Não foi possível apagar a conversa",
         description: err.message,
         variant: "destructive"
       });
@@ -132,172 +143,215 @@ export default function AdminChatAuditPage() {
     return searchMatch && roleMatch && dateMatch;
   });
 
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 px-1">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black text-primary italic leading-none">Auditoria de Chats</h1>
-            <ShieldCheck className="h-6 w-6 text-accent" />
+  const typeLabel = (t?: string | null) => {
+    const k = (t || '').toLowerCase();
+    if (!k) return VAZIO;
+    return TYPE_LABEL[k] ?? txt(t);
+  };
+
+  const renderClear = (thread: Conversation) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Apagar conversa" className="h-10 w-10 rounded-control text-red-500 hover:text-red-600 hover:bg-red-50">
+          {clearingId === `${thread.u1_id}:${thread.u2_id}` ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2 className="h-4 w-4" />
+          )}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="rounded-card p-8 max-w-sm">
+        <AlertDialogHeader>
+          <div className="h-12 w-12 rounded-control bg-red-50 text-red-600 flex items-center justify-center mb-4">
+            <AlertTriangle className="h-6 w-6" />
           </div>
-          <p className="text-muted-foreground font-medium italic">Monitoramento ético e supervisão de interações na rede.</p>
+          <AlertDialogTitle className="text-xl font-bold text-foreground">Apagar esta conversa?</AlertDialogTitle>
+          <AlertDialogDescription className="text-sm">
+            Esta ação apagará <strong>todas</strong> as mensagens entre estes participantes. Não é possível desfazer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-3 mt-6">
+          <AlertDialogCancel className="rounded-control font-bold h-11">Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => handleClearChat(thread.u1_id, thread.u2_id)}
+            className="rounded-control font-bold bg-red-600 hover:bg-red-700 text-white h-11 px-6"
+          >
+            Apagar mensagens
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  const openHref = (thread: Conversation) => `/dashboard/admin/chats/audit?u1=${thread.u1_id}&u2=${thread.u2_id}`;
+
+  return (
+    <div className="space-y-6 pb-20 px-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" /> Coordenação · conversas</p>
+          <h1 className="u-page-title text-3xl mt-1">Conversas</h1>
+          <p className="text-muted-foreground text-sm mt-2">Acompanhe as conversas entre alunos e equipe na plataforma.</p>
         </div>
-        <div className="relative w-full md:w-80 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
-          <Input 
-            placeholder="Buscar por nome ou conteúdo..." 
-            className="pl-12 h-14 bg-white border-none shadow-xl rounded-2xl italic font-medium focus-visible:ring-accent"
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou mensagem..."
+            className="pl-9 h-11 rounded-control"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-2 tracking-widest flex items-center gap-2">
-            <Users2 className="h-3 w-3" /> Categoria de Interação
+          <Label className="u-label flex items-center gap-2">
+            <Users2 className="h-3 w-3" /> Quem conversa
           </Label>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold italic">
-              <SelectValue placeholder="Todas as Interações" />
+            <SelectTrigger className="h-11 rounded-control">
+              <SelectValue placeholder="Todas as conversas" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
-              <SelectItem value="all" className="font-bold">Todas as Interações</SelectItem>
-              <SelectItem value="student_student" className="font-bold">Aluno ↔ Aluno</SelectItem>
-              <SelectItem value="student_staff" className="font-bold">Aluno ↔ Mentoria</SelectItem>
-              <SelectItem value="staff_staff" className="font-bold">Equipe Técnica (Staff)</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todas as conversas</SelectItem>
+              <SelectItem value="student_student">Aluno ↔ aluno</SelectItem>
+              <SelectItem value="student_staff">Aluno ↔ equipe</SelectItem>
+              <SelectItem value="staff_staff">Só equipe</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-[10px] font-black uppercase text-primary/40 px-2 tracking-widest flex items-center gap-2">
-            <Clock className="h-3 w-3" /> Janela de Recência
+          <Label className="u-label flex items-center gap-2">
+            <Clock className="h-3 w-3" /> Período
           </Label>
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="h-12 rounded-xl bg-white border-none shadow-md font-bold italic">
-              <SelectValue placeholder="Todo o Período" />
+            <SelectTrigger className="h-11 rounded-control">
+              <SelectValue placeholder="Todo o período" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-none shadow-2xl">
-              <SelectItem value="all" className="font-bold">Todo o Histórico</SelectItem>
-              <SelectItem value="today" className="font-bold text-accent">Apenas Hoje</SelectItem>
-              <SelectItem value="week" className="font-bold">Última Semana</SelectItem>
-              <SelectItem value="month" className="font-bold">Último Mês</SelectItem>
+            <SelectContent className="rounded-control">
+              <SelectItem value="all">Todo o período</SelectItem>
+              <SelectItem value="today">Hoje</SelectItem>
+              <SelectItem value="week">Últimos 7 dias</SelectItem>
+              <SelectItem value="month">Último mês</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-4">
-              <div className="relative">
-                <History className="h-12 w-12 text-accent animate-pulse" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando Logs de Auditoria...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-50 border-b border-muted/10">
-                  <TableRow className="border-none h-16">
-                    <TableHead className="px-8 font-black uppercase text-[10px] tracking-widest text-primary/40">Participantes</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest text-primary/40">Última Interação</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest text-primary/40">Status</TableHead>
-                    <TableHead className="text-right px-8 font-black uppercase text-[10px] tracking-widest text-primary/40">Ações de Gestão</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredThreads.map((thread, i) => (
-                    <TableRow key={i} className="border-b last:border-0 hover:bg-accent/5 transition-colors group h-24">
-                      <TableCell className="px-8">
-                        <div className="flex items-center gap-4">
-                          <div className="flex -space-x-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 border-2 border-white flex items-center justify-center font-bold text-primary text-xs shadow-sm" title={thread.u1_name}>{thread.u1_name?.charAt(0)}</div>
-                            <div className="h-10 w-10 rounded-full bg-accent/10 border-2 border-white flex items-center justify-center font-bold text-accent text-xs shadow-sm" title={thread.u2_name}>{thread.u2_name?.charAt(0)}</div>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-black text-primary text-sm italic group-hover:text-accent transition-colors">
-                              {thread.u1_name} + {thread.u2_name}
-                            </span>
-                            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                              {thread.u1_type?.toUpperCase()} / {thread.u2_type?.toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-primary/70 line-clamp-1 max-w-[200px]">"{thread.last_message}"</span>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase flex items-center gap-1 mt-1">
-                            <Calendar className="h-2.5 w-2.5" /> {format(new Date(thread.last_date), "dd/MM HH:mm")}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="bg-green-100 text-green-700 border-none font-black text-[8px] uppercase gap-1.5 px-3">
-                          <ShieldCheck className="h-2.5 w-2.5" /> Arquivado
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right px-8">
-                        <div className="flex items-center justify-end gap-3">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50">
-                                {clearingId === `${thread.u1_id}:${thread.u2_id}` ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-card border-none shadow-2xl p-10 max-w-sm bg-white">
-                              <AlertDialogHeader>
-                                <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4">
-                                  <AlertTriangle className="h-6 w-6" />
-                                </div>
-                                <AlertDialogTitle className="text-2xl font-black italic text-primary">Limpar Chat?</AlertDialogTitle>
-                                <AlertDialogDescription className="font-medium text-sm">
-                                  Esta ação apagará <strong>todas</strong> as mensagens entre estes participantes. Esta operação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter className="gap-3 mt-6">
-                                <AlertDialogCancel className="rounded-xl font-bold border-none bg-muted/30 h-12">Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleClearChat(thread.u1_id, thread.u2_id)} 
-                                  className="rounded-xl font-black bg-red-600 hover:bg-red-700 text-white h-12 px-8"
-                                >
-                                  Limpar Agora
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+      {loading ? (
+        <Card className="rounded-card">
+          <CardContent className="py-20 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="u-label">Carregando conversas…</p>
+          </CardContent>
+        </Card>
+      ) : filteredThreads.length === 0 ? (
+        <EmptyState
+          icon={MessageSquare}
+          title={threads.length === 0 ? "Nenhuma conversa ainda" : "Nenhuma conversa encontrada"}
+          description={threads.length === 0
+            ? "Quando alunos e equipe trocarem mensagens, as conversas aparecem aqui."
+            : "Tente outro nome, outra categoria ou um período maior."}
+          action={threads.length > 0 ? {
+            label: "Limpar filtros",
+            onClick: () => { setSearchTerm(""); setRoleFilter("all"); setDateFilter("all"); },
+          } : undefined}
+        />
+      ) : (
+        <>
+          {/* Celular: cartões empilhados no lugar da tabela de 4 colunas */}
+          <div className="sm:hidden space-y-3">
+            {filteredThreads.map((thread, i) => (
+              <Card key={i} className="rounded-card">
+                <CardContent className="p-4 space-y-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-foreground break-words">
+                      {txt(thread.u1_name, "Usuário")} e {txt(thread.u2_name, "Usuário")}
+                    </p>
+                    <p className="u-label mt-0.5">{typeLabel(thread.u1_type)} / {typeLabel(thread.u2_type)}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2 break-words">"{txt(thread.last_message, "")}"</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="u-label flex items-center gap-1"><Calendar className="h-3 w-3" /> {fmtDate(thread.last_date, "dd/MM HH:mm")}</span>
+                    <div className="flex items-center gap-2">
+                      {renderClear(thread)}
+                      <Button variant="outline" className="font-bold h-10 px-4 rounded-control" asChild>
+                        <Link href={openHref(thread)}>
+                          <History className="h-4 w-4 mr-2" /> Abrir
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                          <Button className="bg-primary text-white font-black text-[10px] uppercase h-10 px-6 rounded-xl shadow-lg hover:scale-105 transition-all" asChild>
-                            <Link href={`/dashboard/admin/chats/audit?u1=${thread.u1_id}&u2=${thread.u2_id}`}>
-                              <History className="h-3.5 w-3.5 mr-2" /> Abrir Log
-                            </Link>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredThreads.length === 0 && (
+          <Card className="hidden sm:block rounded-card overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
                     <TableRow>
-                      <TableCell colSpan={4} className="h-64 text-center py-20">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
-                        <p className="font-black italic text-xl text-primary/40 uppercase tracking-widest">Nenhuma conversa localizada</p>
-                      </TableCell>
+                      <TableHead className="px-6 u-label">Participantes</TableHead>
+                      <TableHead className="u-label">Última mensagem</TableHead>
+                      <TableHead className="u-label">Status</TableHead>
+                      <TableHead className="text-right px-6 u-label">Ações</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredThreads.map((thread, i) => (
+                      <TableRow key={i} className="hover:bg-muted/20">
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="flex -space-x-3 shrink-0">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center font-bold text-primary text-xs" title={txt(thread.u1_name, "")}>{txt(thread.u1_name, "?").charAt(0)}</div>
+                              <div className="h-10 w-10 rounded-full bg-muted border-2 border-background flex items-center justify-center font-bold text-foreground text-xs" title={txt(thread.u2_name, "")}>{txt(thread.u2_name, "?").charAt(0)}</div>
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-foreground text-sm">
+                                {txt(thread.u1_name, "Usuário")} e {txt(thread.u2_name, "Usuário")}
+                              </span>
+                              <span className="u-label !text-[10px]">
+                                {typeLabel(thread.u1_type)} / {typeLabel(thread.u2_type)}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm text-muted-foreground line-clamp-1 max-w-[240px]">"{txt(thread.last_message, "")}"</span>
+                            <span className="u-label !text-[10px] flex items-center gap-1 mt-1">
+                              <Calendar className="h-2.5 w-2.5" /> {fmtDate(thread.last_date, "dd/MM HH:mm")}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-bold text-[10px] uppercase gap-1.5 px-3">
+                            <ShieldCheck className="h-2.5 w-2.5" /> Arquivada
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {renderClear(thread)}
+                            <Button variant="outline" className="font-bold h-10 px-4 rounded-control" asChild>
+                              <Link href={openHref(thread)}>
+                                <History className="h-4 w-4 mr-2" /> Abrir conversa
+                              </Link>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

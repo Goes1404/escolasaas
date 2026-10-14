@@ -11,6 +11,8 @@ import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { AuroraAvatar } from "@/components/AuroraAvatar";
+import { EmptyState } from "@/components/EmptyState";
+import { txt } from "@/lib/format";
 
 export default function ChatListPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -257,7 +259,7 @@ export default function ChatListPage() {
               hasUnread ? 'border-orange-500 animate-pulse-subtle' : 'border-primary/5'
             }`}>
               <AvatarImage src={undefined} className="object-cover" />
-              <AvatarFallback className="bg-primary text-white font-black text-2xl italic">{contact.name?.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-white font-black text-2xl italic">{txt(contact.name, "?").charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             
             {hasUnread ? (
@@ -270,16 +272,16 @@ export default function ChatListPage() {
           </div>
           
           <div className="space-y-2 w-full flex-grow">
-            <CardTitle className="text-lg md:text-xl font-black text-primary leading-tight truncate px-2 italic">{contact.name}</CardTitle>
+            <CardTitle className="text-lg md:text-xl font-black text-primary leading-tight truncate px-2 italic">{txt(contact.name, "Sem nome")}</CardTitle>
             <div className="flex flex-col gap-2 items-center">
               <div className="flex flex-col items-center justify-center gap-1.5 text-accent font-black text-[9px] uppercase tracking-widest mt-1">
                 <div className="flex items-center gap-1 opacity-80">
                   <MapPin className="h-3 w-3" />
-                  <span>{contact.institution || "Rede Geral"}</span>
+                  <span>{contact.institution || "Sem unidade"}</span>
                 </div>
                 <Badge variant="outline" className="bg-primary/5 border-none text-primary/40 font-black text-[8px] px-3 h-5 uppercase tracking-widest leading-none flex items-center justify-center mt-1">
                   <GraduationCap className="h-2.5 w-2.5 mr-1 text-accent" />
-                  {contact.profile_type === 'teacher' ? (contact.course || 'DOCENTE') : (contact.profile_type === 'staff' ? 'SECRETARIA' : (contact.exam_target || 'ENEM'))}
+                  {contact.profile_type === 'teacher' ? (contact.course || 'PROFESSOR') : (contact.profile_type === 'staff' ? 'SECRETARIA' : (contact.exam_target || 'ENEM'))}
                 </Badge>
               </div>
             </div>
@@ -297,7 +299,7 @@ export default function ChatListPage() {
           
           <Button className="w-full btn-shimmer bg-primary text-white hover:bg-primary/95 font-black h-12 rounded-xl shadow-xl transition-all active:scale-95 border-none text-xs uppercase tracking-wider" asChild>
             <Link href={`/dashboard/chat/${contact.id}`}>
-              {isStaffUser ? "Enviar Mensagem" : "Abrir Mentoria"}
+              {isStaffUser ? "Enviar mensagem" : "Conversar"}
             </Link>
           </Button>
         </CardContent>
@@ -320,21 +322,21 @@ export default function ChatListPage() {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 px-3 py-1 rounded-full">
               <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">Rede de Diálogo</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">Mensagens</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tighter italic">
-              {isStaffUser ? "Gestão de Conversas" : "Mentoria Especializada"}
+              {isStaffUser ? "Conversas com alunos" : "Fale com seus professores"}
             </h1>
             <p className="text-sm text-white/55 font-medium max-w-lg leading-relaxed">
               {isStaffUser 
-                ? "Atendimento direto e suporte aos estudantes cadastrados na plataforma." 
-                : "Conecte-se com professores de referência e sane suas dúvidas pedagógicas em tempo real."
+                ? "Responda dúvidas e acompanhe os alunos cadastrados na plataforma." 
+                : "Mande sua dúvida direto para o professor ou para a equipe de apoio."
               }
             </p>
           </div>
           
           <div className="flex flex-col items-start md:items-end gap-1.5 shrink-0 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 min-w-[155px]">
-            <p className="text-[9px] text-white/65 font-bold uppercase tracking-widest leading-none">Contatos Ativos</p>
+            <p className="text-[9px] text-white/65 font-bold uppercase tracking-widest leading-none">Contatos</p>
             <p className="font-black text-white text-2xl leading-none mt-1">{filteredContacts.length}</p>
             {Object.keys(unreadMessages).length > 0 && (
               <span className="text-[9px] bg-red-500 text-white font-black px-2.5 py-0.5 rounded-full animate-pulse mt-2">
@@ -349,7 +351,7 @@ export default function ChatListPage() {
       <div className="relative max-w-xl group w-full pt-2">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors group-focus-within:text-accent z-10" />
         <Input 
-          placeholder={isStaffUser ? "Buscar aluno por nome, polo, escola ou curso..." : "Buscar mentor por nome ou matéria..."} 
+          placeholder={isStaffUser ? "Buscar aluno por nome, polo, escola ou curso..." : "Buscar professor por nome ou matéria…"} 
           className="pl-12 h-14 bg-white border-none shadow-md rounded-2xl text-base font-medium italic focus-visible:ring-accent"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -378,7 +380,7 @@ export default function ChatListPage() {
       {!isStaffUser && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { title: "Docente", desc: "Fale diretamente com seu professor de referência.", icon: GraduationCap, color: "bg-blue-50 border-blue-100 text-blue-700" },
+            { title: "Professor", desc: "Fale direto com o professor da sua matéria.", icon: GraduationCap, color: "bg-blue-50 border-blue-100 text-blue-700" },
             { title: "Bolsas", desc: "Tire dúvidas sobre processos e requisitos de bolsas.", icon: ShieldCheck, color: "bg-amber-50 border-amber-100 text-amber-700" },
             { title: "Apoio Psicopedagógico", desc: "Suporte emocional e pedagógico especializado.", icon: User, color: "bg-green-50 border-green-100 text-green-700" },
           ].map((canal) => (
@@ -412,11 +414,11 @@ export default function ChatListPage() {
                 <Badge className="bg-white/15 text-white border-none font-black text-[8px] uppercase px-2">24/7</Badge>
               </div>
               <p className="text-white/65 text-xs font-medium mt-1.5 leading-relaxed max-w-md">
-                Sua mentora de inteligência artificial. Tire dúvidas pedagógicas a qualquer hora.
+                Sua mentora de estudos com inteligência artificial. Tire dúvidas a qualquer hora.
               </p>
             </div>
             <Button className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-black h-12 px-8 rounded-xl shadow-xl active:scale-95 transition-all shrink-0" asChild>
-              <Link href="/dashboard/chat/aurora-ai">Abrir Mentoria</Link>
+              <Link href="/dashboard/chat/aurora-ai">Conversar com a Aurora</Link>
             </Button>
           </CardContent>
         </Card>
@@ -430,7 +432,7 @@ export default function ChatListPage() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" />
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 animate-pulse">Sintonizando Rede de Mentores...</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 animate-pulse">Carregando contatos…</p>
           </div>
         ) : (
           <>
@@ -439,7 +441,7 @@ export default function ChatListPage() {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <MessagesSquare className="h-6 w-6 text-accent" />
-                  <h2 className="text-xl md:text-2xl font-black text-primary italic uppercase tracking-tight">Conversas Recentes</h2>
+                  <h2 className="text-xl md:text-2xl font-black text-primary italic uppercase tracking-tight">Conversas recentes</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                   {activeChats.map(renderContactCard)}
@@ -452,7 +454,7 @@ export default function ChatListPage() {
               <div className="flex items-center gap-3">
                 <Users className="h-6 w-6 text-primary/30" />
                 <h2 className="text-xl md:text-2xl font-black text-primary/40 italic uppercase tracking-tight">
-                  {isStaffUser ? "Iniciar Nova Conversa com Alunos" : "Disponíveis para Contato"}
+                  {isStaffUser ? "Começar conversa com um aluno" : "Com quem você pode falar"}
                 </h2>
               </div>
               
@@ -461,9 +463,13 @@ export default function ChatListPage() {
                   {directoryContacts.map(renderContactCard)}
                 </div>
               ) : (
-                <div className="py-12 text-center border border-dashed rounded-card bg-white opacity-40">
-                  <p className="text-sm font-medium italic">Nenhum outro contato disponível.</p>
-                </div>
+                <EmptyState
+                  compact
+                  icon={searchTerm || activeCategory !== "Todos" ? Search : Users}
+                  title={searchTerm || activeCategory !== "Todos" ? "Ninguém encontrado com esse filtro" : activeChats.length > 0 ? "Você já conversa com todos os contatos" : "Ainda não há contatos disponíveis"}
+                  description={searchTerm || activeCategory !== "Todos" ? "Tente outro nome ou outra matéria." : activeChats.length > 0 ? "Suas conversas estão logo acima." : isStaffUser ? "Os alunos cadastrados aparecem aqui." : "Quando os professores forem cadastrados, eles aparecem aqui. Enquanto isso, a Aurora IA responde suas dúvidas."}
+                  action={searchTerm || activeCategory !== "Todos" ? { label: "Limpar filtros", onClick: () => { setSearchTerm(""); setActiveCategory("Todos"); } } : !isStaffUser && activeChats.length === 0 ? { label: "Conversar com a Aurora", href: "/dashboard/chat/aurora-ai" } : undefined}
+                />
               )}
             </div>
           </>

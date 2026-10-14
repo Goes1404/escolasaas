@@ -13,6 +13,12 @@ import {
   Zap, CheckCircle2, XCircle, Lock, Trophy,
   Flame, Target, ChevronRight, Loader2, Star,
 } from 'lucide-react';
+import { fmtLocale } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
+
+/** Letra da alternativa normalizada — `key` ou gabarito ausente não derruba a tela. */
+const letra = (v: unknown) => String(v ?? '').toUpperCase();
 
 // ─── Types ──────────────────────────────────────────────────
 type Option = { key: string; value?: string; text?: string };
@@ -154,7 +160,7 @@ export default function DailyQuestionPage() {
       setStreakCount(prof?.current_streak ?? 0);
 
     } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não conseguimos carregar o desafio', description: 'Confira sua internet e abra a página de novo.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -167,7 +173,7 @@ export default function DailyQuestionPage() {
     setSubmitting(true);
     try {
       const today     = new Date().toISOString().slice(0, 10);
-      const isCorrect = selected.toUpperCase() === daily.correct_answer.toUpperCase();
+      const isCorrect = letra(selected) === letra(daily.correct_answer);
 
       // Salva a resposta
       await supabase.from('daily_question_answers').insert({
@@ -202,7 +208,7 @@ export default function DailyQuestionPage() {
         description: `+${xp} XP ganhos`,
       });
     } catch (e: any) {
-      toast({ title: 'Erro ao salvar resposta', description: e.message, variant: 'destructive' });
+      toast({ title: 'Sua resposta não foi salva', description: 'Confira sua internet e toque em Confirmar resposta de novo.', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -211,10 +217,11 @@ export default function DailyQuestionPage() {
   // ─── Render ───────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
-          <p className="text-sm font-bold text-muted-foreground italic">Carregando desafio...</p>
+      <div className="max-w-2xl mx-auto px-4 space-y-6 pb-24" aria-label="Carregando…">
+        <Skeleton className="h-56 w-full rounded-card" />
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full rounded-card" />
+          {[0, 1, 2, 3, 4].map(i => <Skeleton key={i} className="h-14 w-full rounded-card" />)}
         </div>
       </div>
     );
@@ -223,13 +230,14 @@ export default function DailyQuestionPage() {
   if (!daily) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <div className="aurora-dark rounded-card border-2 border-foreground p-12 text-white shadow-hard">
-          <Target className="h-16 w-16 mx-auto mb-4 opacity-40" />
-          <h2 className="u-page-title text-2xl">Sem desafio hoje</h2>
-          <p className="text-white/50 mt-2 text-sm">
-            O professor ainda não agendou a questão de hoje. Volte mais tarde!
-          </p>
-        </div>
+        <EmptyState
+          tone="dark"
+          icon={Target}
+          title="Ainda não tem desafio hoje"
+          description="O professor ainda não agendou a questão do dia. Volte mais tarde — enquanto isso, dá para treinar com um simulado."
+          action={{ label: 'Treinar com simulados', href: '/dashboard/student/simulados', icon: Zap }}
+          className="aurora-dark border-2 border-solid border-foreground shadow-hard"
+        />
       </div>
     );
   }
@@ -263,7 +271,7 @@ export default function DailyQuestionPage() {
               Questão do dia
             </h1>
             <p className="u-label !text-foreground/60">
-              {new Date(daily.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', {
+              {fmtLocale(daily.scheduled_date, 'date', 'pt-BR', {
                 weekday: 'long', day: '2-digit', month: 'long'
               })}
             </p>
@@ -325,7 +333,7 @@ export default function DailyQuestionPage() {
             {daily.options.map((opt, idx) => {
               const label     = optionLabels[idx] ?? String.fromCharCode(65 + idx);
               const isSelected = selected === opt.key;
-              const isCorrect  = opt.key.toUpperCase() === daily.correct_answer.toUpperCase();
+              const isCorrect  = letra(opt.key) === letra(daily.correct_answer);
               const revealed   = alreadyDone;
 
               let cardStyle = 'border-slate-100 bg-slate-50/50 hover:border-primary/30 hover:bg-primary/5';
@@ -383,7 +391,7 @@ export default function DailyQuestionPage() {
               {submitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" />Confirmando...</>
               ) : (
-                <><Zap className="h-4 w-4 mr-2" />Confirmar Resposta</>
+                <><Zap className="h-4 w-4 mr-2" />Confirmar resposta</>
               )}
             </Button>
           )}
@@ -426,7 +434,7 @@ export default function DailyQuestionPage() {
                 <p className={`text-xs font-semibold text-red-600`}>
                   Resposta correta:{' '}
                   <span className="font-black">
-                    {optionLabels[daily.options.findIndex(o => o.key.toUpperCase() === daily.correct_answer.toUpperCase())] ?? daily.correct_answer}
+                    {optionLabels[daily.options.findIndex(o => letra(o.key) === letra(daily.correct_answer))] ?? (letra(daily.correct_answer) || '—')}
                   </span>
                 </p>
               )}

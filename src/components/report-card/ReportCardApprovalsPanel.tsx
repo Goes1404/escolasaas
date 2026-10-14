@@ -21,6 +21,8 @@ import { CheckCircle2, XCircle, Loader2, FileCheck, Clock, GraduationCap, School
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import type { PendingEntry } from "@/app/api/admin/report-card-approvals/route";
+import { fmtDate } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type StudentOption = { id: string; name: string };
 
@@ -117,7 +119,7 @@ export default function ReportCardApprovalsPanel() {
       }
       setSelections(initial);
     } catch (err: any) {
-      toast({ title: "Erro ao carregar boletins pendentes", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para carregar a fila de boletins", description: "Confira sua internet e recarregue a página.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -131,7 +133,7 @@ export default function ReportCardApprovalsPanel() {
   const handleApprove = async (entry: PendingEntry) => {
     const chosen = selections[entry.id];
     if (!chosen) {
-      toast({ title: "Selecione um aluno antes de aprovar", variant: "destructive" });
+      toast({ title: "Escolha o aluno antes de aprovar", description: "Busque o nome no campo do boletim e selecione a pessoa certa.", variant: "destructive" });
       return;
     }
     setBusyId(entry.id);
@@ -145,7 +147,7 @@ export default function ReportCardApprovalsPanel() {
       setEntries((prev) => prev.filter((e) => e.id !== entry.id));
       toast({ title: "Boletim aprovado", description: `${chosen.name} · ${entry.semester}º semestre` });
     } catch (err: any) {
-      toast({ title: "Falha ao aprovar", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para aprovar", description: "O boletim continua na fila. Tente de novo em instantes.", variant: "destructive" });
     } finally {
       setBusyId(null);
     }
@@ -163,7 +165,7 @@ export default function ReportCardApprovalsPanel() {
       setEntries((prev) => prev.filter((e) => e.id !== entry.id));
       toast({ title: "Boletim rejeitado", description: `${entry.full_name} · ${entry.semester}º semestre` });
     } catch (err: any) {
-      toast({ title: "Falha ao rejeitar", description: err.message, variant: "destructive" });
+      toast({ title: "Não deu para rejeitar", description: "O boletim continua na fila. Tente de novo em instantes.", variant: "destructive" });
     } finally {
       setBusyId(null);
       setRejectReason("");
@@ -246,20 +248,23 @@ export default function ReportCardApprovalsPanel() {
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
               <Clock className="h-12 w-12 text-accent animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Carregando fila de aprovação...</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Carregando fila de aprovação…</p>
             </div>
           ) : entries.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-center px-6">
-              <CheckCircle2 className="h-12 w-12 text-emerald-300" />
-              <p className="font-black italic text-xl text-primary/40 uppercase tracking-widest">Nenhum boletim pendente</p>
-              <p className="text-sm text-muted-foreground font-medium">Tudo revisado. Novas importações aparecem aqui.</p>
-            </div>
+            <EmptyState
+              icon={CheckCircle2}
+              title="Nenhum boletim esperando aprovação"
+              description="Tudo revisado. Quando um novo boletim for importado, ele aparece aqui."
+              className="border-0 rounded-none"
+            />
           ) : visibleEntries.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-center px-6">
-              <Search className="h-10 w-10 text-slate-200" />
-              <p className="font-black italic text-lg text-primary/40 uppercase tracking-widest">Nenhum resultado</p>
-              <p className="text-sm text-muted-foreground font-medium">Nenhum boletim na fila corresponde aos filtros.</p>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhum boletim com esses filtros"
+              description="Tente outro nome, outra trilha ou outro semestre."
+              action={{ label: "Limpar filtros", onClick: () => { setSearch(""); setTrackFilter("all"); setSemesterFilter("all"); } }}
+              className="border-0 rounded-none"
+            />
           ) : (
             <div className="divide-y divide-slate-50">
               {hasActiveFilter && (
@@ -295,7 +300,7 @@ export default function ReportCardApprovalsPanel() {
                           )}
                         </div>
                         <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide mt-1">
-                          Importado {format(new Date(entry.imported_at), "dd/MM HH:mm")}
+                          Importado {fmtDate(entry.imported_at, "dd/MM HH:mm")}
                           {entry.created_by_name ? ` por ${entry.created_by_name}` : ""}
                         </p>
                       </div>

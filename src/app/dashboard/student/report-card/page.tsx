@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { EmptyState } from "@/components/EmptyState";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import { examTypeStyles } from "@/lib/exam-types";
@@ -419,7 +420,7 @@ function PlatformSimuladosSection({ groups }: { groups: SimGroup[] }) {
                     {att ? (
                       <div className="mt-1">
                         <p className="u-num text-lg tabular-nums text-slate-950 leading-none">
-                          {att.tri != null ? att.tri : `${pct}%`}
+                          {att.tri != null ? att.tri : pct != null ? `${pct}%` : "—"}
                         </p>
                         <p className="text-[9px] font-bold text-slate-600 mt-0.5">
                           {att.tri != null ? "nota TRI" : "aproveitamento"} · {att.score}/{att.total}
@@ -540,8 +541,9 @@ export default function ReportCardPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex flex-col items-center justify-center gap-3 py-20">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="u-label">Carregando boletim…</p>
       </div>
     );
   }
@@ -552,11 +554,13 @@ export default function ReportCardPage() {
 
   if (entries.length === 0 && !hasPdfs && simGroups.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <GraduationCap className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-        <p className="text-sm font-semibold text-slate-500">
-          Seu boletim ainda não foi lançado. Assim que a secretaria publicar, ele aparece aqui automaticamente.
-        </p>
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <EmptyState
+          icon={GraduationCap}
+          title="Seu boletim ainda não foi lançado"
+          description="Assim que a secretaria publicar suas notas, elas aparecem aqui sozinhas. Enquanto isso, um simulado mostra como você está."
+          action={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+        />
       </div>
     );
   }

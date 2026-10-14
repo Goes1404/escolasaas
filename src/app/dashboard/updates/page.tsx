@@ -5,7 +5,9 @@ import { supabase } from "@/app/lib/supabase";
 import { fixEncoding } from "@/lib/utils";
 import { Loader2, Sparkles, Wrench, TrendingUp, ImageIcon, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { EmptyState } from "@/components/EmptyState";
 import Link from "next/link";
+import { fmtLocale } from '@/lib/format';
 
 type UpdateEntry = {
   id: string;
@@ -69,10 +71,12 @@ export default function UpdatesPage() {
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : updates.length === 0 ? (
-        <div className="text-center py-16 px-4">
-          <Sparkles className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 font-semibold text-sm">Nenhuma novidade publicada ainda.</p>
-        </div>
+        <EmptyState
+          icon={Sparkles}
+          title="Ainda não há novidades por aqui"
+          description="Quando a plataforma ganhar um recurso novo ou uma melhoria, o aviso aparece nesta página."
+          action={{ label: "Voltar ao início", href: "/dashboard/home" }}
+        />
       ) : (
         <div className="space-y-4">
           {updates.map((entry) => {
@@ -106,7 +110,7 @@ export default function UpdatesPage() {
                       {meta.label}
                     </span>
                     <time className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
-                      {new Date(entry.created_at).toLocaleDateString("pt-BR", {
+                      {fmtLocale(entry.created_at, 'date', "pt-BR", {
                         day: "2-digit", month: "long", year: "numeric",
                       })}
                     </time>

@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
 import Image from "next/image";
+import { EmptyState } from "@/components/EmptyState";
+import { ContentCover } from "@/components/ContentCover";
 
 const BOOK_CATEGORIES = ["Didáticos", "Literatura", "Técnicos", "Guias"];
 const RESOURCE_TYPES = ["PDF", "E-book", "Interativo"];
@@ -51,7 +53,7 @@ export default function BooksManagementPage() {
       setResources(data || []);
     } catch (e: any) {
       console.error(e);
-      toast({ title: "Erro de Rede", description: "Falha ao carregar acervo de livros.", variant: "destructive" });
+      toast({ title: "Erro ao carregar", description: "Não foi possível carregar os livros.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function BooksManagementPage() {
 
   const handleSave = async () => {
     if (!formData.title || (!formData.url && !file)) {
-      toast({ title: "Campos obrigatórios", description: "Título e Arquivo (ou Link) são necessários.", variant: "destructive" });
+      toast({ title: "Campos obrigatórios", description: "Informe o título e envie o arquivo (ou cole o link).", variant: "destructive" });
       return;
     }
 
@@ -135,7 +137,7 @@ export default function BooksManagementPage() {
 
       if (error) throw error;
       
-      toast({ title: editingId ? "Livro Atualizado!" : "Livro Cadastrado!" });
+      toast({ title: editingId ? "Livro atualizado!" : "Livro cadastrado!" });
       
       await fetchResources();
       
@@ -192,162 +194,186 @@ export default function BooksManagementPage() {
     r.category?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const labelCls = "u-label";
+  const fieldCls = "h-10 rounded-control bg-background border-border";
+  const fileCls = "h-10 rounded-control bg-background border border-dashed border-border cursor-pointer p-1.5 file:mr-3 file:py-1 file:px-3 file:rounded-control file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground";
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">Gestão de Livros</h1>
-          <p className="text-muted-foreground font-medium italic">Administração do acervo bibliográfico digital.</p>
+    <div className="space-y-6 pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><BookOpen className="h-3.5 w-3.5" /> Professor · biblioteca</p>
+          <h1 className="u-page-title text-3xl mt-1">Livros</h1>
+          <p className="text-muted-foreground text-sm mt-2">Cadastre e organize os livros digitais que os alunos podem ler.</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if(!open) resetForm();
         }}>
           <DialogTrigger asChild>
-            <Button className="rounded-2xl h-14 bg-accent text-accent-foreground font-black px-8 shadow-xl hover:scale-105 transition-all">
-              <Plus className="h-6 w-6 mr-2" /> Novo Livro
+            <Button variant="arcade" className="rounded-control h-11 font-bold px-5 w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" /> Novo livro
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-card md:rounded-card p-5 md:p-6 bg-white w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto border-none shadow-2xl">
+          <DialogContent className="rounded-card p-5 md:p-6 w-[95vw] sm:w-full max-w-lg max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black italic text-primary">Configurar Livro</DialogTitle>
+              <DialogTitle className="text-lg font-bold">{editingId ? "Editar livro" : "Novo livro"}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-3 py-2">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Título da Obra</Label>
-                <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Ex: Dom Casmurro - Ed. Especial" className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                <Label className={labelCls}>Título</Label>
+                <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Ex.: Dom Casmurro — edição especial" className={fieldCls} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40">Segmento</Label>
+                  <Label className={labelCls}>Categoria</Label>
                   <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className={fieldCls}><SelectValue /></SelectTrigger>
                     <SelectContent>{BOOK_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase opacity-40">Formato</Label>
+                  <Label className={labelCls}>Formato</Label>
                   <Select value={formData.type} onValueChange={v => setFormData({...formData, type: v})}>
-                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className={fieldCls}><SelectValue /></SelectTrigger>
                     <SelectContent>{RESOURCE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Restrição de Acesso</Label>
+                <Label className={labelCls}>Quem pode ver</Label>
                 <Select value={formData.target_audience} onValueChange={v => setFormData({...formData, target_audience: v})}>
-                  <SelectTrigger className="h-10 rounded-xl bg-muted/30 border-none font-bold">
-                    <SelectValue placeholder="Todos os Alunos" />
+                  <SelectTrigger className={fieldCls}>
+                    <SelectValue placeholder="Todos os alunos" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl">
-                    <SelectItem value="all">Acesso Global</SelectItem>
-                    <SelectItem value="etec">Apenas Alunos ETEC</SelectItem>
-                    <SelectItem value="enem">Apenas Alunos ENEM</SelectItem>
+                  <SelectContent className="rounded-control">
+                    <SelectItem value="all">Todos os alunos</SelectItem>
+                    <SelectItem value="etec">Só alunos ETEC</SelectItem>
+                    <SelectItem value="enem">Só alunos ENEM</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Upload da Obra (PDF/EPUB)</Label>
+                <Label className={labelCls}>Arquivo do livro (PDF/EPUB)</Label>
                 <div className="flex flex-col gap-2">
-                  <Input 
-                    type="file" 
-                    onChange={e => setFile(e.target.files?.[0] || null)} 
-                    className="h-10 rounded-xl bg-muted/30 border-2 border-dashed border-primary/20 cursor-pointer hover:border-accent p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white"
+                  <Input
+                    type="file"
+                    onChange={e => setFile(e.target.files?.[0] || null)}
+                    className={fileCls}
                   />
                   {!file && (
-                    <Input 
-                      value={formData.url} 
-                      onChange={e => setFormData({...formData, url: e.target.value})} 
-                      placeholder="Ou URL do livro..." 
-                      className="h-10 rounded-xl bg-muted/30 border-none font-medium text-xs mt-1" 
+                    <Input
+                      value={formData.url}
+                      onChange={e => setFormData({...formData, url: e.target.value})}
+                      placeholder="Ou cole o link do livro…"
+                      className={`${fieldCls} text-xs`}
                     />
                   )}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Capa do Livro (Arquivo ou URL)</Label>
+                <Label className={labelCls}>Capa (arquivo ou link)</Label>
                 <div className="flex flex-col gap-2">
-                  <Input 
-                    type="file" 
+                  <Input
+                    type="file"
                     accept="image/*"
-                    onChange={e => setCoverFile(e.target.files?.[0] || null)} 
-                    className="h-10 rounded-xl bg-muted/30 border-2 border-dashed border-primary/20 cursor-pointer hover:border-accent p-1.5 file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary file:text-white"
+                    onChange={e => setCoverFile(e.target.files?.[0] || null)}
+                    className={fileCls}
                   />
                   {!coverFile && (
-                    <Input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="Ou cole a URL..." className="h-10 rounded-xl bg-muted/30 border-none font-medium text-xs mt-1" />
+                    <Input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="Ou cole o link da imagem…" className={`${fieldCls} text-xs`} />
                   )}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase opacity-40">Sinopse</Label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Resumo breve da obra..." className="min-h-[60px] w-full rounded-xl bg-muted/30 border-none px-3 py-2 text-sm font-medium resize-none" />
+                <Label className={labelCls}>Sinopse</Label>
+                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Resumo breve da obra…" className="min-h-[60px] w-full rounded-control bg-background border border-border px-3 py-2 text-sm resize-none" />
               </div>
             </div>
             <DialogFooter className="mt-2">
-              <Button onClick={handleSave} disabled={isSubmitting || uploading} className="w-full h-12 bg-primary text-white font-black text-base rounded-2xl shadow-xl">
-                {(isSubmitting || uploading) ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Plus className="h-5 w-5 mr-2" />}
-                {uploading ? "Salvando nos servidores..." : (editingId ? "Atualizar Livro" : "Cadastrar na Biblioteca")}
+              <Button onClick={handleSave} disabled={isSubmitting || uploading} className="w-full h-11 rounded-control font-bold">
+                {(isSubmitting || uploading) ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                {uploading ? "Enviando arquivo…" : (editingId ? "Salvar alterações" : "Cadastrar livro")}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="relative max-w-xl group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
-        <Input 
-          placeholder="Pesquisar no acervo de livros..." 
-          className="pl-12 h-14 bg-white border-none shadow-xl rounded-[1.25rem] italic focus-visible:ring-accent"
+      <div className="relative max-w-xl">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por título ou categoria…"
+          className="pl-9 h-11 rounded-control bg-background border-border"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
       </div>
 
       {loading ? (
-        <div className="py-20 flex justify-center"><Loader2 className="h-12 w-12 animate-spin text-accent" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="py-20 text-center border-4 border-dashed border-muted/20 rounded-[3rem] bg-muted/5">
-          <BookOpen className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-          <p className="font-black text-primary italic text-xl">Nenhuma obra cadastrada</p>
+        <div className="py-20 flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="u-label">Carregando livros…</p>
         </div>
+      ) : filtered.length === 0 ? (
+        resources.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Nenhum livro cadastrado ainda"
+            description="Envie um PDF ou cole um link para o livro aparecer na biblioteca dos alunos."
+            action={{ label: "Novo livro", onClick: () => setIsDialogOpen(true), icon: Plus }}
+          />
+        ) : (
+          <EmptyState
+            icon={Search}
+            title="Nenhum livro encontrado"
+            description={`Nada corresponde a "${searchTerm}".`}
+            secondary={{ label: "Limpar busca", onClick: () => setSearchTerm("") }}
+          />
+        )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((item) => (
-            <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-card flex flex-col hover:shadow-2xl transition-all duration-500">
-              <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                {item.image_url ? (
-                  <img loading="lazy" decoding="async" src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                ) : (
-                  <div aria-hidden="true" className="w-full h-full media-placeholder" />
-                )}
-                <div className="absolute top-4 left-4">
-                  <Badge className="bg-white/80 backdrop-blur-md text-primary border-none px-3 py-1 font-black text-[10px] uppercase shadow-lg flex items-center gap-2">
-                    <BookOpen className="h-3 w-3" />
-                    {item.type}
-                  </Badge>
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {filtered.map((item) => {
+            const categoria = item.category?.replace('LIVRO|', '') || null;
+            return (
+              <Card key={item.id} className="overflow-hidden rounded-card flex flex-col">
+                <div className="relative aspect-[3/4] bg-muted">
+                  <ContentCover
+                    imageUrl={item.image_url}
+                    subject={categoria}
+                    title={item.title}
+                    label={categoria}
+                    className="absolute inset-0"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-background/90 text-foreground border border-border px-2 py-0.5 font-semibold text-[10px] rounded-control flex items-center gap-1.5">
+                      <BookOpen className="h-3 w-3" />
+                      {item.type || "Livro"}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-              <CardHeader className="p-8 pb-4">
-                <span className="text-[10px] font-black text-accent uppercase tracking-widest">{item.category?.replace('LIVRO|', '')}</span>
-                <CardTitle className="text-xl font-black italic truncate mt-2">{item.title}</CardTitle>
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-2 italic">{item.description || "Sem sinopse disponível."}</p>
-              </CardHeader>
-              <CardFooter className="p-8 pt-4 border-t border-muted/10 mt-auto flex justify-between">
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => startEdit(item)} className="h-10 w-10 rounded-full text-accent hover:bg-accent/10">
-                    <Pencil className="h-4 w-4" />
+                <CardHeader className="p-4 pb-2">
+                  {categoria && <span className="u-label">{categoria}</span>}
+                  <CardTitle className="text-base font-bold leading-snug line-clamp-2 mt-1">{item.title}</CardTitle>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.description || "Sem sinopse."}</p>
+                </CardHeader>
+                <CardFooter className="p-4 pt-3 border-t border-border mt-auto flex justify-between gap-2">
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => startEdit(item)} className="h-9 w-9 rounded-control" title="Editar" aria-label="Editar livro">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-9 w-9 rounded-control text-muted-foreground hover:text-red-600 hover:bg-red-500/10" title="Excluir" aria-label="Excluir livro">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Button variant="outline" size="sm" asChild className="rounded-control text-xs font-semibold">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">Abrir arquivo</a>
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-10 w-10 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button variant="outline" size="sm" asChild className="rounded-xl border-primary/20 text-[10px] font-black uppercase">
-                  <a href={item.url} target="_blank">Ver Arquivo</a>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

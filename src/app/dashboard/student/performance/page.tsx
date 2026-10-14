@@ -24,6 +24,9 @@ import { supabase } from "@/app/lib/supabase";
 import { format, subDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { RadarChartPremium, AreaChartPremium } from "@/components/charts/premium";
+import { fmtDate, fmtNumber, fmtPct, pct as pctOf, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { getStreak } from '@/lib/streak';
 
 // Tempo em h/min a partir de segundos (ex.: 4520 -> "1h 15min", 435 -> "7min", 40 -> "40s")
 function fmtDurationLong(seconds: number) {
@@ -113,9 +116,9 @@ export default function StudentPerformancePage() {
           }).reverse();
 
           const history = last15Days.map(dateStr => {
-            const dayAnswers = answers.filter(a => format(new Date(a.answered_at), 'yyyy-MM-dd') === dateStr);
+            const dayAnswers = answers.filter(a => fmtDate(a.answered_at, 'yyyy-MM-dd') === dateStr);
             return {
-              date: format(new Date(dateStr), 'dd/MM'),
+              date: fmtDate(dateStr, 'dd/MM'),
               acertos: dayAnswers.filter(a => a.is_correct).length,
               total: dayAnswers.length
             };
@@ -127,7 +130,8 @@ export default function StudentPerformancePage() {
             accuracy: Math.round((corrects / total) * 100),
             // Tempo real gasto em simulados; fallback pro estimado se ainda não houver dados de duração.
             timeSpent: realTimeSpent > 0 ? realTimeSpent : total * 45,
-            streak: 5 // Mock
+            // Ofensiva real (study_streaks); antes era 5 fixo para todo aluno.
+            streak: await getStreak(user!.id).then(s => s.current_streak || 0).catch(() => 0)
           });
           setSubjectData(radar);
           setHistoryData(history);
@@ -146,7 +150,7 @@ export default function StudentPerformancePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-accent" />
-        <p className="u-label text-primary animate-pulse">Sincronizando BI…</p>
+        <p className="u-label text-primary animate-pulse">Carregando seu desempenho…</p>
       </div>
     );
   }
@@ -164,20 +168,20 @@ export default function StudentPerformancePage() {
                 <BarChart3 className="h-5 w-5 text-accent" />
               </div>
               <Badge className="bg-accent text-accent-foreground border-none font-black text-[9px] uppercase tracking-widest px-3 py-1">
-                Meu Desempenho
+                Raio-X dos estudos
               </Badge>
             </div>
             <h1 className="text-2xl md:text-4xl font-black tracking-tighter text-white italic leading-tight">
-              Centro de <span className="text-accent">Comando</span>
+              Meu <span className="text-accent">desempenho</span>
             </h1>
             <p className="text-white/50 text-xs font-medium italic">
-              Dados reais sobre sua jornada. Refine seus pontos cegos.
+              Veja onde você vai bem e o que vale a pena revisar.
             </p>
           </div>
           <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-5 py-3 rounded-2xl self-start md:self-auto">
             <div>
-              <p className="text-[9px] font-black text-white/65 uppercase tracking-widest">Taxa de Acerto</p>
-              <p className="text-3xl font-black text-accent italic leading-none">{stats.accuracy}%</p>
+              <p className="text-[9px] font-black text-white/65 uppercase tracking-widest">Taxa de acerto</p>
+              <p className="text-3xl font-black text-accent italic leading-none">{fmtPct(stats.accuracy, "0%")}</p>
             </div>
             <div className="h-10 w-10 rounded-full border-4 border-accent border-t-transparent animate-spin-slow shrink-0" />
           </div>
@@ -188,9 +192,9 @@ export default function StudentPerformancePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
         {[
           { label: "Questões",     value: stats.totalAnswered,                      icon: BrainCircuit, color: "text-blue-500",   bg: "bg-blue-50" },
-          { label: "Taxa de Acerto", value: `${stats.accuracy}%`,                   icon: Target,       color: "text-brand-pink", bg: "bg-brand-pink/10" },
-          { label: "Tempo em Simulados", value: fmtDurationLong(stats.timeSpent), icon: Clock,        color: "text-brand-slate", bg: "bg-brand-slate/10" },
-          { label: "Sequência",    value: `${stats.streak}d`,                       icon: Zap,          color: "text-foreground",  bg: "bg-brand-yellow/30" },
+          { label: "Taxa de acerto", value: fmtPct(stats.accuracy, "0%"),                   icon: Target,       color: "text-brand-pink", bg: "bg-brand-pink/10" },
+          { label: "Tempo em simulados", value: fmtDurationLong(stats.timeSpent), icon: Clock,        color: "text-brand-slate", bg: "bg-brand-slate/10" },
+          { label: "Sequência",    value: `${stats.streak} ${stats.streak === 1 ? "dia" : "dias"}`,                       icon: Zap,          color: "text-foreground",  bg: "bg-brand-yellow/30" },
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-4 md:p-6 shadow-md border border-slate-100 hover:shadow-xl hover:-translate-y-0.5 transition-all">
             <div className={`h-9 w-9 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
@@ -209,7 +213,7 @@ export default function StudentPerformancePage() {
         <div className="lg:col-span-7 bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
           <div className="p-4 md:p-8 pb-2 flex items-center justify-between">
             <div>
-              <h2 className="font-black text-base md:text-xl text-slate-900 italic">Mapa de Competências</h2>
+              <h2 className="font-black text-base md:text-xl text-slate-900 italic">Mapa por matéria</h2>
               <p className="text-xs text-slate-400 italic mt-0.5">Distribuição de acertos por área.</p>
             </div>
             <Award className="h-6 w-6 text-accent/30" />
@@ -218,9 +222,14 @@ export default function StudentPerformancePage() {
             {subjectData.length > 0 ? (
               <RadarChartPremium data={subjectData} angleKey="subject" yKey="score" color="#4ccced" unit="%" />
             ) : (
-              <div className="h-full flex flex-col items-center justify-center opacity-20 italic text-sm">
-                <p>Responda questões para gerar seu mapa.</p>
-              </div>
+              <EmptyState
+                compact
+                icon={Target}
+                title="Seu mapa ainda não tem dados"
+                description="Responda algumas questões e o gráfico mostra em quais matérias você acerta mais."
+                action={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+                className="h-full justify-center"
+              />
             )}
           </div>
         </div>
@@ -229,7 +238,7 @@ export default function StudentPerformancePage() {
           {/* Line chart */}
           <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
             <div className="p-4 md:p-8 pb-2">
-              <h2 className="font-black text-base text-slate-900 italic">Atividade Diária</h2>
+              <h2 className="font-black text-base text-slate-900 italic">Atividade diária</h2>
               <p className="text-xs text-slate-400 italic mt-0.5">Acertos nos últimos 15 dias.</p>
             </div>
             <div className="p-4 md:p-8 pt-2 h-[200px] md:h-[260px]">
@@ -249,7 +258,7 @@ export default function StudentPerformancePage() {
               <div>
                 <p className="u-label !text-foreground/60 mb-1">Aurora IA</p>
                 <p className="text-xs font-semibold text-foreground/85 leading-relaxed">
-                  "Seu desempenho em Linguagens cresceu 15% esta semana. Foque em Natureza para equilibrar sua média TRI."
+                  "Comece pela matéria com a menor porcentagem no detalhamento abaixo: é onde cada questão revisada rende mais pontos."
                 </p>
               </div>
             </div>
@@ -259,20 +268,20 @@ export default function StudentPerformancePage() {
 
       {/* ── SUBJECT BREAKDOWN ── */}
       <div className="space-y-3">
-        <h3 className="text-base font-black text-slate-900 italic px-1 uppercase tracking-tighter">Detalhamento por Área</h3>
+        <h3 className="text-base font-black text-slate-900 italic px-1 uppercase tracking-tighter">Detalhamento por matéria</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
           {subjectData.map((item, idx) => (
             <div key={idx} className="bg-white rounded-2xl p-4 md:p-5 shadow-md border border-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all">
               <div className="flex justify-between items-center mb-3">
-                <p className="font-black text-sm italic text-slate-900">{item.subject}</p>
+                <p className="font-black text-sm italic text-slate-900">{txt(item.subject, "Sem matéria")}</p>
                 <span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.score >= 70 ? 'bg-primary/10 text-[#0F7A95]' : item.score >= 50 ? 'bg-brand-yellow/40 text-foreground' : 'bg-brand-pink/10 text-brand-pink'}`}>
-                  {item.score}%
+                  {fmtPct(item.score, "0%")}
                 </span>
               </div>
               <Progress value={item.score} className="h-1.5 rounded-full" />
               <div className="flex justify-between mt-2 text-[8px] font-bold text-slate-400 uppercase tracking-widest">
                 <span>Iniciante</span>
-                <span className="text-accent">Maestro</span>
+                <span className="text-accent">Domínio total</span>
               </div>
             </div>
           ))}
@@ -283,13 +292,18 @@ export default function StudentPerformancePage() {
       <div className="space-y-3">
         <h3 className="text-base font-black text-slate-900 italic px-1 uppercase tracking-tighter flex items-center gap-2">
           <Clock className="h-4 w-4 text-brand-slate" />
-          Histórico de Simulados
+          Histórico de simulados
         </h3>
         <div className="bg-white rounded-2xl md:rounded-card shadow-md border border-slate-100 overflow-hidden">
           {attempts.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 italic text-sm">
-              Nenhum simulado finalizado ainda. Ao concluir um simulado, o tempo aparece aqui.
-            </div>
+            <EmptyState
+              compact
+              icon={Clock}
+              title="Você ainda não terminou nenhum simulado"
+              description="Quando concluir um, a data, os acertos e o tempo que você levou aparecem aqui."
+              action={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+              className="border-0 rounded-none"
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -304,11 +318,11 @@ export default function StudentPerformancePage() {
                 </thead>
                 <tbody>
                   {attempts.map((a) => {
-                    const pct = a.total_questions > 0 ? Math.round((a.score / a.total_questions) * 100) : 0;
+                    const pct = pctOf(a.score, a.total_questions);
                     return (
                       <tr key={a.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                         <td className="pl-4 pr-2 md:px-6 py-3 font-bold text-slate-600">
-                          <span className="whitespace-nowrap">{format(new Date(a.created_at), "dd/MM/yy", { locale: ptBR })}</span>
+                          <span className="whitespace-nowrap">{fmtDate(a.created_at, "dd/MM/yy")}</span>
                           {/* No celular a matéria vem embaixo da data: cinco colunas
                               não cabiam e a tabela rolava para o lado. */}
                           <span className="sm:hidden block text-[11px] font-semibold text-slate-400 leading-tight mt-0.5">{a.subjects?.name || "Geral / Misto"}</span>
@@ -317,7 +331,7 @@ export default function StudentPerformancePage() {
                           {a.subjects?.name || "Geral / Misto"}
                         </td>
                         <td className="px-2 py-3 text-center font-black text-slate-800 tabular-nums whitespace-nowrap">
-                          {a.score}<span className="text-slate-300">/{a.total_questions}</span>
+                          {fmtNumber(a.score, 0, '0')}<span className="text-slate-300">/{fmtNumber(a.total_questions, 0, '0')}</span>
                         </td>
                         <td className="px-2 py-3 text-center">
                           <span className={`text-xs font-black px-2 py-0.5 rounded-full ${pct >= 70 ? 'bg-primary/10 text-[#0F7A95]' : pct >= 50 ? 'bg-brand-yellow/40 text-foreground' : 'bg-brand-pink/10 text-brand-pink'}`}>

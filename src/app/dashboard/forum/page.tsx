@@ -26,6 +26,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/app/lib/supabase";
+import { EmptyState } from "@/components/EmptyState";
+import { txt } from "@/lib/format";
 
 const FORUM_CATEGORIES = [
   "Todos", 
@@ -92,11 +94,11 @@ export default function ForumPage() {
     
     if (!error) {
       setForums(prev => [data, ...prev]);
-      toast({ title: "Discussão Iniciada!", description: "Sua pergunta agora está visível para toda a rede." });
+      toast({ title: "Discussão publicada!", description: "Agora todo mundo da turma pode ver e responder." });
       setIsCreateOpen(false);
       setNewForum({ name: "", description: "", category: "Dúvidas" });
     } else {
-      toast({ title: "Erro ao publicar", description: error.message, variant: "destructive" });
+      toast({ title: "Não deu para publicar", description: "Confira sua internet e tente de novo em instantes.", variant: "destructive" });
     }
     setIsSubmitting(false);
   };
@@ -154,7 +156,7 @@ export default function ForumPage() {
           <h1 className="text-3xl md:text-4xl font-black text-primary italic tracking-tight leading-none">
             Comunidade <span className="text-accent">{tenant.branding.appName}</span>
           </h1>
-          <p className="text-muted-foreground font-medium text-sm md:text-lg italic">Onde o conhecimento se torna colaborativo.</p>
+          <p className="text-muted-foreground font-medium text-sm md:text-lg italic">Tire dúvidas, ajude colegas e troque ideias sobre os estudos.</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -166,11 +168,11 @@ export default function ForumPage() {
           <DialogContent className="rounded-card border-none shadow-2xl p-8 md:p-12 max-w-[95vw] md:max-w-lg bg-white mx-auto">
               <DialogHeader>
                   <DialogTitle className="u-display text-2xl text-primary">Iniciar tópico</DialogTitle>
-                  <DialogDescription className="font-medium text-sm italic">Compartilhe sua dúvida ou insight com a rede.</DialogDescription>
+                  <DialogDescription className="font-medium text-sm italic">Conte sua dúvida ou ideia para a turma.</DialogDescription>
               </DialogHeader>
               <div className="space-y-5 py-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 px-2">Título do Debate</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 px-2">Título</label>
                     <Input placeholder="Qual sua dúvida principal?" value={newForum.name} onChange={(e) => setNewForum({...newForum, name: e.target.value})} disabled={isSubmitting} className="h-14 rounded-xl bg-muted/30 border-none font-bold" />
                   </div>
                   <div className="space-y-2">
@@ -181,14 +183,14 @@ export default function ForumPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 px-2">Contexto / Detalhes</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 px-2">Detalhes</label>
                     <Input placeholder="Explique um pouco mais..." value={newForum.description} onChange={(e) => setNewForum({...newForum, description: e.target.value})} disabled={isSubmitting} className="h-14 rounded-xl bg-muted/30 border-none font-medium italic" />
                   </div>
               </div>
               <DialogFooter>
                   <Button onClick={handleCreateForum} disabled={isSubmitting || !newForum.name.trim()} className="w-full h-16 bg-primary text-white font-black text-lg rounded-2xl shadow-xl">
                     {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <MessageSquare className="h-6 w-6 mr-2 text-accent" />}
-                    {isSubmitting ? "Publicando..." : "Publicar Agora"}
+                    {isSubmitting ? "Publicando..." : "Publicar"}
                   </Button>
               </DialogFooter>
           </DialogContent>
@@ -199,7 +201,7 @@ export default function ForumPage() {
         <div className="relative flex-1 w-full group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
           <Input 
-            placeholder="Pesquisar debates..." 
+            placeholder="Buscar discussões…" 
             className="pl-12 h-14 bg-white border-none shadow-xl rounded-2xl text-base font-medium italic focus-visible:ring-accent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -222,14 +224,28 @@ export default function ForumPage() {
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-accent" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sintonizando Rede...</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Carregando discussões…</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {filteredForums?.length === 0 ? (
-            <div className="col-span-full py-24 text-center border-4 border-dashed rounded-[3rem] opacity-30">
-              <MessageSquare className="h-16 w-16 mx-auto mb-4" />
-              <p className="u-display text-xl">Nenhuma discussão encontrada</p>
+            <div className="col-span-full">
+              {forums.length === 0 ? (
+                <EmptyState
+                  icon={MessageSquare}
+                  title="Ninguém começou uma discussão ainda"
+                  description="Seja a primeira pessoa a perguntar: as dúvidas da turma aparecem aqui, e colegas e professores podem responder."
+                  action={{ label: "Nova discussão", icon: Plus, onClick: () => setIsCreateOpen(true) }}
+                />
+              ) : (
+                <EmptyState
+                  icon={Search}
+                  title="Nenhuma discussão com esse filtro"
+                  description="Tente outra palavra ou outra matéria. Se ninguém perguntou ainda, você pode abrir o assunto."
+                  action={{ label: "Ver todas", onClick: () => { setSearchTerm(""); setActiveCategory("Todos"); } }}
+                  secondary={{ label: "Nova discussão", onClick: () => setIsCreateOpen(true) }}
+                />
+              )}
             </div>
           ) : (
             filteredForums?.map((forum) => {
@@ -244,11 +260,11 @@ export default function ForumPage() {
                         <CardTitle className="pt-6 text-base sm:text-lg font-black text-primary leading-snug group-hover:text-accent transition-colors line-clamp-2 min-h-[2.75rem]">{forum.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 pt-0 flex-grow">
-                        <p className="text-xs md:text-sm text-muted-foreground font-medium italic line-clamp-2 opacity-80">"{forum.description}"</p>
+                        <p className="text-xs md:text-sm text-muted-foreground font-medium italic line-clamp-2 opacity-80">{forum.description ? `"${forum.description}"` : "Sem detalhes. Abra para ver as respostas."}</p>
                         <div className="flex items-center justify-between mt-8 pt-6 border-t border-muted/10">
                           <div className="flex flex-col">
                             <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Autor</span>
-                            <span className="text-[10px] font-bold text-primary italic">@{forum.author_name?.split(' ')[0].toLowerCase()}</span>
+                            <span className="text-[10px] font-bold text-primary italic">@{txt(forum.author_name, 'anônimo').split(' ')[0].toLowerCase()}</span>
                           </div>
                           <Button asChild variant="ghost" className="text-accent font-black text-[10px] uppercase hover:bg-accent/10 rounded-xl px-4">
                             <Link href={`/dashboard/forum/${forum.id}`}>Participar <ArrowRight className="ml-2 h-4 w-4" /></Link>

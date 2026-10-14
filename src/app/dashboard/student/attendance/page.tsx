@@ -31,6 +31,9 @@ import { supabase } from "@/app/lib/supabase";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { trackMissionProgress } from "@/lib/missions";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StudentAttendancePage() {
   const { user, profile } = useAuth();
@@ -121,7 +124,7 @@ export default function StudentAttendancePage() {
   function handleOpenImpact() {
     const code = checkinCode.trim().toUpperCase();
     if (code.length < 4 || code.length > 6) {
-      toast({ title: "Código inválido", description: "O token tem 4 caracteres (ex: A7X9).", variant: "destructive" });
+      toast({ title: "Código inválido", description: "O código tem 4 caracteres (ex: A7X9). Confira na lousa e digite de novo.", variant: "destructive" });
       return;
     }
     setConfirmoInput("");
@@ -131,7 +134,7 @@ export default function StudentAttendancePage() {
   async function handleConfirmedCheckin() {
     const code = checkinCode.trim().toUpperCase();
     if (confirmoInput.trim().toUpperCase() !== "CONFIRMO") {
-      toast({ title: "Digite CONFIRMO para prosseguir", variant: "destructive" });
+      toast({ title: "Digite CONFIRMO para continuar", variant: "destructive" });
       return;
     }
     setCheckingIn(true);
@@ -151,10 +154,10 @@ export default function StudentAttendancePage() {
       const data = await res.json();
       if (!res.ok) {
         trackFalha("checkin_recusado", data.error ?? "sem detalhe");
-        toast({ title: "Erro no check-in", description: data.error || "Código inválido ou expirado.", variant: "destructive" });
+        toast({ title: "Não deu para registrar sua presença", description: data.error || "O código está errado ou já expirou. Confira na lousa ou peça um novo ao professor.", variant: "destructive" });
       } else {
         trackAcao("checkin_ok");
-        toast({ title: "Presença registrada!", description: `Aula: ${data.session_title}` });
+        toast({ title: "Presença registrada!", description: data.session_title ? `Aula: ${txt(data.session_title)}` : undefined });
         if (user) {
           trackMissionProgress(supabase, user.id, 'checkin', 1).then(() => {});
         }
@@ -167,7 +170,7 @@ export default function StudentAttendancePage() {
       trackFalha("checkin_falhou", e);
       const demorou = e instanceof TempoEsgotado;
       toast({
-        title: demorou ? "A rede não respondeu" : "Erro de conexão",
+        title: demorou ? "A internet não respondeu" : "Sem conexão",
         description: demorou
           ? "Seu código continua válido. Tente de novo — se insistir, avise o professor."
           : "Não conseguimos registrar sua presença. Tente de novo.",
@@ -271,9 +274,9 @@ export default function StudentAttendancePage() {
             <KeyRound className="h-4 w-4 text-orange-600" />
           </div>
           <div>
-            <p className="font-black text-primary text-sm italic">Check-in da Aula</p>
+            <p className="font-black text-primary text-sm italic">Presença na aula</p>
             <p className="text-[10px] text-slate-500 font-medium">
-              Digite o token exibido na lousa
+              Digite o código que está na lousa
             </p>
           </div>
         </div>
@@ -324,15 +327,16 @@ export default function StudentAttendancePage() {
         </div>
 
         {loading ? (
-          <div className="py-16 flex flex-col items-center gap-3">
-            <Loader2 className="h-7 w-7 animate-spin text-orange-400" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Carregando...</p>
+          <div className="space-y-2" aria-label="Carregando…">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[68px] w-full rounded-2xl" />)}
           </div>
         ) : sessions.length === 0 ? (
-          <div className="py-16 flex flex-col items-center gap-3 border border-dashed border-slate-200 rounded-card">
-            <ClipboardCheck className="h-8 w-8 text-slate-300" />
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhuma aula registrada</p>
-          </div>
+          <EmptyState
+            icon={ClipboardCheck}
+            title="Ainda não há aulas na sua lista"
+            description="Quando suas aulas forem lançadas, cada uma aparece aqui com a sua presença. Para marcar presença, digite o código da lousa acima."
+            compact
+          />
         ) : (
           <div className="space-y-2">
             {sessions.map((session, idx) => {
@@ -366,11 +370,11 @@ export default function StudentAttendancePage() {
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-primary italic truncate leading-tight">
-                      {session.title}
+                      {txt(session.title, "Aula")}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       <span className="text-[10px] text-slate-500 font-bold">
-                        {format(new Date(session.session_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}
+                        {fmtDate(session.session_date, "dd/MM/yyyy")}
                       </span>
                       {session.subject && (
                         <>
@@ -406,7 +410,7 @@ export default function StudentAttendancePage() {
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {session.session_type === "live" ? "Live" : "Presencial"}
+                      {session.session_type === "live" ? "Ao vivo" : "Presencial"}
                     </Badge>
                   </div>
                 </div>
@@ -442,13 +446,13 @@ export default function StudentAttendancePage() {
             <div className="flex items-start gap-3 p-4 bg-red-500/8 border border-red-500/15 rounded-2xl">
               <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
               <p className="text-red-300 text-xs font-bold leading-relaxed">
-                O token só pode ser digitado por você, fisicamente dentro da sala de aula.
+                O código só pode ser digitado por você, fisicamente dentro da sala de aula.
               </p>
             </div>
 
             <ul className="space-y-2 text-white/50 text-xs font-medium">
               {[
-                "Compartilhar o token com colegas que faltaram caracteriza fraude documental.",
+                "Passar o código para colegas que faltaram caracteriza fraude documental.",
                 "Alunos detectados em fraude perdem a vaga no cursinho imediatamente.",
                 "A lista de papel é cruzada com os check-ins do app pela secretaria.",
                 "Divergências entre lista física e app geram auditoria.",
@@ -462,7 +466,7 @@ export default function StudentAttendancePage() {
 
             <div className="space-y-1.5 pt-1">
               <Label className="text-[10px] font-black uppercase text-white/55 tracking-widest ml-1">
-                Digite <span className="text-red-400">CONFIRMO</span> para prosseguir
+                Digite <span className="text-red-400">CONFIRMO</span> para continuar
               </Label>
               <input
                 type="text"

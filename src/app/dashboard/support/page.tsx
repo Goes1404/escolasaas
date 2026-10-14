@@ -38,21 +38,32 @@ export default function AuroraSupportPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [latency, setLatency] = useState(0);
+  const [latency, setLatency] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     setMessages([{
       role: "assistant",
-      content: `Olá! Sou a Aurora, sua Engine de Apoio. Conectada agora a: ${profile?.institution || 'Rede Geral'}. Como posso acelerar seus processos hoje?`
+      content: `Oi! Sou a Aurora IA. Posso explicar matéria, tirar dúvida sobre ENEM e vestibular ou ajudar você a usar a plataforma. Por onde quer começar?`
     }]);
 
-    // Simulação industrial de medição de latência real
-    const interval = setInterval(() => {
-      setLatency(Math.floor(Math.random() * 40) + 10);
-    }, 5000);
-    return () => clearInterval(interval);
+    // Medição real: tempo de ida e volta até o servidor (antes era um
+    // número aleatório entre 10 e 50 ms).
+    let vivo = true;
+    const medir = async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) { if (vivo) setLatency(-1); return; }
+      const t0 = performance.now();
+      try {
+        await fetch('/api/health', { cache: 'no-store' });
+        if (vivo) setLatency(Math.round(performance.now() - t0));
+      } catch {
+        if (vivo) setLatency(-1);
+      }
+    };
+    medir();
+    const interval = setInterval(medir, 20000);
+    return () => { vivo = false; clearInterval(interval); };
   }, [profile]);
 
   useEffect(() => {
@@ -91,17 +102,18 @@ export default function AuroraSupportPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Erro ${res.status}`);
+        // Só a mensagem que o servidor escreveu para o aluno é exibida; erro de rede cai no texto padrão.
+        throw Object.assign(new Error(err.error || ""), { paraAluno: true });
       }
 
       const data = await res.json();
-      const reply = data?.result?.response || data?.text || "Sem resposta da Aurora.";
+      const reply = data?.result?.response || data?.text || "A Aurora não conseguiu responder desta vez. Tente perguntar de outro jeito.";
 
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (err: any) {
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Não consegui processar sua solicitação agora. Tente novamente em instantes. (${err.message})`,
+        content: (err?.paraAluno && err.message) || "Não consegui falar com a Aurora agora. Verifique sua internet e tente de novo.",
         isError: true,
       }]);
     } finally {
@@ -122,19 +134,19 @@ export default function AuroraSupportPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1 className="u-page-title text-2xl md:text-3xl text-primary">
-              Engine de Comunicação
+              Aurora IA
             </h1>
-            <Badge className="bg-accent/10 text-accent font-black text-[8px] uppercase tracking-widest border-none px-3">SINAL ATIVO</Badge>
+            <Badge className="bg-accent/10 text-accent font-black text-[8px] uppercase tracking-widest border-none px-3">Online</Badge>
           </div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-            <ShieldCheck className="h-3 w-3 text-accent" /> {profile?.institution || 'REDE GERAL'} • MONITORAMENTO 24/7
+            <ShieldCheck className="h-3 w-3 text-accent" /> {profile?.institution ? `${profile.institution} · ` : ''}Disponível 24h
           </p>
         </div>
         <div className="flex items-center gap-3">
            <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => setMessages([{role: "assistant", content: "Sintonizando dados..."}])} 
+            onClick={() => setMessages([{role: "assistant", content: "Conversa reiniciada. Qual é a sua dúvida?"}])} 
             className="rounded-xl border-dashed h-10 px-6 text-xs font-black uppercase hover:bg-red-50 hover:text-red-600 transition-colors"
           >
             <Eraser className="h-4 w-4 mr-2" /> Reiniciar
@@ -145,7 +157,7 @@ export default function AuroraSupportPage() {
       <div className="flex-1 flex flex-col md:flex-row gap-8 min-h-0 overflow-hidden pb-4">
         <div className="hidden lg:flex flex-col gap-6 w-72 shrink-0">
           <div className="space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2">Categorias de Suporte</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 px-2">Perguntas rápidas</p>
             {suggestionChips.map((chip, i) => (
               <Button 
                 key={i} 
@@ -166,19 +178,23 @@ export default function AuroraSupportPage() {
             <div className="relative z-10 space-y-4">
               <h3 className="font-black text-xs flex items-center gap-2 italic">
                 <Wifi className="h-4 w-4 text-accent" />
-                Status do Polo
+                Sua conexão
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-[9px] font-black uppercase opacity-60">
-                  <span>Latência de Rede</span>
-                  <span className="text-accent italic">{latency}ms</span>
+                  <span>Tempo de resposta</span>
+                  <span className="text-accent">{latency === null ? '…' : latency < 0 ? 'sem conexão' : `${latency} ms`}</span>
                 </div>
                 <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.5)]" style={{ width: `${100 - latency}%` }} />
+                  <div className="h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.5)]" style={{ width: `${latency === null || latency < 0 ? 0 : Math.max(8, 100 - Math.min(latency, 1000) / 10)}%` }} />
                 </div>
               </div>
               <p className="text-[10px] opacity-70 leading-relaxed font-medium italic">
-                O sinal em {profile?.institution || 'sua unidade'} está 100% estável.
+                {latency !== null && latency < 0
+                  ? 'Você parece estar sem internet. As respostas voltam quando a conexão voltar.'
+                  : latency !== null && latency > 800
+                    ? 'Conexão lenta: as respostas podem demorar um pouco.'
+                    : 'Conexão estável. Se a resposta demorar, confira sua internet.'}
               </p>
             </div>
           </Card>
@@ -210,7 +226,7 @@ export default function AuroraSupportPage() {
                   <div className="h-10 w-10 rounded-full bg-muted shrink-0" />
                   <div className="bg-muted/10 p-6 rounded-card rounded-tl-none flex items-center gap-4">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-50 italic">Aurora processando solicitação...</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-50 italic">Aurora está pensando…</span>
                   </div>
                 </div>
               )}
@@ -224,7 +240,7 @@ export default function AuroraSupportPage() {
                 <Input 
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Descreva sua dúvida pedagógica ou administrativa..."
+                  placeholder="Escreva sua dúvida…"
                   disabled={loading}
                   className="h-14 md:h-16 bg-white border-none rounded-3xl pl-14 pr-8 shadow-xl focus-visible:ring-accent text-sm md:text-base font-bold italic"
                 />

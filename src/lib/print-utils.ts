@@ -96,4 +96,4 @@ export function openPrintWindow({
 
 /** Formata um número como moeda brasileira. */
 export const brl = (v: number | string | null | undefined) =>
-  Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  { const n = Number(v ?? 0); return (Number.isFinite(n) ? n : 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };

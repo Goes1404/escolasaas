@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/components/TenantProvider";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate, fmtBRL as fmtBRLSafe, txt } from '@/lib/format';
+import { EmptyState } from "@/components/EmptyState";
 
 interface Teacher { id: string; name: string | null; email: string | null }
 interface Rate { teacher_id: string; rate_type: string; amount: number; notes: string | null }
@@ -29,7 +31,8 @@ interface Payment {
 }
 
 const RATE_LABEL: Record<string, string> = { monthly: "Mensal", hourly: "Por hora", per_class: "Por aula" };
-const fmtBRL = (v: number) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// Valor ausente vira R$ 0,00 (como antes); valor ilegível nunca vira "R$ NaN".
+const fmtBRL = (v: unknown) => fmtBRLSafe(v, "R$ 0,00");
 const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 export default function SecretaryFinancePage() {
@@ -160,8 +163,8 @@ export default function SecretaryFinancePage() {
   const printReceipt = (p: Payment) => {
     if (!selected) return;
     const monthLabel = (() => {
-      const [y, m] = p.reference_month.split("-");
-      return y && m ? format(new Date(Number(y), Number(m) - 1, 1), "MMMM 'de' yyyy", { locale: ptBR }) : p.reference_month;
+      const [y, m] = (p.reference_month || "").split("-");
+      return y && m ? fmtDate(new Date(Number(y), Number(m) - 1, 1), "MMMM 'de' yyyy") : p.reference_month;
     })();
     const w = window.open("", "_blank");
     if (!w) return;
@@ -211,7 +214,7 @@ export default function SecretaryFinancePage() {
     return (
       <div className="h-96 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Carregando financeiro...</p>
+        <p className="u-label">Carregando financeiro…</p>
       </div>
     );
   }
@@ -220,53 +223,56 @@ export default function SecretaryFinancePage() {
   const totalPaid = payments.filter(p => p.status === "paid").reduce((a, p) => a + Number(p.amount), 0);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 pb-20 px-1">
+    <div className="space-y-6 pb-20">
       {/* Cabeçalho */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-black text-primary italic leading-none flex items-center gap-2">
-          <Wallet className="h-7 w-7 text-primary" /> Financeiro dos Professores
-        </h1>
-        <p className="text-muted-foreground font-medium italic text-sm">
+      <div>
+        <p className="u-label flex items-center gap-2"><Wallet className="h-3.5 w-3.5" /> Secretaria · pagamento de professores</p>
+        <h1 className="u-page-title text-3xl mt-1">Professores</h1>
+        <p className="text-muted-foreground text-sm mt-2">
           Defina o valor a pagar de cada professor e gere os recibos por período.
         </p>
       </div>
 
       {/* Totais */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <Card className="border-none shadow-xl rounded-3xl bg-white p-5">
-          <DollarSign className="h-5 w-5 text-slate-400 mb-2" />
-          <p className="text-2xl font-black text-slate-900 tabular-nums">{teachers.length}</p>
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Professores</p>
+        {/* Cor só como sinal: verde = pago. Pendente é ausência de estado → neutro. */}
+        <Card className="rounded-card shadow-none p-5">
+          <p className="u-label flex items-center gap-2"><DollarSign className="h-3.5 w-3.5" /> Professores</p>
+          <p className="u-num text-2xl mt-2">{teachers.length}</p>
         </Card>
-        <Card className="border-none shadow-xl rounded-3xl bg-white p-5">
-          <Clock className="h-5 w-5 text-amber-500 mb-2" />
-          <p className="text-2xl font-black text-amber-600 tabular-nums">{fmtBRL(totalPending)}</p>
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Recibos pendentes</p>
+        <Card className="rounded-card shadow-none p-5">
+          <p className="u-label flex items-center gap-2"><Clock className="h-3.5 w-3.5" /> Recibos pendentes</p>
+          <p className="u-num text-xl sm:text-2xl mt-2 break-words">{fmtBRL(totalPending)}</p>
         </Card>
-        <Card className="border-none shadow-xl rounded-3xl bg-white p-5 col-span-2 sm:col-span-1">
-          <CheckCircle2 className="h-5 w-5 text-emerald-500 mb-2" />
-          <p className="text-2xl font-black text-emerald-600 tabular-nums">{fmtBRL(totalPaid)}</p>
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Já pago</p>
+        <Card className="rounded-card shadow-none p-5 col-span-2 sm:col-span-1">
+          <p className="u-label !text-emerald-600 flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5" /> Já pago</p>
+          <p className="u-num text-xl sm:text-2xl mt-2 text-emerald-600 break-words">{fmtBRL(totalPaid)}</p>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Lista de professores */}
-        <Card className="lg:col-span-2 border-none shadow-2xl rounded-card bg-white p-5 space-y-4 h-fit">
+        <Card className="lg:col-span-2 rounded-card shadow-none p-5 space-y-4 h-fit">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar professor..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-11 bg-muted/30 border-none rounded-xl font-medium text-sm"
+              className="pl-10 h-11 bg-muted/30 border-none rounded-control text-sm"
             />
           </div>
           <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
             {loading ? (
-              Array(4).fill(0).map((_, i) => <div key={i} className="h-[60px] rounded-2xl bg-slate-50 animate-pulse" />)
+              Array(4).fill(0).map((_, i) => <div key={i} className="h-[60px] rounded-control bg-muted animate-pulse" />)
             ) : filteredTeachers.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400 italic">Nenhum professor encontrado.</p>
+              <EmptyState
+                compact
+                icon={UserRound}
+                title={search ? "Nenhum professor com esse nome" : "Nenhum professor cadastrado"}
+                description={search ? "Confira a grafia ou limpe a busca." : "Professores cadastrados pelo administrador aparecem aqui."}
+                action={search ? { label: "Limpar busca", onClick: () => setSearch("") } : undefined}
+              />
             ) : filteredTeachers.map((t) => {
               const r = rates[t.id];
               const isSel = selectedId === t.id;
@@ -274,14 +280,14 @@ export default function SecretaryFinancePage() {
                 <button
                   key={t.id}
                   onClick={() => selectTeacher(t)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${isSel ? "border-primary bg-primary/5 shadow-md" : "border-slate-100 hover:bg-slate-50"}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-control border transition-colors text-left ${isSel ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
                 >
-                  <div className="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                  <div className="h-9 w-9 rounded-control bg-muted flex items-center justify-center text-muted-foreground shrink-0">
                     <UserRound className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-slate-800 truncate">{t.name || "Sem nome"}</p>
-                    <p className="text-[10px] font-bold text-slate-400">
+                    <p className="text-sm font-semibold truncate">{txt(t.name, "Sem nome")}</p>
+                    <p className="text-xs text-muted-foreground">
                       {r ? `${fmtBRL(Number(r.amount))} · ${RATE_LABEL[r.rate_type] || r.rate_type}` : "Sem valor definido"}
                     </p>
                   </div>
@@ -294,95 +300,97 @@ export default function SecretaryFinancePage() {
         {/* Detalhe do professor */}
         <div className="lg:col-span-3 space-y-6">
           {!selected ? (
-            <Card className="border-none shadow-2xl rounded-card bg-white p-12 text-center">
-              <Wallet className="h-10 w-10 text-slate-200 mx-auto mb-3" />
-              <p className="text-sm font-bold text-slate-400 italic">Selecione um professor para definir o valor e gerar recibos.</p>
-            </Card>
+            <EmptyState
+              icon={Wallet}
+              title="Nenhum professor selecionado"
+              description="Escolha um professor na lista para definir o valor a pagar e gerar recibos."
+            />
           ) : (
             <>
               {/* Valor a pagar */}
-              <Card className="border-none shadow-2xl rounded-card bg-white p-6 space-y-4">
-                <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-emerald-500" /> Valor a Pagar — {selected.name}
-                </h2>
+              <Card className="rounded-card shadow-none p-6 space-y-4">
+                <div>
+                  <p className="u-label flex items-center gap-2"><DollarSign className="h-3.5 w-3.5" /> Valor a pagar</p>
+                  <h2 className="text-lg font-bold mt-1 truncate">{txt(selected.name, "Sem nome")}</h2>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Tipo</Label>
+                    <Label className="u-label ml-1">Tipo</Label>
                     <Select value={rateType} onValueChange={setRateType}>
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none font-bold text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent className="rounded-xl border-none shadow-2xl">
-                        <SelectItem value="monthly" className="font-bold text-xs">Mensal</SelectItem>
-                        <SelectItem value="hourly" className="font-bold text-xs">Por hora</SelectItem>
-                        <SelectItem value="per_class" className="font-bold text-xs">Por aula</SelectItem>
+                      <SelectTrigger className="h-11 rounded-control bg-muted/30 border-none text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent className="rounded-control">
+                        <SelectItem value="monthly" className="text-sm">Mensal</SelectItem>
+                        <SelectItem value="hourly" className="text-sm">Por hora</SelectItem>
+                        <SelectItem value="per_class" className="text-sm">Por aula</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Valor (R$)</Label>
+                    <Label className="u-label ml-1">Valor (R$)</Label>
                     <Input
                       type="number" min="0" step="0.01" inputMode="decimal"
                       value={rateAmount} onChange={(e) => setRateAmount(e.target.value)}
                       placeholder="0,00"
-                      className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm"
+                      className="h-11 bg-muted/30 border-none rounded-control text-sm"
                     />
                   </div>
                 </div>
-                <Button onClick={handleSaveRate} disabled={savingRate} className="w-full h-12 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest border-none">
+                <Button onClick={handleSaveRate} disabled={savingRate} variant="outline" className="w-full h-11 rounded-control font-bold">
                   {savingRate ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                  Salvar Valor
+                  Salvar valor
                 </Button>
               </Card>
 
               {/* Gerar recibo */}
-              <Card className="border-none shadow-2xl rounded-card bg-white p-6 space-y-4">
-                <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-orange-500" /> Gerar Recibo
+              <Card className="rounded-card shadow-none p-6 space-y-4">
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-muted-foreground" /> Gerar recibo
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Mês de referência</Label>
-                    <Input type="month" value={refMonth} onChange={(e) => setRefMonth(e.target.value)} className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm" />
+                    <Label className="u-label ml-1">Mês de referência</Label>
+                    <Input type="month" value={refMonth} onChange={(e) => setRefMonth(e.target.value)} className="h-11 bg-muted/30 border-none rounded-control text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-primary/40 tracking-widest ml-1">Valor (R$)</Label>
-                    <Input type="number" min="0" step="0.01" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0,00" className="h-12 bg-muted/30 border-none rounded-xl font-bold text-sm" />
+                    <Label className="u-label ml-1">Valor (R$)</Label>
+                    <Input type="number" min="0" step="0.01" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0,00" className="h-11 bg-muted/30 border-none rounded-control text-sm" />
                   </div>
                 </div>
-                <Button onClick={handleCreatePayment} disabled={creatingPay} className="w-full h-12 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-widest border-none">
+                <Button onClick={handleCreatePayment} disabled={creatingPay} variant="arcade" className="w-full h-11 rounded-control font-bold">
                   {creatingPay ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                  Gerar Recibo
+                  Gerar recibo
                 </Button>
               </Card>
 
               {/* Histórico de recibos */}
-              <Card className="border-none shadow-2xl rounded-card bg-white overflow-hidden">
+              <Card className="rounded-card shadow-none overflow-hidden">
                 <div className="p-6 pb-2">
-                  <h2 className="text-lg font-black text-primary italic flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-slate-400" /> Recibos ({selectedPayments.length})
+                  <h2 className="text-lg font-bold flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-muted-foreground" /> Recibos <span className="u-num text-base text-muted-foreground">{selectedPayments.length}</span>
                   </h2>
                 </div>
                 <div className="p-4 pt-2 space-y-2">
                   {selectedPayments.length === 0 ? (
-                    <p className="py-8 text-center text-xs text-slate-400 italic">Nenhum recibo gerado para este professor.</p>
+                    <EmptyState compact icon={Receipt} title="Nenhum recibo gerado ainda" description="Use “Gerar recibo” acima para criar o primeiro deste professor." />
                   ) : selectedPayments.map((p) => {
-                    const [y, m] = p.reference_month.split("-");
-                    const monthLabel = y && m ? format(new Date(Number(y), Number(m) - 1, 1), "MMM/yy", { locale: ptBR }) : p.reference_month;
+                    const [y, m] = (p.reference_month || "").split("-");
+                    const monthLabel = y && m ? fmtDate(new Date(Number(y), Number(m) - 1, 1), "MMM/yy") : txt(p.reference_month);
                     const paid = p.status === "paid";
                     return (
-                      <div key={p.id} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                      <div key={p.id} className="flex items-center gap-3 p-3 rounded-control border border-border">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-black text-slate-800 tabular-nums">{fmtBRL(Number(p.amount))}</span>
-                            <Badge className={`border-none font-black text-[9px] uppercase px-2 h-4 ${paid ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                            <span className="u-num text-sm">{fmtBRL(p.amount)}</span>
+                            <Badge className={`border-none font-bold text-[10px] px-2 h-5 ${paid ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
                               {paid ? "Pago" : "Pendente"}
                             </Badge>
                           </div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Ref. {monthLabel}</p>
+                          <p className="u-label mt-1">Ref. {monthLabel}</p>
                         </div>
-                        <button onClick={() => togglePaid(p)} title={paid ? "Marcar como pendente" : "Marcar como pago"} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${paid ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>
+                        <button onClick={() => togglePaid(p)} title={paid ? "Marcar como pendente" : "Marcar como pago"} aria-label={paid ? "Marcar como pendente" : "Marcar como pago"} className={`h-9 w-9 rounded-control flex items-center justify-center transition-colors ${paid ? "text-emerald-600 hover:bg-emerald-50" : "text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50"}`}>
                           <CheckCircle2 className="h-4 w-4" />
                         </button>
-                        <button onClick={() => printReceipt(p)} title="Imprimir recibo" className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <button onClick={() => printReceipt(p)} title="Imprimir recibo" aria-label="Imprimir recibo" className="h-9 w-9 rounded-control flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                           <Printer className="h-4 w-4" />
                         </button>
                       </div>

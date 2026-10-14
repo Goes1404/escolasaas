@@ -166,7 +166,12 @@ export default function NotesGraphPage() {
       supabase.from("notes").select("*").eq("user_id", user.id),
       supabase.from("subjects").select("id, name"),
     ]).then(([nr, sr]) => {
-      if (nr.data) setNotes(nr.data as Note[]);
+      // Nota sem título ou com blocos nulos derrubava o grafo (charAt/map em null).
+      if (nr.data) setNotes((nr.data as Note[]).map(n => ({
+        ...n,
+        title: (n.title ?? "").trim() || "Sem título",
+        blocks: Array.isArray(n.blocks) ? n.blocks : [],
+      })));
       if (sr.data) setSubjects(sr.data);
     }).finally(() => setLoading(false));
   }, [user]);
@@ -290,7 +295,7 @@ export default function NotesGraphPage() {
   if (loading) return (
     <div className={`flex flex-col items-center justify-center gap-3 ${screenH}`}>
       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      <p className="u-label">Construindo grafo…</p>
+      <p className="u-label">Carregando suas notas…</p>
     </div>
   );
 
@@ -385,9 +390,9 @@ export default function NotesGraphPage() {
           <div className="relative flex flex-col items-center justify-center h-full gap-4 text-center px-8">
             <Network className="h-12 w-12 text-muted-foreground/60" />
             <div className="space-y-1.5">
-              <p className="font-semibold text-foreground">Nenhuma nota ainda</p>
+              <p className="font-semibold text-foreground">Você ainda não tem notas</p>
               <p className="text-muted-foreground text-sm max-w-xs">
-                Crie notas no caderno e use <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs text-foreground">[[nome da nota]]</code> para criar conexões.
+                Crie notas no caderno e use <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs text-foreground">[[nome da nota]]</code> dentro do texto para ligar uma nota à outra. As ligações aparecem aqui.
               </p>
             </div>
             <Button asChild variant="arcade">

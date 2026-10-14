@@ -28,6 +28,7 @@ import {
 import { trackMissionProgress } from '@/lib/missions';
 import { allowedExamTypesFor, examTypeLabel } from '@/lib/exam-types';
 import { trackAcao, trackFalha } from '@/lib/telemetry';
+import { pct as pctOf } from '@/lib/format';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ALL_TOPICS = '_all';
@@ -258,7 +259,7 @@ export default function SimuladoPage() {
       trackAcao('simulado_iniciado', { questoes: formatted.length, banca: selectedBoard, modo: mode });
     } catch (e: any) {
       trackFalha('simulado_falha_iniciar', e, { banca: selectedBoard, modo: mode });
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não deu para montar o simulado', description: 'Confira sua internet e tente de novo.', variant: 'destructive' });
       setGameState('error');
     }
   }, [mode, selectedSubjectId, selectedMicroTopicId, selectedBoard, activeBoards, subjects, profile, toast, simSize]);
@@ -393,7 +394,7 @@ export default function SimuladoPage() {
           </div>
         </div>
         <p className="text-sm font-black text-slate-800 italic animate-pulse">
-          {gameState === 'loading_subjects' ? 'Carregando matérias...' : 'Montando seu simulado personalizado...'}
+          {gameState === 'loading_subjects' ? 'Carregando matérias…' : 'Montando seu simulado…'}
         </p>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aguarde um momento</p>
       </div>
@@ -411,10 +412,10 @@ export default function SimuladoPage() {
         </div>
         <div className="text-center">
           <p className="font-black text-xl text-primary italic">Algo deu errado</p>
-          <p className="text-sm text-slate-400 mt-1">Não foi possível carregar as matérias.</p>
+          <p className="text-sm text-slate-400 mt-1">Não conseguimos carregar o simulado. Confira sua internet e tente de novo.</p>
         </div>
         <Button onClick={fetchSubjects} className="rounded-xl bg-primary font-black px-8">
-          <RotateCw className="h-4 w-4 mr-2" /> Tentar Novamente
+          <RotateCw className="h-4 w-4 mr-2" /> Tentar de novo
         </Button>
       </div>
     );
@@ -586,7 +587,7 @@ export default function SimuladoPage() {
             <div className="space-y-4">
               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">Enunciado</span>
               <p className={`text-sm sm:text-base font-bold leading-[1.8] whitespace-pre-wrap break-words italic pr-2 transition-colors duration-300 ${bodyTextTheme}`}>
-                {currentQuestion.question_text.replace(/\[IMAGEM_PENDENTE\]/g, '').trim()}
+                {(currentQuestion.question_text ?? '').replace(/\[IMAGEM_PENDENTE\]/g, '').trim()}
               </p>
             </div>
           </div>
@@ -1181,7 +1182,7 @@ export default function SimuladoPage() {
             <div className="h-px flex-1 bg-slate-100" />
           </div>
           {resultadosOficiais.map((r, i) => {
-            const pct = Math.round((r.score / r.total) * 100);
+            const pct = pctOf(r.score, r.total);
             // Mesma escala de veredito de todas as telas de resultado:
             // ciano ≥70, amarelo ≥50, rosa abaixo.
             const color = pct >= 70 ? 'text-primary' : pct >= 50 ? 'text-foreground' : 'text-brand-pink';

@@ -9,6 +9,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import { fmtNumber } from "@/lib/format";
 import type { ReportCardImportRow, ReportCardImportResponse, ReportCardTrack } from "@/app/api/admin/report-card-import/route";
 import { parseReportCardSheet, templateColumns } from "./report-card-import-lib";
 
@@ -49,7 +50,7 @@ export default function ReportCardImportPage() {
         setRows(parsed);
         toast({ title: `${parsed.length} alunos carregados da planilha` });
       } catch {
-        toast({ title: "Erro ao ler planilha", variant: "destructive" });
+        toast({ title: "Não foi possível ler a planilha", variant: "destructive" });
       }
     };
     reader.readAsBinaryString(file);
@@ -73,44 +74,49 @@ export default function ReportCardImportPage() {
       const data: ReportCardImportResponse = await res.json();
       setResult(data);
       setStep("done");
-      toast({ title: `✅ ${data.inserted} boletins enviados para aprovação!` });
+      toast({ title: `${fmtNumber(data.inserted, 0, "0")} boletins enviados para aprovação` });
     } catch (err: any) {
-      toast({ title: "Erro na importação", description: err.message, variant: "destructive" });
+      toast({ title: "Não foi possível importar", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  const segBtn = (active: boolean) =>
+    `flex-1 rounded-control px-3 py-2 text-xs font-bold uppercase transition-colors ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 px-1">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-primary italic leading-none">Importar Boletim</h1>
-          <p className="text-muted-foreground font-medium italic text-sm">
-            Carregue a planilha de notas. Os boletins entram como <strong>pendentes</strong> — o
-            casamento com o aluno e a publicação acontecem em Boletins Pendentes.
+    <div className="space-y-6 pb-20 px-1">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <p className="u-label flex items-center gap-2"><FileSpreadsheet className="h-3.5 w-3.5" /> Coordenação · boletins</p>
+          <h1 className="u-page-title text-3xl mt-1">Importar boletim</h1>
+          <p className="text-muted-foreground text-sm mt-2 max-w-2xl">
+            Carregue a planilha de notas. Os boletins entram como <strong>pendentes</strong> — a
+            confirmação do aluno e a publicação acontecem em Boletins pendentes.
           </p>
         </div>
-        <Button variant="outline" asChild className="rounded-xl font-black text-xs uppercase border-slate-200 shrink-0">
+        <Button variant="outline" asChild className="rounded-control font-bold shrink-0">
           <Link href="/dashboard/admin/report-card-approvals">
-            <FileCheck className="h-4 w-4 mr-2" /> Ver Boletins Pendentes
+            <FileCheck className="h-4 w-4 mr-2" /> Ver boletins pendentes
           </Link>
         </Button>
       </div>
 
       {step === "upload" && (
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm rounded-2xl bg-slate-50">
-            <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-5">
+          <Card className="rounded-card bg-muted/30">
+            <CardContent className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Vestibulinho</p>
-                <div className="flex rounded-xl border border-slate-200 bg-white p-1">
+                <p className="u-label">Vestibular</p>
+                <div className="flex rounded-control border bg-card p-1">
                   {(["enem", "etec"] as const).map((t) => (
                     <button
                       key={t}
                       type="button"
+                      aria-pressed={track === t}
                       onClick={() => { setTrack(t); setRows([]); }}
-                      className={`flex-1 rounded-lg px-3 py-2 text-xs font-black uppercase transition-all ${track === t ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:bg-slate-50"}`}
+                      className={segBtn(track === t)}
                     >
                       {t === "enem" ? "ENEM" : "ETEC"}
                     </button>
@@ -119,16 +125,17 @@ export default function ReportCardImportPage() {
               </div>
 
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Semestre</p>
-                <div className="flex rounded-xl border border-slate-200 bg-white p-1">
+                <p className="u-label">Semestre</p>
+                <div className="flex rounded-control border bg-card p-1">
                   {([1, 2] as const).map((s) => (
                     <button
                       key={s}
                       type="button"
+                      aria-pressed={semester === s}
                       onClick={() => setSemester(s)}
-                      className={`flex-1 rounded-lg px-3 py-2 text-xs font-black uppercase transition-all ${semester === s ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:bg-slate-50"}`}
+                      className={segBtn(semester === s)}
                     >
-                      {s}º Semestre
+                      {s}º semestre
                     </button>
                   ))}
                 </div>
@@ -140,15 +147,15 @@ export default function ReportCardImportPage() {
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileDrop}
             onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-primary/30 hover:border-primary/60 bg-primary/2 hover:bg-primary/5 rounded-card p-12 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all group"
+            className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 rounded-card p-8 sm:p-12 flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors"
           >
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
-              <FileSpreadsheet className="h-8 w-8 text-primary" />
+            <div className="h-14 w-14 rounded-control bg-primary/10 flex items-center justify-center">
+              <FileSpreadsheet className="h-7 w-7 text-primary" />
             </div>
             <div className="text-center">
-              <p className="font-black text-primary italic text-lg">Arraste o arquivo Excel aqui</p>
-              <p className="text-sm font-medium text-muted-foreground mt-1">
-                ou clique para selecionar · .xlsx / .xls
+              <p className="font-bold text-foreground text-base">Arraste o arquivo Excel aqui</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                ou toque para escolher · .xlsx / .xls
               </p>
             </div>
             <input
@@ -160,38 +167,39 @@ export default function ReportCardImportPage() {
             />
           </div>
 
-          <Card className="border-none shadow-sm rounded-2xl bg-slate-50">
-            <CardContent className="p-5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Colunas Reconhecidas ({track === "enem" ? "ENEM" : "ETEC"})</p>
+          <Card className="rounded-card bg-muted/30">
+            <CardContent className="p-4 sm:p-5">
+              <p className="u-label mb-3">Colunas reconhecidas ({track === "enem" ? "ENEM" : "ETEC"})</p>
               <div className="flex flex-wrap gap-2">
                 {templateColumns(track).map((h) => (
-                  <span key={h} className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg px-2.5 py-1">{h}</span>
+                  <span key={h} className="text-[11px] font-semibold text-muted-foreground bg-card border rounded-control px-2.5 py-1">{h}</span>
                 ))}
               </div>
-              <p className="text-[11px] font-medium text-slate-400 mt-3">
+              <p className="text-xs text-muted-foreground mt-3">
                 A primeira linha precisa ser o cabeçalho. Colunas não reconhecidas ficam em branco no boletim.
               </p>
             </CardContent>
           </Card>
 
           {rows.length > 0 && (
-            <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border rounded-card p-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-black text-primary italic">{rows.length} alunos carregados</p>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Prontos para envio</p>
+                  <p className="font-bold text-foreground"><span className="u-num tabular-nums">{rows.length}</span> alunos carregados</p>
+                  <p className="u-label mt-0.5">Prontos para envio</p>
                 </div>
               </div>
               <Button
+                variant="arcade"
                 onClick={handleImport}
                 disabled={loading}
-                className="h-11 px-6 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase rounded-xl shadow-lg shadow-primary/30"
+                className="h-11 px-6 font-bold rounded-control"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                Enviar para Aprovação
+                Enviar para aprovação
               </Button>
             </div>
           )}
@@ -200,53 +208,52 @@ export default function ReportCardImportPage() {
 
       {step === "done" && result && (
         <div className="space-y-5">
-          <div className="relative bg-[#0d0d0f] rounded-card p-8 overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(76,204,237,0.25) 0%, transparent 65%)" }} />
-            <div className="relative z-10 flex items-center gap-5">
-              <div className="h-16 w-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
-                <GraduationCap className="h-8 w-8 text-primary" />
+          <Card className="rounded-card">
+            <CardContent className="p-5 sm:p-8 flex items-center gap-4 sm:gap-5">
+              <div className="h-14 w-14 rounded-control bg-primary/10 flex items-center justify-center shrink-0">
+                <GraduationCap className="h-7 w-7 text-primary" />
               </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Importação Concluída</p>
-                <h2 className="text-3xl font-black italic text-white leading-none">
-                  {result.inserted} <span className="text-primary">boletins</span> pendentes
-                </h2>
-                <p className="text-sm font-medium text-white/60 mt-1">
+              <div className="min-w-0">
+                <p className="u-label mb-1">Importação concluída</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  <span className="u-num tabular-nums">{fmtNumber(result.inserted, 0, "0")}</span> boletins pendentes
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
                   {result.errors.length > 0 ? `${result.errors.length} linha(s) ignorada(s)` : "Todas as linhas foram importadas"}
                 </p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {result.errors.length > 0 && (
-            <Card className="border-none shadow-sm rounded-2xl bg-red-50 border border-red-100">
+            <Card className="rounded-card bg-red-50 border-red-100">
               <CardContent className="p-5 space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-red-400">Avisos</p>
+                <p className="u-label !text-red-600">Avisos</p>
                 {result.errors.map((e, i) => (
-                  <p key={i} className="text-xs font-medium text-red-700">{e}</p>
+                  <p key={i} className="text-sm text-red-700 break-words">{e}</p>
                 ))}
               </CardContent>
             </Card>
           )}
 
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 space-y-1">
+          <div className="bg-card border rounded-card p-5 space-y-1">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-              <p className="font-black text-emerald-700">Próximo passo</p>
+              <p className="font-bold text-foreground">Próximo passo</p>
             </div>
-            <p className="ml-7 text-xs text-emerald-700 font-medium">
-              Acesse <Link href="/dashboard/admin/report-card-approvals" className="underline font-bold">Boletins Pendentes</Link> para
-              confirmar o aluno de cada linha importada e aprovar antes que fiquem visíveis para os alunos.
+            <p className="ml-7 text-sm text-muted-foreground">
+              Abra <Link href="/dashboard/admin/report-card-approvals" className="underline font-semibold text-foreground">Boletins pendentes</Link> para
+              confirmar o aluno de cada linha importada e aprovar antes que os boletins fiquem visíveis para os alunos.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={reset} variant="outline" className="h-12 px-8 rounded-xl font-black text-xs uppercase border-slate-200">
-              <Upload className="h-4 w-4 mr-2" /> Importar Outra Planilha
+            <Button onClick={reset} variant="outline" className="h-11 px-6 rounded-control font-bold">
+              <Upload className="h-4 w-4 mr-2" /> Importar outra planilha
             </Button>
-            <Button asChild className="h-12 px-8 rounded-xl font-black text-xs uppercase bg-primary text-white shadow-lg shadow-primary/30">
+            <Button variant="arcade" asChild className="h-11 px-6 rounded-control font-bold">
               <Link href="/dashboard/admin/report-card-approvals">
-                <FileCheck className="h-4 w-4 mr-2" /> Ir para Boletins Pendentes
+                <FileCheck className="h-4 w-4 mr-2" /> Ir para boletins pendentes
               </Link>
             </Button>
           </div>

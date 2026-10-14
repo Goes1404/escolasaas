@@ -27,6 +27,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/app/lib/supabase";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fmtDate, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DOC_TYPES: Record<string, { label: string; color: string }> = {
   atestado:               { label: 'Atestado Médico',           color: 'bg-red-100 text-red-700' },
@@ -40,9 +43,9 @@ const DOC_TYPES: Record<string, { label: string; color: string }> = {
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  pendente:  { label: 'Aguardando',  color: 'bg-amber-100 text-amber-700' },
+  pendente:  { label: 'Em análise',  color: 'bg-amber-100 text-amber-700' },
   aprovado:  { label: 'Aprovado',    color: 'bg-emerald-100 text-emerald-700' },
-  rejeitado: { label: 'Rejeitado',   color: 'bg-red-100 text-red-700' },
+  rejeitado: { label: 'Recusado',    color: 'bg-red-100 text-red-700' },
 };
 
 interface StudentUpload {
@@ -86,10 +89,10 @@ export default function StudentDocumentsUploadPage() {
 
   const handleUpload = async () => {
     if (!user || !selectedFile) {
-      toast({ title: 'Selecione um arquivo', variant: 'destructive' }); return;
+      toast({ title: 'Escolha um arquivo', description: 'Toque na área tracejada para escolher o PDF ou a foto do documento.', variant: 'destructive' }); return;
     }
     if (!uploadTitle.trim()) {
-      toast({ title: 'Informe um título para o documento', variant: 'destructive' }); return;
+      toast({ title: 'Dê um nome ao documento', description: 'Ex.: Atestado médico 20/05. Assim a secretaria sabe o que é.', variant: 'destructive' }); return;
     }
     setUploading(true);
     try {
@@ -122,7 +125,7 @@ export default function StudentDocumentsUploadPage() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       fetchUploads();
     } catch (err: any) {
-      toast({ title: 'Erro ao enviar', description: err.message, variant: 'destructive' });
+      toast({ title: 'Não deu para enviar o documento', description: 'Confira sua internet e se o arquivo tem até 10 MB, depois tente de novo.', variant: 'destructive' });
     } finally {
       setUploading(false);
     }
@@ -130,7 +133,7 @@ export default function StudentDocumentsUploadPage() {
 
   const handleDeleteUpload = async (upload: StudentUpload) => {
     if (upload.status !== 'pendente') {
-      toast({ title: 'Não é possível remover documentos já revisados', variant: 'destructive' }); return;
+      toast({ title: 'Esse documento já foi revisado', description: 'Depois que a secretaria analisa, ele não pode mais ser removido.', variant: 'destructive' }); return;
     }
     try {
       await supabase.storage.from('student-documents').remove([upload.file_path]);
@@ -138,7 +141,7 @@ export default function StudentDocumentsUploadPage() {
       setUploads(prev => prev.filter(u => u.id !== upload.id));
       toast({ title: 'Documento removido.' });
     } catch (err: any) {
-      toast({ title: 'Erro ao remover', description: err.message, variant: 'destructive' });
+      toast({ title: 'Não deu para remover o documento', description: 'Confira sua internet e tente de novo.', variant: 'destructive' });
     }
   };
 
@@ -165,7 +168,7 @@ export default function StudentDocumentsUploadPage() {
               </div>
               <CardTitle className="u-display text-2xl text-white leading-tight">Enviar documento</CardTitle>
               <CardDescription className="text-white/70 font-medium italic text-sm mt-1">
-                Envie documentos em formato PDF ou Imagem.
+                Pode ser PDF ou foto.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-8 space-y-5">
@@ -184,7 +187,7 @@ export default function StudentDocumentsUploadPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Título / Descrição</Label>
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Nome do documento</Label>
                 <Input
                   value={uploadTitle}
                   onChange={e => setUploadTitle(e.target.value)}
@@ -214,7 +217,7 @@ export default function StudentDocumentsUploadPage() {
                   ) : (
                     <div className="text-center space-y-1">
                       <Upload className="h-6 w-6 text-primary/40 mx-auto" />
-                      <p className="text-[11px] font-bold text-slate-400">Clique para selecionar</p>
+                      <p className="text-[11px] font-bold text-slate-400">Toque para escolher o arquivo</p>
                       <p className="text-[9px] text-slate-300 font-medium uppercase tracking-widest">PDF · JPG · PNG · WEBP · Máx 10MB</p>
                     </div>
                   )}
@@ -227,13 +230,13 @@ export default function StudentDocumentsUploadPage() {
                 className="w-full h-14 bg-primary text-white font-black rounded-2xl shadow-xl border-none text-sm"
               >
                 {uploading ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Upload className="h-5 w-5 mr-2" />}
-                Enviar para a Secretaria
+                Enviar para a secretaria
               </Button>
 
               <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-100">
                 <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[10px] font-bold text-amber-700 leading-relaxed">
-                  Seus documentos ficam disponíveis para revisão da secretaria. Documentos pendentes podem ser removidos por você.
+                  A secretaria vai conferir seus documentos. Enquanto estiverem em análise, você ainda pode removê-los.
                 </p>
               </div>
             </CardContent>
@@ -252,19 +255,16 @@ export default function StudentDocumentsUploadPage() {
           </div>
 
           {loadingUploads ? (
-            <div className="py-16 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="space-y-3" aria-label="Carregando…">
+              {[0, 1, 2].map(i => <Skeleton key={i} className="h-[88px] w-full rounded-card" />)}
             </div>
           ) : uploads.length === 0 ? (
-            <Card className="border-none shadow-xl rounded-card bg-white">
-              <CardContent className="py-16 flex flex-col items-center text-center gap-3">
-                <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center">
-                  <FileText className="h-8 w-8 text-primary/30" />
-                </div>
-                <p className="font-black text-primary/40 italic text-sm">Nenhum documento enviado ainda</p>
-                <p className="text-xs text-muted-foreground font-medium">Envie seus documentos usando o formulário ao lado.</p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={FileText}
+              title="Você ainda não enviou documentos"
+              description="Cada documento que você mandar aparece aqui, com a situação da análise da secretaria."
+              action={{ label: 'Escolher um arquivo', onClick: () => fileInputRef.current?.click(), icon: Upload }}
+            />
           ) : (
             <div className="space-y-3">
               {uploads.map(upload => {
@@ -278,7 +278,7 @@ export default function StudentDocumentsUploadPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-bold text-sm text-primary italic truncate">{upload.title}</p>
+                          <p className="font-bold text-sm text-primary italic truncate">{txt(upload.title, typeMeta.label)}</p>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <Badge className={`${statusMeta.color} border-none font-black text-[9px] uppercase px-2`}>
                               {statusMeta.label}
@@ -290,7 +290,7 @@ export default function StudentDocumentsUploadPage() {
                             {typeMeta.label}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground font-medium">
-                            {format(new Date(upload.uploaded_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                            {fmtDate(upload.uploaded_at, "dd 'de' MMM 'de' yyyy")}
                           </span>
                         </div>
                         {upload.notes && (

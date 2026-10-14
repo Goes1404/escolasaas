@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { celebrateOnce } from '@/lib/celebrate';
+import { fmtLocale, txt } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /** XP de 5+ dígitos em forma curta ("128,5 mil"): em 360px o número inteiro em
  *  Boldonse comia a linha e o nome do aluno virava "A…". */
@@ -109,7 +112,7 @@ function PodiumCard({ entry, place }: { entry: RankEntry; place: 1 | 2 | 3 }) {
           </div>
         </div>
         <p className="text-xs font-bold text-center max-w-[84px] leading-tight truncate">
-          {entry.full_name?.split(' ')[0]}
+          {txt(entry.full_name, 'Aluno').split(' ')[0]}
         </p>
         <div className="flex items-center gap-1 border-2 border-foreground bg-card rounded-control px-2 py-0.5">
           <Zap className="h-3 w-3 text-accent-foreground fill-accent" />
@@ -196,7 +199,7 @@ export default function RankingPage() {
 
       setLastUpdated(new Date());
     } catch (e: any) {
-      toast({ title: 'Erro ao carregar ranking', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não deu para carregar o ranking', description: 'Confira sua internet e toque em Atualizar.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -218,7 +221,7 @@ export default function RankingPage() {
 
   const periodo = (() => {
     if (cycle) {
-      const fim = new Date(cycle.ends_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+      const fim = fmtLocale(cycle.ends_at, 'date', 'pt-BR', { day: '2-digit', month: 'long' });
       return `${cycle.label ?? 'Leva atual'} · Vale até ${fim}`;
     }
     const d = new Date();
@@ -270,7 +273,7 @@ export default function RankingPage() {
           <div className="relative z-10 mt-5 flex items-center gap-3 bg-white/10 rounded-card px-4 py-3 border-2 border-white/25">
             <Avatar name={myEntry.full_name} url={myEntry.avatar_url} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold leading-normal truncate">{myEntry.full_name?.split(' ')[0]} (você)</p>
+              <p className="text-xs font-bold leading-normal truncate">{txt(myEntry.full_name, 'Você').split(' ')[0]} (você)</p>
               <p className="u-label !text-white/50 !text-[9px] mt-1 whitespace-nowrap">
                 <span className="u-num">{xpCurto(myEntry.weekly_xp)}</span> XP na semana
               </p>
@@ -320,7 +323,7 @@ export default function RankingPage() {
                   </span>
                   <Avatar name={w.full_name} url={w.avatar_url} size="sm" />
                   <p className="flex-1 min-w-0 truncate text-sm font-bold">
-                    {w.full_name}
+                    {txt(w.full_name, 'Aluno')}
                     {isMe && <span className="ml-1.5 u-label !text-[8px] text-primary">(você)</span>}
                   </p>
                   <div className="flex items-center gap-1 shrink-0">
@@ -358,17 +361,20 @@ export default function RankingPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary/30" />
+        <div className="space-y-2" aria-busy="true" aria-label="Carregando ranking">
+          <Skeleton className="h-56 w-full rounded-card" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-control" />
+          ))}
         </div>
       ) : ranking.length === 0 ? (
-        <div className="py-20 text-center">
-          <Trophy className="h-16 w-16 mx-auto mb-4 text-slate-200" />
-          <p className="u-page-title text-lg text-primary">Ranking ainda vazio</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Responda questões para aparecer aqui!
-          </p>
-        </div>
+        <EmptyState
+          icon={Trophy}
+          title="Ninguém pontuou nesta semana ainda"
+          description="Cada questão certa vale XP. Responda o desafio do dia e seja a primeira pessoa no pódio."
+          action={{ label: "Começar o desafio", href: "/dashboard/student/daily" }}
+          secondary={{ label: "Fazer um simulado", href: "/dashboard/student/simulados" }}
+        />
       ) : (
         <>
           {/* ── PÓDIO ── */}
@@ -413,7 +419,7 @@ export default function RankingPage() {
 
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-bold truncate ${isMe ? 'text-primary' : ''}`}>
-                        {entry.full_name}
+                        {txt(entry.full_name, 'Aluno')}
                         {isMe && <span className="u-label !text-[8px] ml-1.5 text-primary">(você)</span>}
                       </p>
                       <p className="u-label !text-[9px] mt-0.5">

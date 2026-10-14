@@ -7,6 +7,8 @@ import { supabase } from '@/app/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { BookHeart, Loader2, Calendar, Sparkles } from 'lucide-react';
+import { fmtDate, fmtNumber } from '@/lib/format';
+import { EmptyState } from '@/components/EmptyState';
 
 type Mood = 'great' | 'good' | 'neutral' | 'tired' | 'frustrated';
 
@@ -30,10 +32,8 @@ const MOODS: { value: Mood; emoji: string; label: string; bg: string; ring: stri
 
 const today = () => new Date().toISOString().split('T')[0];
 
-const formatDate = (iso: string) => {
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-};
+// Entrada sem data (ou com data em outro formato) quebrava a tela inteira.
+const formatDate = (iso: string | null | undefined) => fmtDate(iso);
 
 export default function JournalPage() {
   const { user } = useAuth();
@@ -76,7 +76,7 @@ export default function JournalPage() {
 
   const handleSave = async () => {
     if (!user || !mood) {
-      toast({ title: 'Selecione seu humor', variant: 'destructive' });
+      toast({ title: 'Escolha como foi seu dia', description: 'Toque em uma das carinhas antes de salvar.', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -99,7 +99,7 @@ export default function JournalPage() {
       toast({ title: 'Entrada salva! 📝', description: 'Seu diário foi atualizado.' });
       loadHistory();
     } catch (e: any) {
-      toast({ title: 'Erro ao salvar', description: e.message, variant: 'destructive' });
+      toast({ title: 'Não deu para salvar', description: 'Confira sua internet e tente de novo. O que você escreveu continua aqui.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -164,7 +164,7 @@ export default function JournalPage() {
               value={whatLearned}
               onChange={e => setWhatLearned(e.target.value.slice(0, 300))}
               rows={3}
-              placeholder="Conceito novo, técnica, insight..."
+              placeholder="Um conceito novo, uma técnica, uma ideia…"
               className="w-full text-sm font-medium rounded-2xl border border-slate-200 bg-slate-50 p-3 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
             />
           </div>
@@ -202,7 +202,7 @@ export default function JournalPage() {
           className="w-full h-12 bg-violet-600 hover:bg-violet-700 text-white font-black rounded-2xl shadow-lg shadow-violet-200 border-none disabled:opacity-40"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2 text-amber-200" />}
-          Salvar Reflexão
+          Salvar
         </Button>
       </div>
 
@@ -216,11 +216,12 @@ export default function JournalPage() {
             {[0, 1, 2].map(i => <div key={i} className="h-24 bg-muted/20 rounded-2xl animate-pulse" />)}
           </div>
         ) : history.filter(e => e.entry_date !== today()).length === 0 ? (
-          <div className="py-10 text-center border-2 border-dashed border-violet-200 rounded-3xl bg-violet-50/30">
-            <BookHeart className="h-8 w-8 text-violet-400 mx-auto mb-2" />
-            <p className="font-black text-violet-700 italic">Sem entradas anteriores</p>
-            <p className="text-xs text-violet-600/70 mt-1">Continue escrevendo todos os dias.</p>
-          </div>
+          <EmptyState
+            compact
+            icon={BookHeart}
+            title="Seu histórico ainda está em branco"
+            description="Cada dia que você salvar aparece aqui, para você ver o quanto já evoluiu. Comece pela entrada de hoje, logo acima."
+          />
         ) : (
           <div className="grid gap-3">
             {history.filter(e => e.entry_date !== today()).map(e => {
@@ -231,11 +232,11 @@ export default function JournalPage() {
                     <span className="text-2xl">{moodMeta?.emoji ?? '📝'}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-black text-primary italic">{formatDate(e.entry_date)}</p>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{moodMeta?.label ?? 'Sem humor'}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{moodMeta?.label ?? 'Sem registro de humor'}</p>
                     </div>
                     {e.hours_studied && (
                       <span className="text-[10px] font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-full">
-                        {e.hours_studied}h
+                        {fmtNumber(e.hours_studied, Number.isInteger(Number(e.hours_studied)) ? 0 : 1)}h
                       </span>
                     )}
                   </div>

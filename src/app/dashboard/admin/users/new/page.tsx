@@ -140,17 +140,17 @@ function GeneratedLinkCard({
         </div>
         <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
           <CheckCircle2 size={12} />
-          {type === 'invite' ? 'Link de Primeiro Acesso' : 'Link de Reset de Senha'}
+          {type === 'invite' ? 'Link de primeiro acesso' : 'Link para redefinir a senha'}
         </div>
       </div>
 
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-mono text-slate-600 break-all leading-relaxed">
+      <div className="bg-muted/40 border rounded-card p-4 space-y-3">
+        <p className="text-xs font-mono text-muted-foreground break-all leading-relaxed">
           {preview}
           {!showFull && (
             <button
               onClick={() => setShowFull(true)}
-              className="ml-1 text-accent underline text-xs font-bold"
+              className="ml-1 text-primary underline text-xs font-bold"
             >
               ver completo
             </button>
@@ -160,23 +160,25 @@ function GeneratedLinkCard({
         <div className="flex gap-2">
           <Button
             onClick={handleCopy}
-            className="flex-1 h-10 rounded-xl font-bold text-xs gap-2 bg-primary text-white border-none"
+            className="flex-1 h-10 rounded-control font-bold text-xs gap-2"
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Copiado!' : 'Copiar Link'}
+            {copied ? 'Copiado' : 'Copiar link'}
           </Button>
           <Button
             variant="outline"
             onClick={onRegenerate}
             disabled={loading}
-            className="h-10 px-4 rounded-xl font-bold text-xs border-muted/30"
+            aria-label="Gerar novo link"
+            title="Gerar novo link"
+            className="h-10 px-4 rounded-control font-bold text-xs"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           </Button>
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         Envie este link pelo WhatsApp ou e-mail. Ele funciona <strong>uma única vez</strong> e
         expira em 1 hora. O usuário será redirecionado para definir uma nova senha.
       </p>
@@ -267,17 +269,17 @@ export default function AdminNewUserPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Erro ao criar usuário.');
+        setError(data.error || 'Não foi possível criar o usuário.');
         return;
       }
 
       setCreatedUser(data.user);
       setDefaultPassword(data.defaultPassword ?? null);
-      toast({ title: 'Usuário criado com sucesso!' });
+      toast({ title: 'Usuário criado' });
       await generateInviteLink(data.user.email);
 
     } catch {
-      setError('Falha de conexão. Tente novamente.');
+      setError('Sem conexão com o servidor. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -300,7 +302,7 @@ export default function AdminNewUserPage() {
       setInviteLink(data.link);
     } catch (err: any) {
       toast({
-        title: 'Erro ao gerar link',
+        title: 'Não foi possível gerar o link',
         description: err.message,
         variant: 'destructive',
       });
@@ -318,62 +320,63 @@ export default function AdminNewUserPage() {
   // ── Tela de Sucesso ──
   if (createdUser) {
     return (
-      <div className="max-w-xl mx-auto space-y-8 animate-in fade-in duration-500 py-8">
+      <div className="max-w-xl mx-auto space-y-6 py-8 px-1">
         <div className="text-center space-y-3">
-          <div className="h-16 w-16 bg-emerald-100 rounded-3xl flex items-center justify-center mx-auto">
+          <div className="h-14 w-14 bg-emerald-100 rounded-card flex items-center justify-center mx-auto">
             <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-black text-primary">Usuário Criado!</h1>
+          <p className="u-label">Coordenação · novo usuário</p>
+          <h1 className="u-page-title text-3xl">Usuário criado</h1>
           <p className="text-sm text-muted-foreground">
             <strong>{createdUser.name}</strong> foi cadastrado com o e-mail{' '}
-            <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">{createdUser.email}</code>
+            <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono break-all">{createdUser.email}</code>
           </p>
         </div>
 
         {/* Senha padrão */}
         {defaultPassword && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+          <div className="bg-amber-50 border border-amber-200 rounded-card p-5 space-y-3">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-amber-200 flex items-center justify-center shrink-0">
+              <div className="h-8 w-8 rounded-control bg-amber-200 flex items-center justify-center shrink-0">
                 <KeyRound className="h-4 w-4 text-amber-700" />
               </div>
               <div>
-                <p className="text-xs font-black text-amber-800">Senha Padrão de Acesso</p>
-                <p className="text-[10px] text-amber-600 font-medium">O aluno usa essa senha para entrar pela primeira vez</p>
+                <p className="text-sm font-bold text-amber-900">Senha padrão de acesso</p>
+                <p className="text-xs text-amber-800">O aluno usa essa senha para entrar pela primeira vez</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 border border-amber-200">
-              <code className="flex-1 text-base font-black text-amber-900 font-mono tracking-wider">{defaultPassword}</code>
+            <div className="flex items-center gap-2 bg-card rounded-control px-4 py-3 border border-amber-200">
+              <code className="flex-1 min-w-0 truncate text-base font-bold text-amber-900 font-mono tracking-wider">{defaultPassword}</code>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={async () => {
                   await navigator.clipboard.writeText(defaultPassword);
-                  toast({ title: 'Senha copiada!' });
+                  toast({ title: 'Senha copiada' });
                 }}
-                className="h-8 px-3 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs"
+                className="h-8 px-3 text-amber-800 hover:bg-amber-100 rounded-control font-bold text-xs shrink-0"
               >
                 <Copy size={13} className="mr-1" /> Copiar
               </Button>
             </div>
-            <p className="text-[10px] text-amber-600 font-medium leading-relaxed">
+            <p className="text-xs text-amber-800 leading-relaxed">
               No primeiro login o aluno será solicitado a criar uma nova senha.
             </p>
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6 space-y-4">
+        <div className="bg-card rounded-card border p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2.5 mb-2">
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-control bg-primary/10 flex items-center justify-center">
               <KeyRound className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="text-sm font-black text-primary">Link de Primeiro Acesso</h2>
+            <h2 className="text-sm font-bold text-foreground">Link de primeiro acesso</h2>
           </div>
 
           {linkLoading && !inviteLink ? (
             <div className="py-6 flex items-center justify-center gap-3 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm font-medium">Gerando link seguro...</span>
+              <span className="text-sm">Gerando o link…</span>
             </div>
           ) : inviteLink ? (
             <GeneratedLinkCard
@@ -385,21 +388,21 @@ export default function AdminNewUserPage() {
           ) : (
             <Button
               onClick={() => generateInviteLink(createdUser.email)}
-              className="w-full h-11 rounded-xl font-bold bg-primary text-white border-none"
+              className="w-full h-11 rounded-control font-bold"
             >
               <Sparkles size={16} className="mr-2" />
-              Gerar Link de Acesso
+              Gerar link de acesso
             </Button>
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button
             asChild
             variant="outline"
-            className="flex-1 h-11 rounded-xl font-bold border-muted/30"
+            className="flex-1 h-11 rounded-control font-bold"
           >
-            <Link href="/dashboard/admin/users">Ver Diretório</Link>
+            <Link href="/dashboard/admin/users">Ver lista de usuários</Link>
           </Button>
           <Button
             onClick={() => {
@@ -412,9 +415,9 @@ export default function AdminNewUserPage() {
               });
               setGeneratedEmail('');
             }}
-            className="flex-1 h-11 rounded-xl font-bold bg-primary text-white border-none"
+            className="flex-1 h-11 rounded-control font-bold"
           >
-            Criar Outro Usuário
+            Criar outro usuário
           </Button>
         </div>
       </div>
@@ -423,18 +426,19 @@ export default function AdminNewUserPage() {
 
   // ── Formulário ──
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20 px-1">
+    <div className="max-w-2xl mx-auto space-y-6 pb-20 px-1">
 
       {/* Cabeçalho */}
       <div className="flex items-start gap-4">
-        <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-xl mt-1 shrink-0">
-          <Link href="/dashboard/admin/users">
+        <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-control mt-1 shrink-0">
+          <Link href="/dashboard/admin/users" aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-black text-primary italic leading-none">Novo Usuário</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="u-label">Coordenação · usuários</p>
+          <h1 className="u-page-title text-3xl mt-1">Novo usuário</h1>
+          <p className="text-sm text-muted-foreground mt-2">
             Preencha os dados. O e-mail será gerado automaticamente no padrão da plataforma.
           </p>
         </div>
@@ -444,27 +448,27 @@ export default function AdminNewUserPage() {
 
         {/* Erro global */}
         {error && (
-          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-700 font-medium">
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-card text-sm text-red-700 font-medium break-words">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             {error}
           </div>
         )}
 
         {/* Bloco 1: Identidade */}
-        <fieldset className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6 space-y-5">
-          <legend className="text-xs font-black uppercase text-primary/50 tracking-widest px-1">
+        <fieldset className="bg-card rounded-card border p-5 sm:p-6 space-y-5">
+          <legend className="u-label px-1">
             Identidade
           </legend>
 
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-              Nome Completo <span className="text-red-500">*</span>
+            <Label className="u-label">
+              Nome completo <span className="text-red-500">*</span>
             </Label>
             <Input
               value={form.fullName}
               onChange={e => setField('fullName', e.target.value)}
               placeholder="Ex: João Carlos Silva"
-              className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm focus-visible:ring-accent"
+              className="h-11 rounded-control"
               required
             />
             <p className="text-xs text-muted-foreground px-1">
@@ -474,45 +478,45 @@ export default function AdminNewUserPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">CPF</Label>
+              <Label className="u-label">CPF</Label>
               <Input
                 value={form.cpf}
                 onChange={e => setField('cpf', cpfMask(e.target.value))}
                 placeholder="000.000.000-00"
                 maxLength={14}
-                className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm focus-visible:ring-accent"
+                className="h-11 rounded-control"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-                Data de Nascimento
+              <Label className="u-label">
+                Data de nascimento
               </Label>
               <Input
                 type="date"
                 value={form.birthDate}
                 onChange={e => setField('birthDate', e.target.value)}
-                className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm focus-visible:ring-accent"
+                className="h-11 rounded-control"
               />
             </div>
           </div>
         </fieldset>
 
         {/* Bloco 2: E-mail gerado */}
-        <fieldset className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6 space-y-4">
-          <legend className="text-xs font-black uppercase text-primary/50 tracking-widest px-1">
-            E-mail de Acesso
+        <fieldset className="bg-card rounded-card border p-5 sm:p-6 space-y-4">
+          <legend className="u-label px-1">
+            E-mail de acesso
           </legend>
 
-          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-3 p-4 bg-muted/40 rounded-control border">
             <Mail size={18} className="text-primary shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-0.5">
+              <p className="u-label mb-0.5">
                 E-mail gerado automaticamente
               </p>
-              <p className="text-sm font-black text-primary font-mono truncate">
+              <p className="text-sm font-bold text-foreground font-mono truncate">
                 {generatedEmail || (
-                  <span className="text-muted-foreground font-normal italic">
+                  <span className="text-muted-foreground font-normal">
                     Digite o nome para gerar
                   </span>
                 )}
@@ -545,15 +549,15 @@ export default function AdminNewUserPage() {
               value={form.emailOverride}
               onChange={e => setField('emailOverride', e.target.value)}
               placeholder="email@exemplo.com"
-              className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm focus-visible:ring-accent"
+              className="h-11 rounded-control"
             />
           )}
         </fieldset>
 
         {/* Bloco 3: Papel */}
-        <fieldset className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6 space-y-5">
-          <legend className="text-xs font-black uppercase text-primary/50 tracking-widest px-1">
-            Papel na Plataforma
+        <fieldset className="bg-card rounded-card border p-5 sm:p-6 space-y-5">
+          <legend className="u-label px-1">
+            Papel na plataforma
           </legend>
 
           <RadioGroup
@@ -570,7 +574,7 @@ export default function AdminNewUserPage() {
                 <RadioGroupItem value={opt.value} id={`role-${opt.value}`} className="sr-only" />
                 <label
                   htmlFor={`role-${opt.value}`}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-all font-bold text-sm ${
+                  className={`flex items-center gap-2.5 p-3 rounded-control border-2 cursor-pointer transition-colors font-bold text-sm ${
                     form.role === opt.value
                       ? 'border-primary bg-primary/5'
                       : 'border-muted/30 hover:border-primary/30'
@@ -584,11 +588,11 @@ export default function AdminNewUserPage() {
           </RadioGroup>
 
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-              Cargo / Perfil Detalhado
+            <Label className="u-label">
+              Cargo / perfil
             </Label>
             <Select value={form.profileType} onValueChange={v => setField('profileType', v)}>
-              <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm">
+              <SelectTrigger className="h-11 rounded-control">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -602,14 +606,14 @@ export default function AdminNewUserPage() {
 
         {/* Bloco 4: Dados acadêmicos (apenas alunos) */}
         {isStudent && (
-          <fieldset className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6 space-y-5">
-            <legend className="text-xs font-black uppercase text-primary/50 tracking-widest px-1">
-              Dados Acadêmicos
+          <fieldset className="bg-card rounded-card border p-5 sm:p-6 space-y-5">
+            <legend className="u-label px-1">
+              Dados acadêmicos
             </legend>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-                Objetivo do Aluno
+              <Label className="u-label">
+                Objetivo do aluno
               </Label>
               <RadioGroup
                 value={form.examTarget}
@@ -626,11 +630,11 @@ export default function AdminNewUserPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-                Escola / Polo
+              <Label className="u-label">
+                Escola / polo
               </Label>
               <Select value={form.institution} onValueChange={v => setField('institution', v)}>
-                <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm">
+                <SelectTrigger className="h-11 rounded-control">
                   <SelectValue placeholder="Selecione a escola..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -642,24 +646,24 @@ export default function AdminNewUserPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-                Turma / Curso
+              <Label className="u-label">
+                Turma / curso
               </Label>
               <Input
                 value={form.course}
                 onChange={e => setField('course', e.target.value)}
                 placeholder="Ex: 3ª Série A, Informática"
-                className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm focus-visible:ring-accent"
+                className="h-11 rounded-control"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
-                  Número da Sala
+                <Label className="u-label">
+                  Número da sala
                 </Label>
                 <Select value={form.sala} onValueChange={v => setField('sala', v)}>
-                  <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm">
+                  <SelectTrigger className="h-11 rounded-control">
                     <SelectValue placeholder="Selecione a sala..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -671,11 +675,11 @@ export default function AdminNewUserPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-primary/60 tracking-widest">
+                <Label className="u-label">
                   Turno
                 </Label>
                 <Select value={form.turno} onValueChange={v => setField('turno', v)}>
-                  <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none font-medium shadow-sm">
+                  <SelectTrigger className="h-11 rounded-control">
                     <SelectValue placeholder="Selecione o turno..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -690,30 +694,30 @@ export default function AdminNewUserPage() {
         )}
 
         {/* Resumo e submit */}
-        <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4">
-          <p className="text-xs font-black uppercase text-primary/50 tracking-widest">Resumo</p>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        <div className="bg-muted/30 rounded-card border p-5 space-y-4">
+          <p className="u-label">Resumo</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
             <div>
               <span className="text-muted-foreground text-xs">Nome</span>
-              <p className="font-bold text-primary truncate">{form.fullName || '—'}</p>
+              <p className="font-bold text-foreground truncate">{form.fullName || '—'}</p>
             </div>
             <div>
               <span className="text-muted-foreground text-xs">E-mail</span>
-              <p className="font-bold text-primary truncate font-mono text-xs">{finalEmail || '—'}</p>
+              <p className="font-bold text-foreground truncate font-mono text-xs">{finalEmail || '—'}</p>
             </div>
             <div>
               <span className="text-muted-foreground text-xs">Papel</span>
-              <p className="font-bold text-primary">{form.profileType || '—'}</p>
+              <p className="font-bold text-foreground">{form.profileType || '—'}</p>
             </div>
             {isStudent && (
               <div>
                 <span className="text-muted-foreground text-xs">Objetivo</span>
-                <p className="font-bold text-primary">{form.examTarget}</p>
+                <p className="font-bold text-foreground">{form.examTarget}</p>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 font-medium">
+          <div className="flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-control px-3 py-2 font-medium">
             <KeyRound size={14} className="shrink-0" />
             O usuário receberá um link temporário para definir sua própria senha no primeiro acesso.
           </div>
@@ -721,17 +725,18 @@ export default function AdminNewUserPage() {
           <Button
             type="submit"
             disabled={loading || !form.fullName.trim() || !finalEmail}
-            className="w-full h-13 bg-primary text-white font-black text-sm rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all border-none h-12"
+            variant="arcade"
+            className="w-full h-12 font-bold text-sm rounded-control"
           >
             {loading ? (
               <span className="flex items-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Criando usuário...
+                Criando usuário…
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <UserPlus size={18} />
-                Criar Usuário e Gerar Link
+                Criar usuário e gerar link
               </span>
             )}
           </Button>
