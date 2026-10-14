@@ -43,7 +43,7 @@ function Avatar({ name, url, size = 'md' }: { name: string; url?: string | null;
   const sz = size === 'lg' ? 'h-16 w-16 text-xl' : size === 'md' ? 'h-11 w-11 text-sm' : 'h-8 w-8 text-xs';
   const initials = name?.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
   if (url) return (
-    <img src={url} alt={name} className={`${sz} rounded-full object-cover border-2 border-foreground shrink-0`} />
+    <img loading="lazy" decoding="async" src={url} alt={name} className={`${sz} rounded-full object-cover border-2 border-foreground shrink-0`} />
   );
   // Fundo chapado da paleta (era um gradiente violeta→roxo, fora do produto).
   return (

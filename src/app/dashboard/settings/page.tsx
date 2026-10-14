@@ -268,7 +268,7 @@ export default function SettingsPage() {
             <div className="relative group mb-8">
               <div className="h-48 w-48 rounded-[3rem] overflow-hidden border-[8px] border-slate-50 shadow-2xl relative transition-transform duration-500 group-hover:scale-105">
                 <Avatar className="h-full w-full rounded-none">
-                  <AvatarImage src={formData.avatar_url || `https://picsum.photos/seed/${user.id}/400/400`} className="object-cover" />
+                  <AvatarImage src={formData.avatar_url || undefined} className="object-cover" />
                   <AvatarFallback className="bg-primary text-white text-6xl u-display">{formData.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 {isUploading && (

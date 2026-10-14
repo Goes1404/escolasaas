@@ -312,7 +312,7 @@ export default function TeacherTrailsPage() {
               >
                 {/* Cover */}
                 <div className="relative aspect-video overflow-hidden bg-black/30">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={(!trail.image_url || isPlaceholderImage(trail.image_url)) ? getTrailCoverUrl(trail.title, trail.category) : trail.image_url}
                     alt={trail.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

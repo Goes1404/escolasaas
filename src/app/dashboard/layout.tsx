@@ -314,7 +314,7 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
                     </span>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
+                <CollapsibleContent className="collapsible-anim">
                   <SidebarMenuSub className="border-l border-white/[0.08] ml-3">
                     {item.children.map((child) => (
                       <SidebarMenuSubItem key={child.id}>
@@ -465,7 +465,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!hasHydrated || isUserLoading) return <LoadingShell />;
   if (!user) return null;
 
-  const userAvatar = profile?.avatar_url || `https://picsum.photos/seed/${user.id}/100/100`;
+  // Sem foto: as iniciais (AvatarFallback). A foto aleatória externa custava uma
+  // requisição a outro site em toda tela e mostrava um rosto que não é o do aluno.
+  const userAvatar = profile?.avatar_url || undefined;
 
   return (
     <ExtractionProvider>

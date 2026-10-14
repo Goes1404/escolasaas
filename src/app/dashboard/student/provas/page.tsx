@@ -1315,7 +1315,7 @@ export default function ProvasCompletasPage() {
               <X className="h-5 w-5" />
             </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy" decoding="async"
               src={zoomImage}
               alt="Imagem ampliada"
               onClick={(e) => e.stopPropagation()}

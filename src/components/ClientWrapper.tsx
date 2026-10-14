@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { AccessibilityWidget } from './AccessibilityWidget';
 import { FitTextEngine } from './FitTextEngine';
+import { MotionEngine } from './MotionEngine';
 
 export function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function ClientWrapper({ children }: { children: React.ReactNode }) {
     <div className="w-full min-h-screen">
       {children}
       <FitTextEngine />
+      <MotionEngine />
       {!isAuthOrHome && <AccessibilityWidget />}
     </div>
   );

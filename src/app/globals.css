@@ -1432,3 +1432,142 @@ main button:not([class*="scale"]):not([class*="translate"]):not([class*="anim-"]
   .skeleton-shimmer::after { animation: none; }
 }
 
+
+/* ════════════════════════════════════════════════════════════════════
+   MOVIMENTO DE QUALIDADE — sem travar no celular
+   Regra única: em loop, só `transform` e `opacity` (a GPU compõe sem
+   redesenhar a tela). Medido com CPU 4× mais lenta: as animações de
+   `background-position`, `box-shadow` e `filter` abaixo eram ~1,9 s de
+   pintura a cada 4 s de rolagem; viraram ~0,1 s.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Cards escuros (30 telas): o gradiente gigante andando era redesenhado a
+   cada quadro. Agora o fundo é fixo e a "aurora" é uma camada de luz que
+   respira por opacidade — mesmo efeito, custo zero de pintura. */
+.aurora-dark {
+  position: relative;
+  isolation: isolate;
+  background-size: 100% 100%;
+  background-position: 30% 50%;
+  animation: none;
+}
+.aurora-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 55% at 18% 15%, rgba(76, 204, 237, 0.13) 0%, transparent 70%),
+    radial-gradient(55% 50% at 85% 90%, rgba(237, 52, 116, 0.10) 0%, transparent 70%),
+    radial-gradient(45% 40% at 70% 20%, rgba(237, 224, 76, 0.06) 0%, transparent 70%);
+  opacity: 0.55;
+  animation: aurora-breathe 9s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+@keyframes aurora-breathe {
+  from { opacity: 0.45; }
+  to   { opacity: 1; }
+}
+
+/* Brilhos pulsantes: a sombra fica fixa; o pulso vai para uma camada de
+   opacidade. */
+.animate-glow-pulse { animation: none; }
+.card-on-fire {
+  animation: none;
+  box-shadow:
+    0 0 28px rgba(255, 61, 0, 0.30),
+    0 0 60px rgba(76, 204, 237, 0.22),
+    inset 0 0 16px rgba(255, 61, 0, 0.22);
+}
+.card-on-fire::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 40px rgba(76, 204, 237, 0.45), inset 0 0 24px rgba(76, 204, 237, 0.25);
+  opacity: 0;
+  animation: glow-breathe 3s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+@keyframes glow-breathe { to { opacity: 1; } }
+.border-prism::before { animation: none; background-position: 30% 50%; }
+.page-transition { animation: route-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Brilho dos botões de destaque: em vez de passar sem parar (distrai e
+   gasta bateria), passa uma vez quando o mouse chega. */
+.btn-shimmer::after, .btn-orange-neon::after { animation: none; transform: translateX(-120%) skewX(-12deg); }
+@media (hover: hover) {
+  .btn-shimmer:hover::after, .btn-orange-neon:hover::after {
+    animation: shimmer-slide 0.9s cubic-bezier(0.22, 1, 0.36, 1) 1;
+  }
+}
+
+/* ── Transição entre telas ─────────────────────────────────────────── */
+@keyframes route-in-pro {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); }
+  to   { opacity: 1; transform: none; }
+}
+.route-enter { animation: route-in-pro 380ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── Cascata dos cards ao revelar (ScrollReveal define --ri) ───────── */
+[data-reveal="pending"] .grid > * { opacity: 0; transform: translateY(14px); }
+[data-reveal="in"] .grid > * {
+  opacity: 1;
+  transform: none;
+  transition: opacity .55s cubic-bezier(.2,.7,.2,1), transform .55s cubic-bezier(.2,.7,.2,1);
+  transition-delay: calc(var(--ri, 0) * 45ms);
+}
+
+/* ── Imagens: entram com fade; link quebrado não aparece ───────────── */
+img[data-fade="pending"] { opacity: 0; }
+img[data-fade="in"] { opacity: 1; transition: opacity .45s ease; }
+img[data-broken] { opacity: 0 !important; }
+.media-placeholder {
+  background:
+    radial-gradient(70% 60% at 25% 20%, hsl(var(--primary) / 0.22), transparent 70%),
+    radial-gradient(60% 60% at 80% 85%, hsl(var(--accent) / 0.18), transparent 70%),
+    hsl(var(--muted));
+}
+
+/* ── Abas, menus e gavetas ─────────────────────────────────────────── */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+[role="tabpanel"][data-state="active"] { animation: panel-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+[role="tab"] { transition: color .2s ease, background-color .2s ease, box-shadow .2s ease; }
+
+/* Submenus do menu lateral abrem deslizando em vez de pular. */
+@keyframes collapsible-down { from { height: 0; opacity: 0; } to { height: var(--radix-collapsible-content-height); opacity: 1; } }
+@keyframes collapsible-up   { from { height: var(--radix-collapsible-content-height); opacity: 1; } to { height: 0; opacity: 0; } }
+.collapsible-anim[data-state="open"] { animation: collapsible-down 220ms cubic-bezier(0.22, 1, 0.36, 1); overflow: hidden; }
+.collapsible-anim[data-state="closed"] { animation: collapsible-up 180ms ease-in; overflow: hidden; }
+
+/* Barras de progresso enchem suavemente quando o valor muda. */
+[role="progressbar"] > * { transition: transform .9s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ── Ícones respondem ao hover dos cards clicáveis ─────────────────── */
+@media (hover: hover) {
+  main a:hover > svg:first-child,
+  main a:hover [class*="rounded"] > svg:only-child { transform: scale(1.08); }
+  main a svg { transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-dark::before, .card-on-fire::after { animation: none !important; opacity: .7; }
+  .route-enter, [role="tabpanel"][data-state="active"], .collapsible-anim { animation: none !important; }
+  [data-reveal] .grid > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+  img[data-fade] { opacity: 1 !important; transition: none !important; }
+}
+
+/* Imagem que não carregou: o contêiner mostra o fundo da marca no lugar
+   do vazio cinza. */
+:where(div, figure, a, span):has(> img[data-broken]) {
+  background:
+    radial-gradient(70% 60% at 25% 20%, hsl(var(--primary) / 0.22), transparent 70%),
+    radial-gradient(60% 60% at 80% 85%, hsl(var(--accent) / 0.18), transparent 70%),
+    hsl(var(--muted));
+}

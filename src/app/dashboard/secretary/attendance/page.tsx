@@ -821,7 +821,7 @@ export default function SecretaryAttendancePage() {
                 </div>
                 {selectedSession.paper_photo_url ? (
                   <a href={selectedSession.paper_photo_url} target="_blank" rel="noopener noreferrer" title="Abrir em tamanho real">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={selectedSession.paper_photo_url}
                       alt="Lista de presença em papel"
                       className="w-full rounded-xl object-cover max-h-40 border border-amber-200 hover:opacity-90 transition-opacity cursor-zoom-in"

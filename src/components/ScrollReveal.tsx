@@ -41,15 +41,22 @@ export function ScrollReveal({ routeKey, root }: { routeKey: string; root: () =>
           const el = e.target as HTMLElement;
           io?.unobserve(el);
           el.dataset.reveal = 'in';
-          const done = () => { delete el.dataset.reveal; el.removeEventListener('transitionend', done); };
-          el.addEventListener('transitionend', done);
-          const t = setTimeout(done, 900);
+          // A cascata dos cards de dentro dura mais que o bloco: só limpa o
+          // atributo quando todos terminaram (12 × 45ms + 600ms, com folga).
+          const t = setTimeout(() => { delete el.dataset.reveal; }, 1400);
           cleanups.push(() => clearTimeout(t));
         }
       }, { root: main, rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
 
       for (const el of blocks) {
         el.dataset.reveal = 'pending';
+        // Cards de uma grade entram em cascata, um depois do outro.
+        el.querySelectorAll<HTMLElement>(':scope .grid').forEach((grid, gi) => {
+          if (gi > 1) return;
+          Array.from(grid.children).slice(0, 12).forEach((c, i) => {
+            (c as HTMLElement).style.setProperty('--ri', String(i));
+          });
+        });
         io.observe(el);
       }
       cleanups.push(() => blocks.forEach((el) => { delete el.dataset.reveal; }));

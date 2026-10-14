@@ -570,7 +570,7 @@ export default function SimuladoPage() {
           <div className={`flex-1 md:overflow-y-auto p-5 sm:p-8 space-y-6 md:border-r ${colLeftTheme} transition-colors duration-300`}>
             {currentQuestion.image_url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <img loading="lazy" decoding="async"
                 src={currentQuestion.image_url}
                 alt="Imagem de apoio à questão"
                 className={`w-full rounded-2xl object-contain max-h-64 border ${isDark ? 'border-white/5 bg-[#0d0d10]' : 'border-slate-200 bg-white'}`}

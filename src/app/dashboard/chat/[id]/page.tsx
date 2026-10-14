@@ -276,7 +276,7 @@ export default function DirectChatPage() {
                   </div>
                 ) : (
                   <>
-                    <AvatarImage src={`https://picsum.photos/seed/${contactId}/150/150`} />
+                    <AvatarImage src={undefined} />
                     <AvatarFallback className="bg-primary text-white font-black italic text-sm">{contact?.name?.charAt(0) || "?"}</AvatarFallback>
                   </>
                 )}

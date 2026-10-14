@@ -316,7 +316,7 @@ function BookCard({ item }: { item: any }) {
       <div className={`aspect-[3/4] relative overflow-hidden shrink-0 bg-gradient-to-br ${grad}`}>
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <img loading="lazy" decoding="async"
             src={item.image_url}
             alt={item.title || "Capa"}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -368,7 +368,7 @@ function BookRow({ item }: { item: any }) {
       <div className={`w-14 h-[4.5rem] rounded-xl shrink-0 relative overflow-hidden bg-gradient-to-br ${grad}`}>
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img loading="lazy" decoding="async" src={item.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <BookOpen className="h-6 w-6 text-white/50" />

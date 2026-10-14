@@ -316,7 +316,11 @@ export default function BooksManagementPage() {
           {filtered.map((item) => (
             <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-card flex flex-col hover:shadow-2xl transition-all duration-500">
               <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                <img src={item.image_url || `https://picsum.photos/seed/${item.id}/600/800`} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                {item.image_url ? (
+                  <img loading="lazy" decoding="async" src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                ) : (
+                  <div aria-hidden="true" className="w-full h-full media-placeholder" />
+                )}
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-white/80 backdrop-blur-md text-primary border-none px-3 py-1 font-black text-[10px] uppercase shadow-lg flex items-center gap-2">
                     <BookOpen className="h-3 w-3" />

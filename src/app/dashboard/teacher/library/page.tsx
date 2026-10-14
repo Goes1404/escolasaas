@@ -329,7 +329,11 @@ export default function LibraryManagementPage() {
           {filtered.map((item) => (
             <Card key={item.id} className="border-none shadow-xl overflow-hidden group bg-white rounded-card flex flex-col hover:shadow-2xl transition-all duration-500">
               <div className="relative aspect-video bg-muted overflow-hidden">
-                <img src={item.image_url || `https://picsum.photos/seed/${item.id}/600/400`} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                {item.image_url ? (
+                  <img loading="lazy" decoding="async" src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                ) : (
+                  <div aria-hidden="true" className="w-full h-full media-placeholder" />
+                )}
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-white/80 backdrop-blur-md text-primary border-none px-3 py-1 font-black text-[10px] uppercase shadow-lg flex items-center gap-2">
                     {item.type === 'Video' ? <Video className="h-3 w-3" /> : item.type === 'Prova' ? <ClipboardCheck className="h-3 w-3 text-red-600" /> : <FileText className="h-3 w-3" />}

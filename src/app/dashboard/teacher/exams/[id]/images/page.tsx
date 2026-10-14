@@ -356,7 +356,7 @@ export default function RepairExamImagesPage() {
                       {assigned && (
                         <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-slate-200 bg-white shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={assigned.url} alt="Proposta" className="w-full h-full object-contain" />
+                          <img loading="lazy" decoding="async" src={assigned.url} alt="Proposta" className="w-full h-full object-contain" />
                           <span className="absolute bottom-1 left-1 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded">
                             pág. {assigned.page}
                           </span>

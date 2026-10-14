@@ -33,7 +33,7 @@ export function MascoteRetrato({
   if (imagem) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <img loading="lazy" decoding="async"
         src={imagem}
         alt={def.nome}
         draggable={false}

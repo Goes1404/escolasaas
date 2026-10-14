@@ -256,7 +256,7 @@ export default function ChatListPage() {
             <Avatar className={`h-20 w-20 md:h-24 md:w-24 border-[4px] shadow-2xl transition-all ${
               hasUnread ? 'border-orange-500 animate-pulse-subtle' : 'border-primary/5'
             }`}>
-              <AvatarImage src={`https://picsum.photos/seed/${contact.id}/200/200`} className="object-cover" />
+              <AvatarImage src={undefined} className="object-cover" />
               <AvatarFallback className="bg-primary text-white font-black text-2xl italic">{contact.name?.charAt(0)}</AvatarFallback>
             </Avatar>
             

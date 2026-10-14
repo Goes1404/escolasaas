@@ -63,6 +63,16 @@ const ClassroomChatIA = dynamic(
 );
 import { useIsMobile } from "@/hooks/use-mobile";
 
+/** Id do vídeo a partir de qualquer formato de link do YouTube (ou o id puro). */
+function youtubeIdFrom(url: string): string {
+  if (!url) return '';
+  if (url.includes('v=')) return url.split('v=')[1].split('&')[0];
+  if (url.includes('youtu.be/')) return url.split('youtu.be/')[1].split('?')[0];
+  if (url.includes('/embed/')) return url.split('/embed/')[1].split('?')[0];
+  if (url.includes('/shorts/')) return url.split('/shorts/')[1].split('?')[0];
+  return url;
+}
+
 export default function ClassroomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: trailId } = use(params);
   const { user, profile } = useAuth();
@@ -88,6 +98,10 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
   const [videoProgress, setVideoProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isApiReady, setIsApiReady] = useState(false);
+  // Rede de escola costuma bloquear a API do YouTube (o script), mas não o
+  // player embutido. Sem a API em 6s, a aula passa para o iframe direto — o
+  // aluno assiste do mesmo jeito, só sem o acompanhamento de progresso.
+  const [playerFallback, setPlayerFallback] = useState(false);
 
   const playerRef = useRef<any>(null);
   const progressInterval = useRef<any>(null);
@@ -266,17 +280,12 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
       try {
         if (playerRef.current) playerRef.current.destroy();
         
-        const vidUrl = activeContent.url || '';
-        let vidId = '';
-        if (vidUrl.includes('v=')) vidId = vidUrl.split('v=')[1].split('&')[0];
-        else if (vidUrl.includes('youtu.be/')) vidId = vidUrl.split('youtu.be/')[1].split('?')[0];
-        else if (vidUrl.includes('/embed/')) vidId = vidUrl.split('/embed/')[1].split('?')[0];
-        else vidId = vidUrl;
+        const vidId = youtubeIdFrom(activeContent.url || '');
 
         if (vidId && (window as any).YT && typeof (window as any).YT.Player === 'function') {
           playerRef.current = new (window as any).YT.Player('youtube-player', {
             videoId: vidId,
-            playerVars: { 'autoplay': 1, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 },
+            playerVars: { 'autoplay': 1, 'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'playsinline': 1, 'iv_load_policy': 3 },
             events: { 'onStateChange': onPlayerStateChange }
           });
           trackAcao('aula_video_iniciado');
@@ -289,11 +298,15 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
             tem_id: Boolean(vidId),
             api_pronta: Boolean((window as any).YT?.Player),
           });
-          toast({
-            title: 'O vídeo não carregou',
-            description: 'Pode ser bloqueio de rede. Tente pelos dados do celular ou avise a secretaria.',
-            variant: 'destructive',
-          });
+          if (vidId) {
+            setPlayerFallback(true);
+          } else {
+            toast({
+              title: 'O vídeo não carregou',
+              description: 'O link desta aula parece inválido. Avise o professor ou a secretaria.',
+              variant: 'destructive',
+            });
+          }
         }
       } catch (e) {
         trackFalha('aula_player_falhou', e);
@@ -361,6 +374,14 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
   }, [isDragging, handleDragMove, handleDragEnd]);
 
   const activeContent = contents[activeModuleId || ""]?.find(c => c.id === activeContentId);
+  const activeVideoId = activeContent?.type === 'video' ? youtubeIdFrom(activeContent.url || '') : '';
+
+  // API do YouTube não chegou (bloqueio de rede, conexão lenta): player direto.
+  useEffect(() => {
+    if (!activeVideoId || isApiReady || playerFallback) return;
+    const t = setTimeout(() => setPlayerFallback(true), 6000);
+    return () => clearTimeout(t);
+  }, [activeVideoId, isApiReady, playerFallback]);
   const nextLesson = useMemo(() => {
     if (!activeModuleId || !activeContentId) return null;
 
@@ -508,7 +529,28 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
 
                 <div className={`w-full h-full ${showSimultaneousWorkbook ? 'mt-10' : ''}`} style={showSimultaneousWorkbook ? { height: 'calc(100% - 40px)' } : {}}>
                   {activeContent?.type === 'video' ? (
-                    <div id="youtube-player" className="w-full h-full bg-slate-950" />
+                    playerFallback && activeVideoId ? (
+                      <div className="relative w-full h-full bg-slate-950">
+                        <iframe
+                          key={activeVideoId}
+                          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(activeVideoId)}?playsinline=1&rel=0&modestbranding=1`}
+                          title={activeContent?.title || 'Aula em vídeo'}
+                          className="absolute inset-0 w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                        <a
+                          href={`https://www.youtube.com/watch?v=${encodeURIComponent(activeVideoId)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute bottom-3 right-3 z-10 rounded-full bg-black/70 text-white text-[11px] font-bold px-3 py-1.5 hover:bg-black/85 transition-colors"
+                        >
+                          Abrir no YouTube
+                        </a>
+                      </div>
+                    ) : (
+                      <div id="youtube-player" className="w-full h-full bg-slate-950" />
+                    )
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center gap-4">
                       <Layout className="h-8 w-8 text-accent opacity-20" />

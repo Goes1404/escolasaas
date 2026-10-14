@@ -23,7 +23,7 @@ export function SupportingTextBlock({ text }: { text: string }) {
         <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Texto de Apoio</span>
       </div>
       {images.map((url, i) => (
-        <img key={i} src={url} alt="Imagem do contexto" className="w-full rounded-xl object-contain max-h-64 border border-amber-200 bg-white" />
+        <img loading="lazy" decoding="async" key={i} src={url} alt="Imagem do contexto" className="w-full rounded-xl object-contain max-h-64 border border-amber-200 bg-white" />
       ))}
       {body && (
         <p className="text-sm text-amber-900 font-medium leading-relaxed italic whitespace-pre-wrap">{body}</p>
