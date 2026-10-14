@@ -71,8 +71,14 @@ function excessOf(el: HTMLElement, vw: number): number {
 
 function candidates(): HTMLElement[] {
   const set = new Set<HTMLElement>();
-  document.querySelectorAll<HTMLElement>(DISPLAY).forEach((el) => set.add(el));
-  document.querySelectorAll<HTMLElement>(TEXTUAL).forEach((el) => {
+  // Só o conteúdo da página. Menu lateral, gavetas, diálogos e a barra
+  // inferior ficam de fora: eles entram deslizando (fora da tela por um
+  // instante) e o motor os encolhia por engano.
+  const root = document.querySelector<HTMLElement>('main main') || document.querySelector<HTMLElement>('main') || document.body;
+  const outside = (el: HTMLElement) => !!el.closest('[data-sidebar], [role="dialog"], [data-radix-popper-content-wrapper], nav, header, [data-floating]');
+  root.querySelectorAll<HTMLElement>(DISPLAY).forEach((el) => { if (!outside(el)) set.add(el); });
+  root.querySelectorAll<HTMLElement>(TEXTUAL).forEach((el) => {
+    if (outside(el)) return;
     // Só quem segura o texto diretamente (um nó de texto filho), curto —
     // ex.: título com ícone ao lado. Invólucros sem texto próprio ficam fora,
     // senão a fonte encolheria em cascata pelo card inteiro.

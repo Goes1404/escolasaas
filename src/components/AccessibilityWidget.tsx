@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HandMetal, Send, Eraser, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Virtuoso } from 'react-virtuoso';
 import { usePathname } from "next/navigation";
 import { AuroraAvatar } from "@/components/AuroraAvatar";
-import { useFloatingDodge, TUCKED_CLASSES } from "@/hooks/use-floating-dodge";
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 
 interface Message {
   role: "assistant" | "user";
@@ -27,13 +27,22 @@ export function AccessibilityWidget() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const pathname = usePathname();
-  const dodge = useFloatingDodge<HTMLDivElement>();
+  const hidden = useHideOnScroll();
 
   const isInputHeavyPage = 
     pathname.includes('/chat/') || 
     pathname.includes('/support') || 
     pathname.includes('/live/') || 
     pathname.includes('/forum/');
+
+  // Telas com campo de digitação no rodapé (chat, fórum, suporte, live): os
+  // dois flutuantes sobem juntos, pela variável --fab-bottom do globals.css.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isInputHeavyPage) root.dataset.fabRaise = '';
+    else delete root.dataset.fabRaise;
+    return () => { delete root.dataset.fabRaise; };
+  }, [isInputHeavyPage]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,28 +108,25 @@ export function AccessibilityWidget() {
   
   return (
     <div
-      ref={dodge.ref}
       data-floating
-      onPointerDownCapture={dodge.onPointerDownCapture}
-      onClickCapture={dodge.onClickCapture}
-      className={`fixed ${isInputHeavyPage ? 'bottom-28 lg:bottom-10' : 'bottom-24 lg:bottom-6'} right-4 sm:right-6 z-40 flex flex-col gap-3 items-end transition-[transform,opacity] duration-300 ease-out ${dodge.tucked && !isOpen ? TUCKED_CLASSES : ''}`}
+      className={`fab-dock fab-slot-main ${hidden && !isOpen ? 'fab-hidden' : ''}`}
     >
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-           <button 
-            className={`flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-2xl transition-all hover:scale-110 active:scale-95 border-4 border-white group relative animate-in zoom-in duration-700 ${
-              isOpen ? 'rotate-[360deg] shadow-primary/40' : ''
-            }`}
-            title="Abrir Aurora IA"
+           <button
+            className="fab fab-main group"
+            aria-label="Abrir Aurora IA"
           >
             {/* O rosto do próprio bichinho do aluno, quando ele tem um — este
                 botão fica visível em quase toda página do dashboard, então é
                 aqui que o detalhe mais aparece. Sem bicho adotado, o robô
                 (mesmo ícone dos outros três lugares onde a Aurora mora). */}
-            <div className="relative flex items-center justify-center h-9 w-9 overflow-hidden rounded-full">
-              <AuroraAvatar className="h-full w-full transition-all group-hover:scale-95" />
-            </div>
-            {!isOpen && <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-50 rounded-full border-2 border-white animate-bounce shadow-sm" />}
+            <span className="relative flex items-center justify-center h-8 w-8 overflow-hidden rounded-full">
+              <AuroraAvatar className="h-full w-full" />
+            </span>
+            {/* "Online": ponto fixo, sem pular — o bounce anterior parecia erro. */}
+            <span className="fab-status" aria-hidden="true" />
+            <span className="fab-label">Aurora IA</span>
           </button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[90vw] sm:max-w-[400px] p-0 border-none rounded-l-[2rem] overflow-hidden bg-white flex flex-col shadow-2xl z-50">

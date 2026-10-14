@@ -78,20 +78,14 @@ export function MobileBottomNav() {
                 active ? "text-primary" : "text-slate-400 hover:text-slate-600"
               }`}
             >
-              {/* top indicator bar */}
-              <span
-                className={`absolute top-0 left-1/2 -translate-x-1/2 h-0.5 rounded-full bg-primary transition-all duration-200 ${
-                  active ? "w-8 opacity-100" : "w-0 opacity-0"
-                }`}
-              />
+              {/* Pílula atrás do ícone ativo (estilo app nativo). */}
+              <span className="tab-pill" aria-hidden="true" />
               <tab.icon
-                className={`transition-transform duration-150 ${
-                  active ? "h-5 w-5 scale-110" : "h-5 w-5 scale-100"
-                }`}
-                strokeWidth={active ? 2.5 : 1.8}
+                className="relative h-[22px] w-[22px] transition-transform duration-200"
+                strokeWidth={active ? 2.4 : 1.9}
               />
               <span
-                className={`text-[11px] font-bold leading-none transition-colors duration-150 ${
+                className={`relative text-xs font-bold leading-none mt-0.5 transition-colors duration-150 ${
                   active ? "text-primary" : "text-slate-400"
                 }`}
               >

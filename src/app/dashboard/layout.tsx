@@ -8,7 +8,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useEffect, useState, useMemo, memo, Suspense } from "react";
+import { useEffect, useState, useMemo, memo, Suspense, useRef, useCallback } from "react";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/app/lib/supabase";
 import Image from "next/image";
@@ -284,7 +285,7 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
   const isGroupActive = (children: NavChild[]) => children.some(c => isItemActive(c.href));
 
   const itemClass =
-    "h-10 rounded-xl data-[active=true]:bg-gradient-to-r data-[active=true]:from-accent data-[active=true]:to-accent/90 data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-accent/20 hover:bg-white/[0.07] transition-all duration-150";
+    "nav-item h-11 rounded-xl data-[active=true]:bg-gradient-to-r data-[active=true]:from-accent data-[active=true]:to-accent/90 data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-accent/20 hover:bg-white/[0.07] transition-all duration-150";
 
   return (
     <SidebarMenu className="gap-0.5">
@@ -301,8 +302,8 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
                     isActive={groupActive}
                     className={itemClass}
                   >
-                    <item.icon className="h-4.5 w-4.5 shrink-0" />
-                    <span className="font-bold text-sm">{item.label}</span>
+                    <item.icon className="!h-5 !w-5 shrink-0" />
+                    <span className="font-bold text-[15px] tracking-[-0.01em]">{item.label}</span>
                     <span className="ml-auto flex items-center gap-1.5">
                       {groupHasBadge && (
                         <Badge className="bg-accent text-white text-[9px] font-black h-4 min-w-4 rounded-full px-1 shadow-lg shadow-accent/30">
@@ -320,7 +321,7 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
                         <SidebarMenuSubButton
                           asChild
                           isActive={isItemActive(child.href)}
-                          className="rounded-lg data-[active=true]:bg-accent/20 data-[active=true]:text-white hover:bg-white/[0.06] transition-all"
+                          className="nav-item h-9 rounded-lg data-[active=true]:bg-accent/20 data-[active=true]:text-white hover:bg-white/[0.06] transition-all"
                         >
                           <Link
                             id={child.id}
@@ -328,8 +329,8 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
                             onClick={() => isMobile && setOpenMobile(false)}
                             className="flex items-center gap-2"
                           >
-                            <child.icon className="h-3.5 w-3.5 shrink-0" />
-                            <span className="font-semibold text-xs">{child.label}</span>
+                            <child.icon className="!h-4 !w-4 shrink-0" />
+                            <span className="font-semibold text-sm">{child.label}</span>
                             {child.badge && unreadCount > 0 && (
                               <Badge className="ml-auto bg-accent text-white text-[9px] font-black h-4 min-w-4 rounded-full px-1">
                                 {unreadCount}
@@ -360,8 +361,8 @@ const NavMenu = memo(({ items, pathname, unreadCount }: { items: NavItem[]; path
                 onClick={() => isMobile && setOpenMobile(false)}
                 className="flex items-center gap-3"
               >
-                <item.icon className="h-4.5 w-4.5 shrink-0" />
-                <span className="font-bold text-sm">{item.label}</span>
+                <item.icon className="!h-5 !w-5 shrink-0" />
+                <span className="font-bold text-[15px] tracking-[-0.01em]">{item.label}</span>
                 {item.badge && unreadCount > 0 && (
                   <Badge className="ml-auto bg-accent text-white text-[10px] font-black h-5 min-w-5 rounded-full shadow-lg shadow-accent/30 animate-in zoom-in">
                     {unreadCount}
@@ -388,6 +389,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useTimeTracker(user?.id);
   useEffect(() => { setHasHydrated(true); }, []);
+
+  // Cabeçalho reage à rolagem do <main>: sombra ao sair do topo e barra fina
+  // de progresso de leitura. Escrito direto no DOM (sem estado) para não
+  // renderizar o layout a cada frame de rolagem.
+  const headerRef = useRef<HTMLElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const getMain = useCallback(() => mainRef.current, []);
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    let raf = 0;
+    const paint = () => {
+      raf = 0;
+      const y = main.scrollTop;
+      const max = main.scrollHeight - main.clientHeight;
+      if (headerRef.current) {
+        if (y > 4) headerRef.current.setAttribute('data-scrolled', '');
+        else headerRef.current.removeAttribute('data-scrolled');
+      }
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${max > 120 ? Math.min(1, y / max) : 0})`;
+      }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    main.addEventListener('scroll', onScroll, { passive: true });
+    paint();
+    return () => { main.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -471,7 +501,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden gap-0.5">
-              <span className="u-display text-sm text-white leading-tight">{tenant.branding.appName}</span>
+              <span className="u-display text-base text-white leading-tight">{tenant.branding.appName}</span>
             </div>
           </div>
         </SidebarHeader>
@@ -502,7 +532,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02] pointer-events-none" />
 
         {!hideLayoutHeader && (
-          <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 md:px-6 shrink-0 print:hidden">
+          <header ref={headerRef} className="app-header sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 md:px-6 shrink-0 print:hidden relative">
+            <span ref={progressRef} className="scroll-progress" aria-hidden="true" />
             <SidebarTrigger className="h-10 w-10 rounded-xl hover:bg-muted text-primary">
               <Menu className="h-6 w-6" />
             </SidebarTrigger>
@@ -536,11 +567,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
         )}
 
-        <main className={`flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-x-none ${isFullBleedPage ? 'p-0' : 'p-4 md:p-8'} ${!isFullBleedPage ? 'pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-8' : ''}`}>
+        <main ref={mainRef} className={`flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-x-none ${isFullBleedPage ? 'p-0' : 'p-4 md:p-8'} ${!isFullBleedPage ? 'pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-8' : ''}`}>
           <div className={isFullBleedPage ? 'flex-1 flex flex-col min-h-0 min-w-0' : 'max-w-7xl mx-auto w-full min-w-0'}>
             <Suspense fallback={<div className="p-8 opacity-20 animate-pulse"><Sparkles className="h-10 w-10 text-accent" /></div>}>
               {children}
             </Suspense>
+            <ScrollReveal routeKey={pathname || ''} root={getMain} />
           </div>
         </main>
 

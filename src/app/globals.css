@@ -187,22 +187,34 @@
   background: linear-gradient(160deg, #000000 0%, #0a0a0a 40%, #0a1e2a 70%, #4CCCED 150%);
 }
 
+/* Barra de rolagem fina e sem trilho: a de 16px com borda comia uma faixa
+   larga na lateral da tela. Firefox usa as duas propriedades padrão. */
+html, main {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.45) transparent;
+}
 ::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
-  border-left: 1px solid hsl(var(--border));
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.6);
-  border-radius: 10px;
-  border: 4px solid hsl(var(--background));
-  min-height: 48px;
+  background: hsl(var(--primary) / 0.35);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-height: 40px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.8);
+  background: hsl(var(--primary) / 0.6);
+  background-clip: padding-box;
+}
+@media (max-width: 1023px) {
+  /* No celular a rolagem é por toque: a barra só atrapalha a largura. */
+  main { scrollbar-width: none; }
+  main::-webkit-scrollbar { width: 0; height: 0; }
 }
 
 /* DRIVER.JS — Tour Guide Custom Styles */
@@ -1186,17 +1198,6 @@ input:-webkit-autofill:active {
   }
 }
 
-/* Fora de @layer: classe usada só em src/hooks (fora do content do
-   Tailwind), então dentro da camada ela seria descartada no build. */
-/* Botão flutuante recolhido (useFloatingDodge): vira uma aba na borda
-   direita, translúcida, para não cobrir o conteúdo embaixo dele. */
-.floating-tucked {
-  transform: translateX(62%) scale(0.88);
-  opacity: 0.55;
-}
-@media (prefers-reduced-motion: reduce) {
-  .floating-tucked { transition: none !important; }
-}
 
 /* Celular: respiros de desktop (p-8 a p-16) dentro do p-4 do <main> deixavam
    ~200px úteis num card de 360px — era o que mais espremia título e número.
@@ -1208,3 +1209,226 @@ input:-webkit-autofill:active {
   .gap-10, .gap-12 { gap: 1.5rem; }
   .rounded-\[3rem\], .rounded-\[2\.5rem\] { border-radius: var(--radius-card, 14px); }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   Botões flutuantes (Aurora + feedback) — um trilho só, à direita.
+   O de feedback fica centralizado logo acima do da Aurora. Ao rolar para
+   baixo os dois descem e somem inteiros (use-hide-on-scroll); nada fica
+   cortado na borda da tela.
+   ════════════════════════════════════════════════════════════════════ */
+:root {
+  --fab-main: 52px;
+  --fab-mini: 42px;
+  --fab-gap: 12px;
+  --fab-right: 16px;
+  --fab-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+}
+html[data-fab-raise] { --fab-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 1024px) {
+  :root { --fab-right: 24px; --fab-bottom: 24px; }
+  html[data-fab-raise] { --fab-bottom: 96px; }
+}
+.fab-dock {
+  position: fixed;
+  right: var(--fab-right);
+  z-index: 40;
+  transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+  will-change: transform;
+}
+.fab-slot-main { bottom: var(--fab-bottom); }
+.fab-slot-mini {
+  bottom: calc(var(--fab-bottom) + var(--fab-main) + var(--fab-gap));
+  right: calc(var(--fab-right) + (var(--fab-main) - var(--fab-mini)) / 2);
+}
+.fab-hidden {
+  transform: translateY(calc(var(--fab-bottom) + var(--fab-main) * 2 + 40px));
+  opacity: 0;
+  pointer-events: none;
+}
+.fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, background-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab-main {
+  width: var(--fab-main);
+  height: var(--fab-main);
+  color: #fff;
+  background: linear-gradient(150deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.82) 100%);
+  box-shadow:
+    0 0 0 3px hsl(var(--background)),
+    0 12px 28px -10px hsl(var(--primary) / 0.65),
+    0 3px 8px rgba(15, 23, 42, 0.14),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.fab-mini {
+  width: var(--fab-mini);
+  height: var(--fab-mini);
+  color: hsl(var(--primary));
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 8px 20px -10px rgba(15, 23, 42, 0.35), 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+@media (hover: hover) {
+  .fab:hover { transform: translateY(-2px); }
+  .fab-main:hover {
+    box-shadow:
+      0 0 0 3px hsl(var(--background)),
+      0 18px 34px -10px hsl(var(--primary) / 0.75),
+      0 4px 10px rgba(15, 23, 42, 0.16),
+      inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .fab-mini:hover { color: #fff; background: hsl(var(--primary)); border-color: transparent; }
+}
+.fab:active { transform: scale(.93); }
+.fab:focus-visible { outline: 3px solid hsl(var(--accent)); outline-offset: 3px; }
+.fab-status {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: #22c55e;
+  border: 2px solid hsl(var(--background));
+}
+/* Rótulo que aparece ao passar o mouse (só em tela com mouse). */
+.fab-label {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: hsl(var(--background));
+  background: hsl(var(--foreground));
+  box-shadow: 0 8px 20px -8px rgba(0,0,0,.35);
+  opacity: 0;
+  transform: translate(6px, -50%);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .fab:hover .fab-label, .fab:focus-visible .fab-label { opacity: 1; transform: translate(0, -50%); }
+}
+@media (hover: none) { .fab-label { display: none; } }
+
+/* ════════════════════════════════════════════════════════════════════
+   Acabamento: efeitos discretos que dão cara de produto.
+   Só transform/opacity, e tudo desliga com prefers-reduced-motion.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Cabeçalho ganha sombra e vidro quando a página sai do topo. */
+.app-header { transition: box-shadow .25s ease, background-color .25s ease; }
+.app-header[data-scrolled] {
+  box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
+}
+/* Barra de progresso de leitura na base do cabeçalho. */
+.scroll-progress {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+  pointer-events: none;
+}
+
+/* Seções entram suavemente quando chegam à tela (ScrollReveal). */
+[data-reveal="pending"] { opacity: 0; transform: translateY(18px); }
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+  transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Esqueleto de carregamento com brilho que passa, no lugar do pisca. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-sweep { to { transform: translateX(100%); } }
+
+/* Menu lateral: item ativo com filete de luz à esquerda e ícone que anda
+   um pouco ao passar o mouse. */
+.nav-item { position: relative; }
+.nav-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -10px; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: hsl(var(--accent));
+  box-shadow: 0 0 12px hsl(var(--accent) / .8);
+}
+.nav-item svg:first-child { transition: transform .2s cubic-bezier(.2,.8,.2,1); }
+@media (hover: hover) {
+  .nav-item:hover svg:first-child { transform: translateX(2px) scale(1.06); }
+}
+
+/* Barra inferior: pílula atrás do ícone ativo. */
+.tab-pill {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 52px;
+  height: 30px;
+  margin-left: -26px;
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.12);
+  transform: scale(.6);
+  opacity: 0;
+  transition: transform .3s cubic-bezier(.2,.9,.3,1.3), opacity .2s ease;
+}
+[aria-current="page"] > .tab-pill { transform: scale(1); opacity: 1; }
+
+/* Foco visível consistente em toda a plataforma (teclado). */
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Seleção de texto na cor da marca. */
+::selection { background: hsl(var(--primary) / .25); }
+
+/* Cards clicáveis sobem um pouco ao passar o mouse; botões respondem ao toque.
+   Fora: quem já tem animação de entrada (anim-*) ou transform próprio, para
+   não brigar com eles (regra do sistema: anime o invólucro, não o card). */
+@media (hover: hover) {
+  main a[class*="rounded"]:not([class*="anim-"]):not([class*="translate"]):not([class*="scale"]):not(.lift) {
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
+  }
+  main a[class*="rounded"]:not([class*="anim-"]):not([class*="translate"]):not([class*="scale"]):not(.lift):hover {
+    transform: translateY(-2px);
+  }
+}
+main button:not([class*="scale"]):not([class*="translate"]):not([class*="anim-"]):not([role="tab"]):not([role="checkbox"]):not([role="switch"]) {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: .15s;
+}
+main button:not([class*="scale"]):not([class*="translate"]):not([class*="anim-"]):not([role="tab"]):not([role="checkbox"]):not([role="switch"]):not(:disabled):active {
+  transform: scale(.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-dock, .fab, .fab-label, .app-header, .tab-pill, .nav-item svg { transition: none !important; }
+  main a, main button { transform: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .skeleton-shimmer::after { animation: none; }
+}
+
